@@ -89,7 +89,7 @@ export default function HomePage() {
       {/* Hero Section */}
       <section className="text-center space-y-4 py-12">
         <h1 className="text-4xl font-bold tracking-tight">
-          AI Prompt Gallery Platform
+          Mature Agent Template Marketplace
         </h1>
         <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
           Create, share, and deploy sophisticated AI-powered application templates with 

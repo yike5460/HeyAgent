@@ -19,6 +19,59 @@ export interface PromptTemplate {
   rating: number
   usageCount: number
   tags: string[]
+  
+  // Template inheritance and cloning
+  parentTemplateId?: string
+  forkCount: number
+  isForked: boolean
+  inheritanceConfig?: TemplateInheritanceConfig
+  
+  // Import/Export metadata
+  exportMetadata?: TemplateExportMetadata
+  
+  // Collaboration
+  collaborators: Collaboration[]
+  isPublic: boolean
+  license: 'MIT' | 'Apache-2.0' | 'GPL-3.0' | 'Custom' | 'Proprietary'
+}
+
+// Template Management Types
+export interface TemplateInheritanceConfig {
+  inheritedComponents: ('prompt' | 'mcpServers' | 'saasIntegrations' | 'agentConfig')[]
+  customizations: TemplateCustomization[]
+  mergeStrategy: 'override' | 'merge' | 'append'
+}
+
+export interface TemplateCustomization {
+  component: string
+  field: string
+  originalValue: any
+  customValue: any
+  reason?: string
+}
+
+export interface TemplateExportMetadata {
+  exportedAt: string
+  exportedBy: string
+  version: number
+  includeSecrets: boolean
+  format: 'json' | 'yaml'
+  checksum: string
+}
+
+export interface TemplateImportResult {
+  success: boolean
+  templateId?: string
+  errors: string[]
+  warnings: string[]
+  conflictResolutions?: ConflictResolution[]
+}
+
+export interface ConflictResolution {
+  field: string
+  conflict: 'name_exists' | 'version_mismatch' | 'dependency_missing'
+  resolution: 'skip' | 'rename' | 'overwrite' | 'merge'
+  newValue?: any
 }
 
 export interface PromptConfig {

@@ -1,4 +1,4 @@
-# HeyPrompt - AI Prompt Gallery Platform
+# HeyAgent - Prebuilt Agent Blueprints
 
 A comprehensive platform for creating, sharing, and deploying sophisticated AI-powered application templates with MCP server integration and containerized sandbox environments.
 
@@ -56,7 +56,7 @@ A comprehensive platform for creating, sharing, and deploying sophisticated AI-p
 1. **Clone the repository**
    ```bash
    git clone <repository-url>
-   cd HeyPrompt
+   cd HeyAgent
    ```
 
 2. **Install dependencies**
@@ -365,4 +365,4 @@ const saasConfig: SaaSIntegration = {
 - [Model Context Protocol](https://modelcontextprotocol.io/)
 - [Tailwind CSS](https://tailwindcss.com/docs)
 
-**Built with ❤️ by the HeyPrompt Team**
+**Built with ❤️ by the HeyAgent Team**

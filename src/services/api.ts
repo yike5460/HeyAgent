@@ -91,10 +91,26 @@ class APIService {
     })
   }
 
-  async cloneTemplate(id: string): Promise<APIResponse<PromptTemplate>> {
+  async cloneTemplate(id: string, customizations?: Partial<PromptTemplate>): Promise<APIResponse<PromptTemplate>> {
     return this.request<PromptTemplate>(`/templates/${id}/clone`, {
       method: 'POST',
+      body: JSON.stringify(customizations || {}),
     })
+  }
+
+  async importTemplates(templates: PromptTemplate[]): Promise<APIResponse<PromptTemplate[]>> {
+    return this.request<PromptTemplate[]>('/templates', {
+      method: 'POST',
+      body: JSON.stringify({ action: 'import', templates }),
+    })
+  }
+
+  async exportTemplate(templateId: string): Promise<APIResponse<PromptTemplate>> {
+    return this.request<PromptTemplate>(`/templates/${templateId}`)
+  }
+
+  async exportAllTemplates(): Promise<APIResponse<PromptTemplate[]>> {
+    return this.request<PromptTemplate[]>('/templates?limit=1000')
   }
 
   // Sandbox Management

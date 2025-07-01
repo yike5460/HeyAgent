@@ -10,19 +10,19 @@ import { Navigation } from '@/components/navigation'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'HeyPrompt - AI Prompt Gallery Platform',
-  description: 'Comprehensive platform for AI-powered application templates with MCP server integration and sandbox environments',
+  title: 'HeyAgent - Prebuilt Agent Blueprints',
+  description: 'Create, share, and deploy AI-powered application templates',
   keywords: ['AI', 'prompts', 'templates', 'MCP', 'automation', 'sandbox'],
-  authors: [{ name: 'HeyPrompt Team' }],
+  authors: [{ name: 'HeyAgent Team' }],
   openGraph: {
-    title: 'HeyPrompt - AI Prompt Gallery Platform',
+    title: 'HeyAgent - Prebuilt Agent Blueprints',
     description: 'Create, share, and deploy AI-powered application templates',
     type: 'website',
     locale: 'en_US',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'HeyPrompt - AI Prompt Gallery Platform',
+    title: 'HeyAgent - Prebuilt Agent Blueprints',
     description: 'Create, share, and deploy AI-powered application templates',
   },
   robots: {
