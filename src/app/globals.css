@@ -1,0 +1,257 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Midnight Dark Palette Theme - Light Mode */
+    --background: 210 20% 98%; /* Very light neutral background */
+    --foreground: 0 0% 0%; /* Pure black text for maximum contrast */
+    --card: 210 20% 96%;
+    --card-foreground: 0 0% 0%;
+    --popover: 210 20% 96%;
+    --popover-foreground: 0 0% 0%;
+    --primary: 240 17% 32%; /* #40407a - midnight blue */
+    --primary-foreground: 210 20% 98%;
+    --secondary: 240 31% 17%; /* #2c2c54 - dark midnight */
+    --secondary-foreground: 210 20% 98%;
+    --muted: 210 20% 92%; /* Very light neutral */
+    --muted-foreground: 240 17% 32%;
+    --accent: 210 20% 92%;
+    --accent-foreground: 0 0% 0%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 210 20% 85%; /* Light neutral border */
+    --input: 210 20% 88%;
+    --ring: 240 17% 32%;
+    --radius: 0.5rem;
+    
+    /* Midnight gradient colors */
+    --midnight-black: 0 0% 0%; /* #000000 */
+    --midnight-dark: 240 31% 17%; /* #2c2c54 */
+    --midnight-blue: 240 17% 32%; /* #40407a */
+    --midnight-purple: 243 47% 63%; /* #706fd3 */
+    --midnight-light: 210 20% 98%; /* #f8f9fa */
+  }
+
+  .dark {
+    /* Midnight Dark Palette Theme - Dark Mode */
+    --background: 0 0% 0%; /* Pure black background */
+    --foreground: 210 20% 98%; /* Light neutral text */
+    --card: 240 31% 17%;
+    --card-foreground: 210 20% 98%;
+    --popover: 240 31% 17%;
+    --popover-foreground: 210 20% 98%;
+    --primary: 243 47% 63%; /* #706fd3 - midnight purple */
+    --primary-foreground: 0 0% 0%;
+    --secondary: 240 17% 32%;
+    --secondary-foreground: 210 20% 98%;
+    --muted: 240 31% 17%;
+    --muted-foreground: 243 47% 73%;
+    --accent: 243 47% 63%;
+    --accent-foreground: 0 0% 0%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 240 17% 32%;
+    --input: 240 31% 17%;
+    --ring: 243 47% 63%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-muted;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-muted-foreground/30 rounded-md;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-muted-foreground/50;
+}
+
+/* Monaco Editor theme integration */
+.monaco-editor {
+  @apply bg-card text-card-foreground;
+}
+
+.monaco-editor .margin {
+  @apply bg-muted;
+}
+
+/* React Flow custom styles */
+.react-flow__node {
+  @apply bg-card border-border shadow-sm;
+}
+
+.react-flow__edge {
+  @apply stroke-muted-foreground;
+}
+
+.react-flow__controls {
+  @apply bg-card border-border;
+}
+
+.react-flow__minimap {
+  @apply bg-muted;
+}
+
+/* Custom animations */
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 5px hsl(var(--primary) / 0.5);
+  }
+  50% {
+    box-shadow: 0 0 20px hsl(var(--primary) / 0.8);
+  }
+}
+
+.pulse-glow {
+  animation: pulse-glow 2s infinite;
+}
+
+/* Loading states */
+.loading-skeleton {
+  @apply animate-pulse bg-muted rounded;
+}
+
+/* Template card hover effects */
+.template-card {
+  @apply transition-all duration-200 hover:shadow-lg hover:scale-[1.02];
+}
+
+/* Midnight Dark Gradient Backgrounds */
+.midnight-gradient {
+  background: linear-gradient(135deg,
+    hsl(var(--midnight-black)) 0%,
+    hsl(var(--midnight-dark)) 25%,
+    hsl(var(--midnight-blue)) 50%,
+    hsl(var(--midnight-purple)) 75%,
+    hsl(var(--midnight-light)) 100%);
+}
+
+.midnight-gradient-reverse {
+  background: linear-gradient(135deg,
+    hsl(var(--midnight-light)) 0%,
+    hsl(var(--midnight-purple)) 25%,
+    hsl(var(--midnight-blue)) 50%,
+    hsl(var(--midnight-dark)) 75%,
+    hsl(var(--midnight-black)) 100%);
+}
+
+.midnight-gradient-horizontal {
+  background: linear-gradient(90deg,
+    hsl(var(--midnight-black)) 0%,
+    hsl(var(--midnight-dark)) 25%,
+    hsl(var(--midnight-blue)) 50%,
+    hsl(var(--midnight-purple)) 75%,
+    hsl(var(--midnight-light)) 100%);
+}
+
+/* Industry category colors - Midnight themed */
+.industry-media {
+  @apply bg-gradient-to-r from-slate-100 to-gray-100 text-slate-800
+         dark:from-slate-800/30 dark:to-gray-800/30 dark:text-slate-200;
+}
+.industry-healthcare {
+  @apply bg-gradient-to-r from-purple-100 to-violet-100 text-purple-800
+         dark:from-purple-800/30 dark:to-violet-800/30 dark:text-purple-200;
+}
+.industry-retail {
+  @apply bg-gradient-to-r from-indigo-100 to-purple-100 text-indigo-800
+         dark:from-indigo-800/30 dark:to-purple-800/30 dark:text-indigo-200;
+}
+.industry-manufacturing {
+  @apply bg-gradient-to-r from-gray-100 to-slate-100 text-gray-800
+         dark:from-gray-800/30 dark:to-slate-800/30 dark:text-gray-200;
+}
+.industry-automotive {
+  @apply bg-gradient-to-r from-violet-100 to-purple-100 text-violet-800
+         dark:from-violet-800/30 dark:to-purple-800/30 dark:text-violet-200;
+}
+.industry-financial {
+  @apply bg-gradient-to-r from-neutral-100 to-gray-100 text-neutral-800
+         dark:from-neutral-800/30 dark:to-gray-800/30 dark:text-neutral-200;
+}
+.industry-gaming {
+  @apply bg-gradient-to-r from-purple-100 to-indigo-100 text-purple-800
+         dark:from-purple-800/30 dark:to-indigo-800/30 dark:text-purple-200;
+}
+
+/* Midnight-themed hero section */
+.hero-midnight {
+  background: linear-gradient(135deg,
+    hsl(var(--midnight-black)) 0%,
+    hsl(var(--midnight-dark)) 30%,
+    hsl(var(--midnight-blue)) 60%,
+    hsl(var(--midnight-purple)) 85%,
+    hsl(var(--midnight-light)) 100%);
+  background-size: 400% 400%;
+  animation: midnight-glow 20s ease-in-out infinite;
+}
+
+@keyframes midnight-glow {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+/* Midnight-themed cards */
+.card-midnight {
+  background: linear-gradient(145deg,
+    hsl(210 20% 97%) 0%,
+    hsl(210 20% 95%) 100%);
+  border: 1px solid hsl(210 20% 85%);
+  box-shadow: 0 4px 20px hsla(var(--midnight-blue), 0.15);
+}
+
+.dark .card-midnight {
+  background: linear-gradient(145deg,
+    hsl(0 0% 0%) 0%,
+    hsl(240 31% 17%) 100%);
+  border: 1px solid hsl(240 17% 32%);
+  box-shadow: 0 4px 20px hsla(var(--midnight-purple), 0.2);
+}
+
+/* Midnight-themed buttons */
+.btn-midnight {
+  background: linear-gradient(135deg,
+    hsl(var(--midnight-dark)) 0%,
+    hsl(var(--midnight-blue)) 100%);
+  border: none;
+  color: white;
+  transition: all 0.3s ease;
+}
+
+.btn-midnight:hover {
+  background: linear-gradient(135deg,
+    hsl(var(--midnight-blue)) 0%,
+    hsl(var(--midnight-purple)) 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px hsla(var(--midnight-purple), 0.4);
+}
+
+/* Midnight color indicators */
+.midnight-black { background-color: hsl(var(--midnight-black)); }
+.midnight-dark { background-color: hsl(var(--midnight-dark)); }
+.midnight-blue { background-color: hsl(var(--midnight-blue)); }
+.midnight-purple { background-color: hsl(var(--midnight-purple)); }
+.midnight-light { background-color: hsl(var(--midnight-light)); }
