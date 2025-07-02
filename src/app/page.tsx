@@ -4,17 +4,18 @@ import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { TemplateDetailsPanel } from '@/components/template-details-panel'
 import { PromptTemplate } from '@/types'
 import { localStorageService } from '@/services/local-storage'
 import { useSession } from "next-auth/react"
-import { 
-  Brain, 
-  Database, 
-  Settings, 
-  Workflow, 
-  Plus, 
-  Search, 
-  Users, 
+import {
+  Brain,
+  Database,
+  Settings,
+  Workflow,
+  Plus,
+  Search,
+  Users,
   User,
   ArrowRight,
   Star,
@@ -63,6 +64,8 @@ export default function HomePage() {
   const [myTemplatesCount, setMyTemplatesCount] = useState(0)
   const [myDraftCount, setMyDraftCount] = useState(0)
   const [loading, setLoading] = useState(true)
+  const [selectedTemplate, setSelectedTemplate] = useState<PromptTemplate | null>(null)
+  const [isTemplateDetailsOpen, setIsTemplateDetailsOpen] = useState(false)
 
   useEffect(() => {
     loadMyTemplatesStats()
@@ -81,6 +84,82 @@ export default function HomePage() {
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleUseTemplate = (template: any) => {
+    // Convert the mock template to PromptTemplate format
+    const fullTemplate: PromptTemplate = {
+      ...template,
+      industry: template.industry || 'Media & Entertainment',
+      useCase: template.useCase || 'General',
+      promptConfig: {
+        systemPrompt: 'You are a helpful AI assistant.',
+        userPromptTemplate: 'Please help me with: {request}',
+        parameters: [
+          {
+            name: 'request',
+            type: 'string',
+            description: 'The user request',
+            required: true
+          }
+        ],
+        constraints: {
+          maxTokens: 2000,
+          temperature: 0.7
+        }
+      },
+      mcpServers: [],
+      saasIntegrations: [],
+      agentConfig: {
+        workflow: [],
+        errorHandling: {
+          retryPolicy: { maxRetries: 3, backoffStrategy: 'exponential', baseDelay: 1000, maxDelay: 10000 },
+          fallbackActions: [],
+          errorNotifications: []
+        },
+        monitoring: {
+          metricsCollection: true,
+          performanceTracking: true,
+          costTracking: true,
+          alerting: []
+        },
+        scaling: {
+          autoScaling: false,
+          minInstances: 1,
+          maxInstances: 5,
+          scaleUpThreshold: 80,
+          scaleDownThreshold: 20
+        }
+      },
+      metadata: {
+        category: 'General',
+        complexity: 'beginner',
+        estimatedRuntime: 60,
+        resourceRequirements: {
+          cpu: '0.25',
+          memory: '512Mi',
+          storage: '5Gi',
+          network: true
+        },
+        dependencies: [],
+        changelog: []
+      },
+      version: 1,
+      status: 'published',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      userId: 'mock-user',
+      parentTemplateId: undefined,
+      isForked: false,
+      inheritanceConfig: undefined,
+      exportMetadata: undefined,
+      collaborators: [],
+      isPublic: true,
+      license: 'MIT'
+    }
+    
+    setSelectedTemplate(fullTemplate)
+    setIsTemplateDetailsOpen(true)
   }
 
   const publicStats = {
@@ -163,13 +242,6 @@ export default function HomePage() {
             <h2 className="text-2xl font-bold">Featured Templates</h2>
             <p className="text-muted-foreground">Discover popular AI templates created by the community</p>
           </div>
-          <Link href="/gallery">
-            <Button size="lg" className="group">
-              <Search className="h-4 w-4 mr-2" />
-              View All Templates
-              <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
-            </Button>
-          </Link>
         </div>
 
         {/* Template Cards Grid */}
@@ -214,7 +286,11 @@ export default function HomePage() {
                     </Badge>
                   ))}
                 </div>
-                <Button className="w-full group-hover:bg-primary/90" size="sm">
+                <Button
+                  className="w-full group-hover:bg-primary/90"
+                  size="sm"
+                  onClick={() => handleUseTemplate(template)}
+                >
                   <Download className="h-3 w-3 mr-2" />
                   Use Template
                 </Button>
@@ -335,6 +411,13 @@ export default function HomePage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Template Details Panel */}
+      <TemplateDetailsPanel
+        template={selectedTemplate}
+        isOpen={isTemplateDetailsOpen}
+        onOpenChange={setIsTemplateDetailsOpen}
+      />
     </div>
   )
 }

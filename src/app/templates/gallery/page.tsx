@@ -2,13 +2,12 @@
 
 import { useState, useEffect } from 'react'
 import { TemplateCard } from '@/components/template-card'
-import { TemplateVisualization } from '@/components/template-visualization'
+import { TemplateDetailsPanel } from '@/components/template-details-panel'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { toast } from '@/components/ui/use-toast'
 import { PromptTemplate, IndustryVertical } from '@/types'
 import { Search, Filter, Eye, Copy, GitBranch, Star, Download } from 'lucide-react'
@@ -290,7 +289,7 @@ export default function TemplateGalleryPage() {
   const [templates, setTemplates] = useState<PromptTemplate[]>(mockPublicTemplates)
   const [filteredTemplates, setFilteredTemplates] = useState<PromptTemplate[]>(mockPublicTemplates)
   const [selectedTemplate, setSelectedTemplate] = useState<PromptTemplate | null>(null)
-  const [isPreviewOpen, setIsPreviewOpen] = useState(false)
+  const [isTemplateDetailsOpen, setIsTemplateDetailsOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [industryFilter, setIndustryFilter] = useState<IndustryVertical | 'all'>('all')
   const [complexityFilter, setComplexityFilter] = useState<'all' | 'beginner' | 'intermediate' | 'advanced'>('all')
@@ -331,7 +330,12 @@ export default function TemplateGalleryPage() {
 
   const handlePreview = (template: PromptTemplate) => {
     setSelectedTemplate(template)
-    setIsPreviewOpen(true)
+    setIsTemplateDetailsOpen(true)
+  }
+
+  const handleTemplateCardClick = (template: PromptTemplate) => {
+    setSelectedTemplate(template)
+    setIsTemplateDetailsOpen(true)
   }
 
   const handleClone = (template: PromptTemplate) => {
@@ -498,7 +502,11 @@ export default function TemplateGalleryPage() {
           </div>
         ) : (
           filteredTemplates.map((template) => (
-            <Card key={template.id} className="group hover:shadow-lg transition-shadow">
+            <Card
+              key={template.id}
+              className="group hover:shadow-lg transition-shadow cursor-pointer"
+              onClick={() => handleTemplateCardClick(template)}
+            >
               <CardHeader className="pb-3">
                 <div className="flex items-start justify-between">
                   <div className="space-y-1 flex-1">
@@ -548,16 +556,44 @@ export default function TemplateGalleryPage() {
                   </div>
 
                   <div className="flex space-x-1">
-                    <Button size="sm" variant="outline" onClick={() => handlePreview(template)}>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handlePreview(template)
+                      }}
+                    >
                       <Eye className="h-3 w-3" />
                     </Button>
-                    <Button size="sm" variant="outline" onClick={() => handleClone(template)}>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleClone(template)
+                      }}
+                    >
                       <Copy className="h-3 w-3" />
                     </Button>
-                    <Button size="sm" variant="outline" onClick={() => handleFork(template)}>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleFork(template)
+                      }}
+                    >
                       <GitBranch className="h-3 w-3" />
                     </Button>
-                    <Button size="sm" variant="outline" onClick={() => handleExport(template)}>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleExport(template)
+                      }}
+                    >
                       <Download className="h-3 w-3" />
                     </Button>
                   </div>
@@ -568,80 +604,14 @@ export default function TemplateGalleryPage() {
         )}
       </div>
 
-      {/* Preview Dialog */}
-      <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Template Preview: {selectedTemplate?.title}</DialogTitle>
-            <DialogDescription>
-              Created by {selectedTemplate?.author} • {selectedTemplate?.usageCount} uses • {selectedTemplate?.forkCount} forks
-            </DialogDescription>
-          </DialogHeader>
-          
-          {selectedTemplate && (
-            <div className="space-y-6">
-              <div className="grid gap-4">
-                <div>
-                  <h4 className="font-medium">Description</h4>
-                  <p className="text-sm text-muted-foreground">{selectedTemplate.description}</p>
-                </div>
-                
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <h4 className="font-medium">Industry</h4>
-                    <Badge variant="secondary">{selectedTemplate.industry}</Badge>
-                  </div>
-                  <div>
-                    <h4 className="font-medium">Use Case</h4>
-                    <p className="text-sm">{selectedTemplate.useCase}</p>
-                  </div>
-                </div>
-
-                <div>
-                  <h4 className="font-medium">System Prompt</h4>
-                  <pre className="text-sm bg-muted p-3 rounded-md whitespace-pre-wrap">
-                    {selectedTemplate.promptConfig.systemPrompt}
-                  </pre>
-                </div>
-
-                <div>
-                  <h4 className="font-medium">User Prompt Template</h4>
-                  <pre className="text-sm bg-muted p-3 rounded-md whitespace-pre-wrap">
-                    {selectedTemplate.promptConfig.userPromptTemplate}
-                  </pre>
-                </div>
-
-                <div>
-                  <h4 className="font-medium">Parameters</h4>
-                  <div className="space-y-2">
-                    {selectedTemplate.promptConfig.parameters.map((param) => (
-                      <div key={param.name} className="flex items-center justify-between p-2 bg-muted rounded">
-                        <div>
-                          <span className="font-medium">{param.name}</span>
-                          <span className="text-sm text-muted-foreground ml-2">({param.type})</span>
-                          {param.required && <Badge variant="outline" className="ml-2 text-xs">Required</Badge>}
-                        </div>
-                        <span className="text-sm text-muted-foreground">{param.description}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <h4 className="font-medium">Tags</h4>
-                  <div className="flex flex-wrap gap-1">
-                    {selectedTemplate.tags.map((tag) => (
-                      <Badge key={tag} variant="outline" className="text-xs">
-                        {tag}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
+      {/* Template Details Panel */}
+      <TemplateDetailsPanel
+        template={selectedTemplate}
+        isOpen={isTemplateDetailsOpen}
+        onOpenChange={setIsTemplateDetailsOpen}
+        onCloneTemplate={handleClone}
+        onForkTemplate={handleFork}
+      />
     </div>
   )
 }
