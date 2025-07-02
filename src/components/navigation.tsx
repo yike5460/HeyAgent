@@ -41,26 +41,32 @@ export function Navigation() {
 
         {/* Navigation Links */}
         <nav className="flex items-center space-x-6 text-sm font-medium ml-8">
-          <Link 
-            href="/gallery" 
+          <Link
+            href="/gallery"
             className="transition-colors hover:text-foreground/80 text-foreground/60"
           >
             Gallery
           </Link>
-          <Link 
-            href="/sandbox" 
+          <Link
+            href="/mine"
+            className="transition-colors hover:text-foreground/80 text-foreground/60"
+          >
+            Mine
+          </Link>
+          <Link
+            href="/sandbox"
             className="transition-colors hover:text-foreground/80 text-foreground/60"
           >
             Sandbox
           </Link>
-          <Link 
-            href="/analytics" 
+          <Link
+            href="/analytics"
             className="transition-colors hover:text-foreground/80 text-foreground/60"
           >
             Analytics
           </Link>
-          <Link 
-            href="/docs" 
+          <Link
+            href="/docs"
             className="transition-colors hover:text-foreground/80 text-foreground/60"
           >
             Docs
@@ -89,10 +95,12 @@ export function Navigation() {
           </Button>
 
           {/* Create Button */}
-          <Button size="sm">
-            <Plus className="h-4 w-4 mr-2" />
-            Create
-          </Button>
+          <Link href="/mine">
+            <Button size="sm">
+              <Plus className="h-4 w-4 mr-2" />
+              Create
+            </Button>
+          </Link>
 
           {/* User Menu */}
           {session ? (
