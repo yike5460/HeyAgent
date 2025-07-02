@@ -26,37 +26,67 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 
-// Mock public templates for stats
+// Mock public templates for stats - Industry-focused
 const mockPublicTemplates = [
   {
     id: '1',
     title: 'Short Drama Production Assistant',
-    description: 'Automated script generation, character development, and scene planning for short-form video content',
-    author: 'John Doe',
+    description: 'Automated script generation, character development, and scene planning for short-form video content with Kling video generation integration',
+    author: 'MediaPro Studios',
     rating: 4.8,
-    usageCount: 1250,
-    forkCount: 12,
-    tags: ['video', 'script', 'automation', 'content-creation']
+    usageCount: 2150,
+    forkCount: 34,
+    tags: ['media-entertainment', 'video-generation', 'script', 'kling-api', 'production']
   },
   {
     id: '2',
-    title: 'E-commerce Product Description Generator',
-    description: 'Generate compelling product descriptions for online stores with SEO optimization',
-    author: 'Jane Smith',
-    rating: 4.5,
+    title: 'ASMR Content Creation Workflow',
+    description: 'End-to-end ASMR content generation with audio processing, script optimization, and audience targeting using MCP servers',
+    author: 'SoundScape AI',
+    rating: 4.6,
     usageCount: 890,
-    forkCount: 8,
-    tags: ['ecommerce', 'copywriting', 'seo', 'marketing']
+    forkCount: 18,
+    tags: ['media-entertainment', 'asmr', 'audio', 'mcp-servers', 'content-creation']
   },
   {
     id: '3',
-    title: 'Healthcare Symptom Analyzer',
-    description: 'Analyze patient symptoms and provide preliminary assessment for healthcare professionals',
-    author: 'Dr. Michael Chen',
+    title: 'Healthcare Patient Analysis Agent',
+    description: 'Comprehensive patient workflow automation with symptom analysis, treatment recommendations, and compliance monitoring',
+    author: 'MedTech Solutions',
     rating: 4.9,
-    usageCount: 2100,
-    forkCount: 25,
-    tags: ['healthcare', 'medical', 'diagnosis', 'symptoms']
+    usageCount: 3200,
+    forkCount: 47,
+    tags: ['healthcare', 'patient-analysis', 'compliance', 'medical-workflows', 'firecrawl']
+  },
+  {
+    id: '4',
+    title: 'Automated Customer Service Agent',
+    description: 'Intelligent customer support with sentiment analysis, issue routing, and satisfaction tracking for retail environments',
+    author: 'RetailBot Inc',
+    rating: 4.7,
+    usageCount: 1850,
+    forkCount: 29,
+    tags: ['retail', 'customer-service', 'sentiment-analysis', 'automation', 'support']
+  },
+  {
+    id: '5',
+    title: 'Financial Risk Assessment Pipeline',
+    description: 'Real-time risk evaluation with market data analysis, compliance checking, and automated reporting for FSI',
+    author: 'FinanceAI Corp',
+    rating: 4.8,
+    usageCount: 1650,
+    forkCount: 22,
+    tags: ['financial-services', 'risk-assessment', 'compliance', 'market-data', 'automation']
+  },
+  {
+    id: '6',
+    title: 'Manufacturing Quality Control Agent',
+    description: 'Automated quality inspection with vision processing, defect detection, and supply chain optimization',
+    author: 'IndustryBot Systems',
+    rating: 4.5,
+    usageCount: 980,
+    forkCount: 15,
+    tags: ['manufacturing', 'quality-control', 'vision-processing', 'defect-detection', 'optimization']
   }
 ]
 
@@ -180,58 +210,154 @@ export default function HomePage() {
         loading={loading}
       />
 
-
-
       {/* Features Overview */}
       <div className="space-y-6">
-        <h2 className="text-2xl font-bold text-center">Platform Features</h2>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <Card>
-            <CardHeader className="text-center">
-              <Brain className="h-8 w-8 text-primary mx-auto mb-2" />
-              <CardTitle className="text-lg">Template Creation</CardTitle>
+        <div className="text-center space-y-2">
+          <h2 className="text-3xl font-bold">Platform Capabilities</h2>
+          <p className="text-muted-foreground max-w-2xl mx-auto">
+            Enterprise-grade agent template platform designed for deterministic application prototyping across industry verticals
+          </p>
+        </div>
+        
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+          <Card className="group hover:shadow-lg transition-shadow duration-300">
+            <CardHeader className="text-center pb-4">
+              <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:bg-primary/20 transition-colors duration-300">
+                <Brain className="h-6 w-6 text-primary" />
+              </div>
+              <CardTitle className="text-lg">Production-Tested Prompts</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="pt-0">
               <p className="text-sm text-muted-foreground text-center">
-                Create sophisticated AI prompt templates with parameters, constraints, and workflow orchestration.
+                Sophisticated prompt templates with validated parameters, constraints, and deterministic workflow orchestration.
               </p>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader className="text-center">
-              <GitBranch className="h-8 w-8 text-primary mx-auto mb-2" />
-              <CardTitle className="text-lg">Clone & Fork</CardTitle>
+          <Card className="group hover:shadow-lg transition-shadow duration-300">
+            <CardHeader className="text-center pb-4">
+              <div className="w-12 h-12 bg-secondary/10 rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:bg-secondary/20 transition-colors duration-300">
+                <Database className="h-6 w-6 text-secondary-foreground" />
+              </div>
+              <CardTitle className="text-lg">Mature MCP Servers</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="pt-0">
               <p className="text-sm text-muted-foreground text-center">
-                Clone existing templates and create forks with inheritance tracking and customization support.
+                Integrated agent tools like Firecrawl for web crawling, content extraction, and industry-specific data processing.
               </p>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader className="text-center">
-              <Database className="h-8 w-8 text-primary mx-auto mb-2" />
-              <CardTitle className="text-lg">Local Storage</CardTitle>
+          <Card className="group hover:shadow-lg transition-shadow duration-300">
+            <CardHeader className="text-center pb-4">
+              <div className="w-12 h-12 bg-accent/10 rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:bg-accent/20 transition-colors duration-300">
+                <Settings className="h-6 w-6 text-accent-foreground" />
+              </div>
+              <CardTitle className="text-lg">SaaS Integrations</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="pt-0">
               <p className="text-sm text-muted-foreground text-center">
-                All templates are stored locally in your browser with full offline access and data persistence.
+                Pre-configured APIs for Kling, Veo3 video generation, and specialized industry tools with fallback behaviors.
               </p>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader className="text-center">
-              <Workflow className="h-8 w-8 text-primary mx-auto mb-2" />
-              <CardTitle className="text-lg">Visualization</CardTitle>
+          <Card className="group hover:shadow-lg transition-shadow duration-300">
+            <CardHeader className="text-center pb-4">
+              <div className="w-12 h-12 bg-muted/20 rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:bg-muted/30 transition-colors duration-300">
+                <Workflow className="h-6 w-6 text-muted-foreground" />
+              </div>
+              <CardTitle className="text-lg">E2B Sandbox</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="pt-0">
               <p className="text-sm text-muted-foreground text-center">
-                Interactive diagrams showing LLM, prompts, MCP servers, and workflow orchestration using React Flow.
+                Containerized testing environments with performance metrics, cost analysis, and real-time validation.
               </p>
             </CardContent>
+          </Card>
+        </div>
+      </div>
+
+      {/* Key Features */}
+      <div className="space-y-6">
+        <div className="text-center space-y-2">
+          <h2 className="text-3xl font-bold">Advanced Capabilities</h2>
+          <p className="text-muted-foreground max-w-2xl mx-auto">
+            Comprehensive toolset for professional agent development and deployment
+          </p>
+        </div>
+        
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <Card className="p-6 space-y-4">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
+                <GitBranch className="h-5 w-5 text-primary" />
+              </div>
+              <h3 className="font-semibold">Template Inheritance</h3>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Clone and customize optimized workflow templates with deterministic replication of proven architectures.
+            </p>
+          </Card>
+
+          <Card className="p-6 space-y-4">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-secondary/10 rounded-lg flex items-center justify-center">
+                <Search className="h-5 w-5 text-secondary-foreground" />
+              </div>
+              <h3 className="font-semibold">Visual Architecture</h3>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Structural visualization showing LLM integration, tool dependencies, and API workflows in modern IDEs.
+            </p>
+          </Card>
+
+          <Card className="p-6 space-y-4">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-accent/10 rounded-lg flex items-center justify-center">
+                <Settings className="h-5 w-5 text-accent-foreground" />
+              </div>
+              <h3 className="font-semibold">Advanced Customization</h3>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Modify prompts, adjust MCP servers, configure API endpoints, and define custom fallback behaviors.
+            </p>
+          </Card>
+
+          <Card className="p-6 space-y-4">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-muted/20 rounded-lg flex items-center justify-center">
+                <Users className="h-5 w-5 text-muted-foreground" />
+              </div>
+              <h3 className="font-semibold">Collaborative Development</h3>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Version control, collaborative editing, template rating systems, and comprehensive usage analytics.
+            </p>
+          </Card>
+
+          <Card className="p-6 space-y-4">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
+                <Star className="h-5 w-5 text-primary" />
+              </div>
+              <h3 className="font-semibold">Quality Assurance</h3>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Performance metrics, cost analysis, error handling demonstrations, and output quality assessments.
+            </p>
+          </Card>
+
+          <Card className="p-6 space-y-4">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-secondary/10 rounded-lg flex items-center justify-center">
+                <Upload className="h-5 w-5 text-secondary-foreground" />
+              </div>
+              <h3 className="font-semibold">Deployment Ready</h3>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Seamless deployment workflows to production environments with dependency management and scaling.
+            </p>
           </Card>
         </div>
       </div>
