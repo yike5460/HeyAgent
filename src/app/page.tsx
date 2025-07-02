@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { TemplateDetailsPanel } from '@/components/template-details-panel'
+import { DashboardHero } from '@/components/dashboard-hero'
 import { PromptTemplate } from '@/types'
 import { localStorageService } from '@/services/local-storage'
 import { useSession } from "next-auth/react"
@@ -171,151 +172,15 @@ export default function HomePage() {
 
   return (
     <div className="container mx-auto py-8 space-y-8">
-      {/* Header */}
-      <div className="text-center space-y-4">
-        <h1 className="text-4xl font-bold">AI Template Hub</h1>
-        <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-          Create, discover, and manage AI prompt templates with advanced workflow orchestration. 
-          Explore community templates or build your own with local storage persistence.
-        </p>
-      </div>
+      {/* Enhanced Dashboard Hero */}
+      <DashboardHero
+        publicStats={publicStats}
+        myTemplatesCount={myTemplatesCount}
+        myDraftCount={myDraftCount}
+        loading={loading}
+      />
 
-      {/* Quick Stats */}
-      <div className="grid gap-4 md:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Public Templates</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{publicStats.totalTemplates}</div>
-            <p className="text-xs text-muted-foreground">Community contributed</p>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">My Templates</CardTitle>
-            <User className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {loading ? '...' : myTemplatesCount}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              {myDraftCount} drafts
-            </p>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Usage</CardTitle>
-            <Brain className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {publicStats.totalUsage.toLocaleString()}
-            </div>
-            <p className="text-xs text-muted-foreground">Template executions</p>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Avg Rating</CardTitle>
-            <Star className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {publicStats.averageRating.toFixed(1)}
-            </div>
-            <p className="text-xs text-muted-foreground">Community rating</p>
-          </CardContent>
-        </Card>
-      </div>
 
-      {/* Featured Templates Gallery */}
-      <section className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-2xl font-bold">Featured Templates</h2>
-            <p className="text-muted-foreground">Discover popular AI templates created by the community</p>
-          </div>
-        </div>
-
-        {/* Template Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {mockPublicTemplates.map((template) => (
-            <Card key={template.id} className="group hover:shadow-lg transition-all duration-200 cursor-pointer border-2 hover:border-primary/20">
-              <CardHeader className="pb-3">
-                <div className="flex items-start justify-between">
-                  <Badge variant="secondary" className="text-xs">
-                    {template.tags[0]}
-                  </Badge>
-                  <div className="flex items-center space-x-1 text-sm text-muted-foreground">
-                    <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-                    <span>{template.rating}</span>
-                  </div>
-                </div>
-                <CardTitle className="text-lg group-hover:text-primary transition-colors">
-                  {template.title}
-                </CardTitle>
-                <CardDescription className="text-sm line-clamp-2">
-                  {template.description}
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="pt-0">
-                <div className="flex items-center justify-between text-sm text-muted-foreground mb-3">
-                  <div className="flex items-center space-x-3">
-                    <div className="flex items-center space-x-1">
-                      <Users className="h-3 w-3" />
-                      <span>{template.usageCount.toLocaleString()}</span>
-                    </div>
-                    <div className="flex items-center space-x-1">
-                      <GitBranch className="h-3 w-3" />
-                      <span>{template.forkCount}</span>
-                    </div>
-                  </div>
-                  <span className="text-xs">by {template.author}</span>
-                </div>
-                <div className="flex flex-wrap gap-1 mb-3">
-                  {template.tags.slice(1, 4).map((tag) => (
-                    <Badge key={tag} variant="outline" className="text-xs">
-                      {tag}
-                    </Badge>
-                  ))}
-                </div>
-                <Button
-                  className="w-full group-hover:bg-primary/90"
-                  size="sm"
-                  onClick={() => handleUseTemplate(template)}
-                >
-                  <Download className="h-3 w-3 mr-2" />
-                  Use Template
-                </Button>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        {/* Call to Action */}
-        <Card className="bg-gradient-to-r from-primary/5 to-primary/10 border-primary/20">
-          <CardContent className="flex items-center justify-between p-6">
-            <div>
-              <h3 className="text-lg font-semibold mb-1">Ready to explore more?</h3>
-              <p className="text-muted-foreground">Browse our complete collection of AI templates</p>
-            </div>
-            <Link href="/gallery">
-              <Button size="lg" className="group">
-                <Search className="h-4 w-4 mr-2" />
-                Explore Gallery
-                <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
-              </Button>
-            </Link>
-          </CardContent>
-        </Card>
-      </section>
 
       {/* Features Overview */}
       <div className="space-y-6">
