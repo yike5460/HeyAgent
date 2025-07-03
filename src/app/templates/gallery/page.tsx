@@ -104,12 +104,12 @@ const mockPublicTemplates: PromptTemplate[] = [
   {
     id: '2',
     title: 'E-commerce Product Description Generator',
-    description: 'Generate compelling product descriptions for online stores with SEO optimization',
+    description: 'Generate compelling product descriptions for online stores with SEO optimization and competitive analysis',
     industry: 'Retail',
     useCase: 'Product Marketing',
     promptConfig: {
-      systemPrompt: 'You are an expert copywriter specializing in e-commerce product descriptions.',
-      userPromptTemplate: 'Create a compelling product description for {product_name} in the {category} category. Focus on {key_features} and target {target_audience}.',
+      systemPrompt: 'You are an expert copywriter specializing in e-commerce product descriptions with access to web scraping and competitive analysis tools.',
+      userPromptTemplate: 'Research {competitor_urls} and create a compelling product description for {product_name} in the {category} category. Focus on {key_features} and target {target_audience}.',
       parameters: [
         {
           name: 'product_name',
@@ -122,6 +122,24 @@ const mockPublicTemplates: PromptTemplate[] = [
           type: 'string',
           description: 'Product category',
           required: true
+        },
+        {
+          name: 'competitor_urls',
+          type: 'array',
+          description: 'Competitor product URLs for analysis',
+          required: false
+        },
+        {
+          name: 'key_features',
+          type: 'string',
+          description: 'Key product features to highlight',
+          required: true
+        },
+        {
+          name: 'target_audience',
+          type: 'string',
+          description: 'Target customer demographic',
+          required: true
         }
       ],
       constraints: {
@@ -129,8 +147,96 @@ const mockPublicTemplates: PromptTemplate[] = [
         temperature: 0.8
       }
     },
-    mcpServers: [],
-    saasIntegrations: [],
+    mcpServers: [
+      {
+        serverId: 'firecrawl',
+        serverType: 'firecrawl',
+        configuration: {
+          endpoint: 'https://api.firecrawl.dev',
+          authentication: {
+            type: 'apiKey',
+            credentials: { apiKey: 'fc-key' },
+          },
+          rateLimit: {
+            requestsPerMinute: 60,
+            requestsPerHour: 1000,
+            burstLimit: 10,
+          },
+          fallback: {
+            enabled: true,
+            fallbackServers: [],
+            retryAttempts: 3,
+            timeoutMs: 30000,
+          },
+        },
+        tools: [
+          {
+            name: 'scrape_webpage',
+            description: 'Scrape content from competitor product pages',
+            inputSchema: {
+              type: 'object',
+              properties: {
+                url: { type: 'string' },
+                extractOptions: { type: 'object' }
+              },
+              required: ['url'],
+            },
+            outputSchema: {
+              type: 'object',
+              properties: {
+                content: { type: 'string' },
+                title: { type: 'string' },
+                price: { type: 'string' },
+                features: { type: 'array' }
+              },
+            },
+            costEstimate: {
+              estimatedCostPerCall: 0.01,
+              currency: 'USD',
+              billingModel: 'per-call',
+            },
+          },
+        ],
+        resources: [],
+      },
+    ],
+    saasIntegrations: [
+      {
+        provider: 'openai',
+        service: 'gpt-4',
+        configuration: {
+          apiKey: 'sk-key',
+          endpoint: 'https://api.openai.com/v1',
+          version: 'v1',
+          rateLimit: {
+            requestsPerMinute: 60,
+            requestsPerHour: 1000,
+            burstLimit: 10,
+          },
+          costTracking: {
+            enabled: true,
+            budgetLimit: 100,
+            alertThreshold: 80,
+            trackingGranularity: 'per-call',
+          },
+        },
+        capabilities: [
+          {
+            type: 'text-generation',
+            parameters: [
+              {
+                name: 'max_tokens',
+                type: 'number',
+                description: 'Maximum tokens to generate',
+                required: false,
+                defaultValue: 1500
+              }
+            ],
+            constraints: []
+          }
+        ]
+      }
+    ],
     agentConfig: {
       workflow: [],
       errorHandling: {

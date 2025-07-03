@@ -2,13 +2,14 @@
 
 import { useState, useEffect } from 'react'
 import { TemplateCard } from '@/components/template-card'
+import { TemplateDetailsPanel } from '@/components/template-details-panel'
 import { TemplateVisualization } from '@/components/template-visualization'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+
 import { toast } from '@/components/ui/use-toast'
 import { PromptTemplate, IndustryVertical } from '@/types'
 import { Search, Filter, Eye, Copy, GitBranch, Star, Download } from 'lucide-react'
@@ -105,12 +106,12 @@ const mockPublicTemplates: PromptTemplate[] = [
   {
     id: '2',
     title: 'E-commerce Product Description Generator',
-    description: 'Generate compelling product descriptions for online stores with SEO optimization',
+    description: 'Generate compelling product descriptions for online stores with SEO optimization and competitive analysis',
     industry: 'Retail',
     useCase: 'Product Marketing',
     promptConfig: {
-      systemPrompt: 'You are an expert copywriter specializing in e-commerce product descriptions.',
-      userPromptTemplate: 'Create a compelling product description for {product_name} in the {category} category. Focus on {key_features} and target {target_audience}.',
+      systemPrompt: 'You are an expert copywriter specializing in e-commerce product descriptions with access to web scraping and competitive analysis tools.',
+      userPromptTemplate: 'Research {competitor_urls} and create a compelling product description for {product_name} in the {category} category. Focus on {key_features} and target {target_audience}.',
       parameters: [
         {
           name: 'product_name',
@@ -123,6 +124,24 @@ const mockPublicTemplates: PromptTemplate[] = [
           type: 'string',
           description: 'Product category',
           required: true
+        },
+        {
+          name: 'competitor_urls',
+          type: 'array',
+          description: 'Competitor product URLs for analysis',
+          required: false
+        },
+        {
+          name: 'key_features',
+          type: 'string',
+          description: 'Key product features to highlight',
+          required: true
+        },
+        {
+          name: 'target_audience',
+          type: 'string',
+          description: 'Target customer demographic',
+          required: true
         }
       ],
       constraints: {
@@ -130,8 +149,96 @@ const mockPublicTemplates: PromptTemplate[] = [
         temperature: 0.8
       }
     },
-    mcpServers: [],
-    saasIntegrations: [],
+    mcpServers: [
+      {
+        serverId: 'firecrawl',
+        serverType: 'firecrawl',
+        configuration: {
+          endpoint: 'https://api.firecrawl.dev',
+          authentication: {
+            type: 'apiKey',
+            credentials: { apiKey: 'fc-key' },
+          },
+          rateLimit: {
+            requestsPerMinute: 60,
+            requestsPerHour: 1000,
+            burstLimit: 10,
+          },
+          fallback: {
+            enabled: true,
+            fallbackServers: [],
+            retryAttempts: 3,
+            timeoutMs: 30000,
+          },
+        },
+        tools: [
+          {
+            name: 'scrape_webpage',
+            description: 'Scrape content from competitor product pages',
+            inputSchema: {
+              type: 'object',
+              properties: {
+                url: { type: 'string' },
+                extractOptions: { type: 'object' }
+              },
+              required: ['url'],
+            },
+            outputSchema: {
+              type: 'object',
+              properties: {
+                content: { type: 'string' },
+                title: { type: 'string' },
+                price: { type: 'string' },
+                features: { type: 'array' }
+              },
+            },
+            costEstimate: {
+              estimatedCostPerCall: 0.01,
+              currency: 'USD',
+              billingModel: 'per-call',
+            },
+          },
+        ],
+        resources: [],
+      },
+    ],
+    saasIntegrations: [
+      {
+        provider: 'openai',
+        service: 'gpt-4',
+        configuration: {
+          apiKey: 'sk-key',
+          endpoint: 'https://api.openai.com/v1',
+          version: 'v1',
+          rateLimit: {
+            requestsPerMinute: 60,
+            requestsPerHour: 1000,
+            burstLimit: 10,
+          },
+          costTracking: {
+            enabled: true,
+            budgetLimit: 100,
+            alertThreshold: 80,
+            trackingGranularity: 'per-call',
+          },
+        },
+        capabilities: [
+          {
+            type: 'text-generation',
+            parameters: [
+              {
+                name: 'max_tokens',
+                type: 'number',
+                description: 'Maximum tokens to generate',
+                required: false,
+                defaultValue: 1500
+              }
+            ],
+            constraints: []
+          }
+        ]
+      }
+    ],
     agentConfig: {
       workflow: [],
       errorHandling: {
@@ -538,80 +645,20 @@ export default function TemplateGalleryPage() {
         )}
       </div>
 
-      {/* Preview Dialog */}
-      <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Template Preview: {selectedTemplate?.title}</DialogTitle>
-            <DialogDescription>
-              Created by {selectedTemplate?.author} • {selectedTemplate?.usageCount} uses • {selectedTemplate?.forkCount} forks
-            </DialogDescription>
-          </DialogHeader>
-          
-          {selectedTemplate && (
-            <div className="space-y-6">
-              <div className="grid gap-4">
-                <div>
-                  <h4 className="font-medium">Description</h4>
-                  <p className="text-sm text-muted-foreground">{selectedTemplate.description}</p>
-                </div>
-                
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <h4 className="font-medium">Industry</h4>
-                    <Badge variant="secondary">{selectedTemplate.industry}</Badge>
-                  </div>
-                  <div>
-                    <h4 className="font-medium">Use Case</h4>
-                    <p className="text-sm">{selectedTemplate.useCase}</p>
-                  </div>
-                </div>
-
-                <div>
-                  <h4 className="font-medium">System Prompt</h4>
-                  <pre className="text-sm bg-muted p-3 rounded-md whitespace-pre-wrap">
-                    {selectedTemplate.promptConfig.systemPrompt}
-                  </pre>
-                </div>
-
-                <div>
-                  <h4 className="font-medium">User Prompt Template</h4>
-                  <pre className="text-sm bg-muted p-3 rounded-md whitespace-pre-wrap">
-                    {selectedTemplate.promptConfig.userPromptTemplate}
-                  </pre>
-                </div>
-
-                <div>
-                  <h4 className="font-medium">Parameters</h4>
-                  <div className="space-y-2">
-                    {selectedTemplate.promptConfig.parameters.map((param) => (
-                      <div key={param.name} className="flex items-center justify-between p-2 bg-muted rounded">
-                        <div>
-                          <span className="font-medium">{param.name}</span>
-                          <span className="text-sm text-muted-foreground ml-2">({param.type})</span>
-                          {param.required && <Badge variant="outline" className="ml-2 text-xs">Required</Badge>}
-                        </div>
-                        <span className="text-sm text-muted-foreground">{param.description}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <h4 className="font-medium">Tags</h4>
-                  <div className="flex flex-wrap gap-1">
-                    {selectedTemplate.tags.map((tag) => (
-                      <Badge key={tag} variant="outline" className="text-xs">
-                        {tag}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
+      {/* Template Details Panel */}
+      <TemplateDetailsPanel
+        template={selectedTemplate}
+        isOpen={isPreviewOpen}
+        onOpenChange={setIsPreviewOpen}
+        onUseTemplate={(template) => {
+          toast({
+            title: "Use Template",
+            description: `Template "${template.title}" will be used in sandbox.`
+          })
+        }}
+        onCloneTemplate={handleClone}
+        onForkTemplate={handleFork}
+      />
     </div>
   )
 }

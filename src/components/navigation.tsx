@@ -21,7 +21,11 @@ import {
   LogOut, 
   Moon, 
   Sun,
-  Zap,
+  Hexagon,
+  Sparkles,
+  Diamond,
+  Orbit,
+  Triangle,
   Menu
 } from "lucide-react"
 import { useTheme } from "next-themes"
@@ -35,7 +39,19 @@ export function Navigation() {
       <div className="container flex h-14 items-center">
         {/* Logo */}
         <Link href="/" className="flex items-center space-x-2">
-          <Zap className="h-6 w-6 text-primary" />
+          <div className="relative">
+            {/* Background faded hexagon for stereovision effect */}
+            <Hexagon className="absolute h-6 w-6 text-primary/20 translate-x-0.5 translate-y-0.5" />
+            <Hexagon className="absolute h-6 w-6 text-primary/40 translate-x-0.25 translate-y-0.25" />
+            {/* Main hexagon */}
+            <Hexagon className="relative h-6 w-6 text-primary" />
+          </div>
+          {/* Abstract & Aesthetic icon options for HeyAgent:
+          <Sparkles className="h-6 w-6 text-primary" />   // AI magic, intelligent automation
+          <Diamond className="h-6 w-6 text-primary" />    // Refined, precious, polished templates  
+          <Orbit className="h-6 w-6 text-primary" />      // Orchestration, interconnected systems
+          <Triangle className="h-6 w-6 text-primary" />   // Building blocks, hierarchy, structure
+          */}
           <span className="font-bold text-xl">HeyAgent</span>
         </Link>
 
