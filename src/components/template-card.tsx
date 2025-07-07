@@ -17,7 +17,9 @@ import {
   Database,
   GitBranch,
   Eye,
-  Download
+  Download,
+  Edit,
+  Trash2
 } from "lucide-react"
 import { formatDate, formatNumber } from "@/lib/utils"
 import { PromptTemplate } from "@/types"
@@ -28,6 +30,8 @@ interface TemplateCardProps {
   onClone?: (template: PromptTemplate) => void
   onFork?: (template: PromptTemplate) => void
   onExport?: (template: PromptTemplate) => void
+  onEdit?: (template: PromptTemplate) => void
+  onDelete?: (template: PromptTemplate) => void
   variant?: 'default' | 'compact'
 }
 
@@ -37,6 +41,8 @@ export function TemplateCard({
   onClone, 
   onFork, 
   onExport,
+  onEdit,
+  onDelete,
   variant = 'default' 
 }: TemplateCardProps) {
   const getIndustryColor = (industry: string) => {
@@ -218,17 +224,39 @@ export function TemplateCard({
               <Button 
                 size="sm" 
                 variant="outline" 
-                onClick={() => onPreview(template)}
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  onPreview(template)
+                }}
                 className="group/btn hover:border-primary/30 hover:bg-primary/5 h-7 flex-1 flex items-center justify-center min-w-0"
               >
                 <Eye className="h-3 w-3 group-hover/btn:scale-110 transition-transform text-primary" />
+              </Button>
+            )}
+            {onEdit && (
+              <Button 
+                size="sm" 
+                variant="outline" 
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  onEdit(template)
+                }}
+                className="group/btn hover:border-blue-500/30 hover:bg-blue-500/5 h-7 flex-1 flex items-center justify-center min-w-0"
+              >
+                <Edit className="h-3 w-3 group-hover/btn:scale-110 transition-transform text-blue-600" />
               </Button>
             )}
             {onClone && (
               <Button 
                 size="sm" 
                 variant="outline" 
-                onClick={() => onClone(template)}
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  onClone(template)
+                }}
                 className="group/btn hover:border-secondary/30 hover:bg-secondary/5 h-7 flex-1 flex items-center justify-center min-w-0"
               >
                 <Copy className="h-3 w-3 group-hover/btn:scale-110 transition-transform text-secondary" />
@@ -238,17 +266,39 @@ export function TemplateCard({
               <Button 
                 size="sm" 
                 variant="outline" 
-                onClick={() => onFork(template)}
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  onFork(template)
+                }}
                 className="group/btn hover:border-accent/30 hover:bg-accent/5 h-7 flex-1 flex items-center justify-center min-w-0"
               >
                 <GitBranch className="h-3 w-3 group-hover/btn:scale-110 transition-transform text-accent-foreground" />
+              </Button>
+            )}
+            {onDelete && (
+              <Button 
+                size="sm" 
+                variant="outline" 
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  onDelete(template)
+                }}
+                className="group/btn hover:border-red-500/30 hover:bg-red-500/5 h-7 flex-1 flex items-center justify-center min-w-0"
+              >
+                <Trash2 className="h-3 w-3 group-hover/btn:scale-110 transition-transform text-red-600" />
               </Button>
             )}
             {onExport && (
               <Button 
                 size="sm" 
                 variant="outline" 
-                onClick={() => onExport(template)}
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  onExport(template)
+                }}
                 className="group/btn hover:border-muted-foreground/30 hover:bg-muted/50 h-7 flex-1 flex items-center justify-center min-w-0"
               >
                 <Download className="h-3 w-3 group-hover/btn:scale-110 transition-transform text-muted-foreground" />

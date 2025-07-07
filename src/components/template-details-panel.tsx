@@ -105,12 +105,12 @@ export function TemplateDetailsPanel({
       <DialogContent className="max-w-6xl max-h-[95vh] overflow-hidden flex flex-col">
         <DialogHeader className="flex-shrink-0">
           <div className="flex items-start justify-between">
-            <div className="space-y-2">
+            <div className="space-y-3">
               <DialogTitle className="text-2xl">{template.title}</DialogTitle>
-              <DialogDescription className="text-base">
+              <DialogDescription className="text-lg">
                 {template.description}
               </DialogDescription>
-              <div className="flex items-center space-x-4 text-sm text-muted-foreground">
+              <div className="flex items-center space-x-4 text-base text-muted-foreground">
                 <span>by {template.author}</span>
                 <div className="flex items-center space-x-1">
                   <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
@@ -173,31 +173,31 @@ export function TemplateDetailsPanel({
                 <div className="grid gap-6 md:grid-cols-2">
                   <Card>
                     <CardHeader>
-                      <CardTitle>Template Information</CardTitle>
+                      <CardTitle className="text-lg">Template Information</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
                       <div className="grid grid-cols-2 gap-4">
                         <div>
-                          <h4 className="font-medium text-sm text-muted-foreground">Industry</h4>
-                          <Badge variant="secondary">{template.industry}</Badge>
+                          <h4 className="font-medium text-sm text-muted-foreground mb-2">Industry</h4>
+                          <Badge variant="secondary" className="text-sm">{template.industry}</Badge>
                         </div>
                         <div>
-                          <h4 className="font-medium text-sm text-muted-foreground">Use Case</h4>
-                          <p className="text-sm">{template.useCase}</p>
+                          <h4 className="font-medium text-sm text-muted-foreground mb-2">Use Case</h4>
+                          <p className="text-base">{template.useCase}</p>
                         </div>
                         <div>
-                          <h4 className="font-medium text-sm text-muted-foreground">Complexity</h4>
-                          <Badge variant="outline" className={
+                          <h4 className="font-medium text-sm text-muted-foreground mb-2">Complexity</h4>
+                          <Badge variant="outline" className={`text-sm ${
                             template.metadata.complexity === 'beginner' ? 'bg-green-100 text-green-800' :
                             template.metadata.complexity === 'intermediate' ? 'bg-yellow-100 text-yellow-800' :
                             'bg-red-100 text-red-800'
-                          }>
+                          }`}>
                             {template.metadata.complexity}
                           </Badge>
                         </div>
                         <div>
-                          <h4 className="font-medium text-sm text-muted-foreground">Category</h4>
-                          <p className="text-sm">{template.metadata.category}</p>
+                          <h4 className="font-medium text-sm text-muted-foreground mb-2">Category</h4>
+                          <p className="text-base">{template.metadata.category}</p>
                         </div>
                       </div>
                     </CardContent>
@@ -205,12 +205,12 @@ export function TemplateDetailsPanel({
 
                   <Card>
                     <CardHeader>
-                      <CardTitle>Tags</CardTitle>
+                      <CardTitle className="text-lg">Tags</CardTitle>
                     </CardHeader>
                     <CardContent>
                       <div className="flex flex-wrap gap-2">
                         {template.tags.map((tag) => (
-                          <Badge key={tag} variant="outline" className="text-xs">
+                          <Badge key={tag} variant="outline" className="text-sm">
                             {tag}
                           </Badge>
                         ))}
@@ -221,10 +221,10 @@ export function TemplateDetailsPanel({
 
                 <Card>
                   <CardHeader>
-                    <CardTitle>Description</CardTitle>
+                    <CardTitle className="text-lg">Description</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-sm text-muted-foreground leading-relaxed">
+                    <p className="text-base text-muted-foreground leading-relaxed">
                       {template.description}
                     </p>
                   </CardContent>
@@ -233,17 +233,17 @@ export function TemplateDetailsPanel({
                 {template.mcpServers.length > 0 && (
                   <Card>
                     <CardHeader>
-                      <CardTitle>MCP Servers</CardTitle>
+                      <CardTitle className="text-lg">MCP Servers</CardTitle>
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-3">
                         {template.mcpServers.map((server, index) => (
-                          <div key={index} className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                          <div key={index} className="flex items-center justify-between p-4 bg-muted rounded-lg">
                             <div>
-                              <h4 className="font-medium">{server.serverId}</h4>
+                              <h4 className="font-medium text-base">{server.serverId}</h4>
                               <p className="text-sm text-muted-foreground">{server.serverType}</p>
                             </div>
-                            <Badge variant="outline">{server.tools.length} tools</Badge>
+                            <Badge variant="outline" className="text-sm">{server.tools.length} tools</Badge>
                           </div>
                         ))}
                       </div>
@@ -254,17 +254,17 @@ export function TemplateDetailsPanel({
                 {template.saasIntegrations.length > 0 && (
                   <Card>
                     <CardHeader>
-                      <CardTitle>SaaS Integrations</CardTitle>
+                      <CardTitle className="text-lg">SaaS Integrations</CardTitle>
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-3">
                         {template.saasIntegrations.map((integration, index) => (
-                          <div key={index} className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                          <div key={index} className="flex items-center justify-between p-4 bg-muted rounded-lg">
                             <div>
-                              <h4 className="font-medium">{integration.service}</h4>
+                              <h4 className="font-medium text-base">{integration.service}</h4>
                               <p className="text-sm text-muted-foreground">{integration.provider}</p>
                             </div>
-                            <Badge variant="outline">{integration.configuration.version}</Badge>
+                            <Badge variant="outline" className="text-sm">{integration.configuration.version}</Badge>
                           </div>
                         ))}
                       </div>
@@ -412,52 +412,52 @@ export function TemplateDetailsPanel({
                 {/* Model Configuration Block */}
                 <Card>
                   <CardHeader>
-                    <CardTitle className="flex items-center space-x-2">
+                    <CardTitle className="flex items-center space-x-2 text-lg">
                       <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
-                        <Brain className="h-4 w-4 text-primary" />
+                        <Brain className="h-5 w-5 text-primary" />
                       </div>
                       <span>Model Configuration</span>
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
                     {/* Unified grid layout for all model configuration options */}
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
                       <div>
-                        <h4 className="font-medium text-xs text-muted-foreground mb-1">Provider</h4>
-                        <div className="bg-muted px-3 py-2 rounded-md">
-                          <p className="text-sm font-medium text-left truncate">
+                        <h4 className="font-medium text-sm text-muted-foreground mb-2">Provider</h4>
+                        <div className="bg-muted px-3 py-3 rounded-md">
+                          <p className="text-base font-medium text-left truncate">
                             {template.saasIntegrations.find(s => s.capabilities.some(c => c.type === 'text-generation'))?.provider || 'OpenAI'}
                           </p>
                         </div>
                       </div>
                       
                       <div>
-                        <h4 className="font-medium text-xs text-muted-foreground mb-1">Model</h4>
-                        <div className="bg-muted px-3 py-2 rounded-md">
-                          <p className="text-sm font-medium text-left truncate">
+                        <h4 className="font-medium text-sm text-muted-foreground mb-2">Model</h4>
+                        <div className="bg-muted px-3 py-3 rounded-md">
+                          <p className="text-base font-medium text-left truncate">
                             {template.saasIntegrations.find(s => s.capabilities.some(c => c.type === 'text-generation'))?.service || 'gpt-4'}
                           </p>
                         </div>
                       </div>
                       
                       <div>
-                        <h4 className="font-medium text-xs text-muted-foreground mb-1">Temperature</h4>
-                        <div className="bg-muted px-3 py-2 rounded-md">
-                          <p className="text-sm font-mono font-medium text-left">{template.promptConfig.constraints.temperature || 0.7}</p>
+                        <h4 className="font-medium text-sm text-muted-foreground mb-2">Temperature</h4>
+                        <div className="bg-muted px-3 py-3 rounded-md">
+                          <p className="text-base font-mono font-medium text-left">{template.promptConfig.constraints.temperature || 0.7}</p>
                         </div>
                       </div>
                       
                       <div>
-                        <h4 className="font-medium text-xs text-muted-foreground mb-1">Max Tokens</h4>
-                        <div className="bg-muted px-3 py-2 rounded-md">
-                          <p className="text-sm font-mono font-medium text-left">{template.promptConfig.constraints.maxTokens || 4096}</p>
+                        <h4 className="font-medium text-sm text-muted-foreground mb-2">Max Tokens</h4>
+                        <div className="bg-muted px-3 py-3 rounded-md">
+                          <p className="text-base font-mono font-medium text-left">{template.promptConfig.constraints.maxTokens || 4096}</p>
                         </div>
                       </div>
                       
                       <div>
-                        <h4 className="font-medium text-xs text-muted-foreground mb-1">Top P</h4>
-                        <div className="bg-muted px-3 py-2 rounded-md">
-                          <p className="text-sm font-mono font-medium text-left">{template.promptConfig.constraints.topP || 1.0}</p>
+                        <h4 className="font-medium text-sm text-muted-foreground mb-2">Top P</h4>
+                        <div className="bg-muted px-3 py-3 rounded-md">
+                          <p className="text-base font-mono font-medium text-left">{template.promptConfig.constraints.topP || 1.0}</p>
                         </div>
                       </div>
                     </div>
@@ -467,32 +467,32 @@ export function TemplateDetailsPanel({
                 {/* Prompt Configuration Block */}
                 <Card>
                   <CardHeader>
-                    <CardTitle className="flex items-center space-x-2">
+                    <CardTitle className="flex items-center space-x-2 text-lg">
                       <div className="h-8 w-8 rounded-lg bg-secondary/10 flex items-center justify-center">
-                        <MessageSquare className="h-4 w-4 text-secondary" />
+                        <MessageSquare className="h-5 w-5 text-secondary" />
                       </div>
                       <span>Prompt Configuration</span>
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-3">
+                  <CardContent className="space-y-4">
                     <div>
-                      <h4 className="font-medium text-xs text-muted-foreground mb-1">
+                      <h4 className="font-medium text-sm text-muted-foreground mb-2">
                         System Prompt 
-                        <span className="text-xs text-muted-foreground ml-1">(Optional)</span>
+                        <span className="text-sm text-muted-foreground ml-1">(Optional)</span>
                       </h4>
-                      <div className="bg-muted rounded-md p-3 max-h-[120px] overflow-y-auto">
-                        <pre className="text-xs whitespace-pre-wrap font-mono">
+                      <div className="bg-muted rounded-md p-4 max-h-[140px] overflow-y-auto">
+                        <pre className="text-sm whitespace-pre-wrap font-mono leading-relaxed">
                           {template.promptConfig.systemPrompt || "No system prompt configured"}
                         </pre>
                       </div>
                     </div>
                     <div>
-                      <h4 className="font-medium text-xs text-muted-foreground mb-1">
+                      <h4 className="font-medium text-sm text-muted-foreground mb-2">
                         User Prompt Template 
-                        <span className="text-xs text-destructive ml-1">(Required)</span>
+                        <span className="text-sm text-destructive ml-1">(Required)</span>
                       </h4>
-                      <div className="bg-muted rounded-md p-3 max-h-[120px] overflow-y-auto">
-                        <pre className="text-xs whitespace-pre-wrap font-mono">
+                      <div className="bg-muted rounded-md p-4 max-h-[140px] overflow-y-auto">
+                        <pre className="text-sm whitespace-pre-wrap font-mono leading-relaxed">
                           {template.promptConfig.userPromptTemplate}
                         </pre>
                       </div>
@@ -500,7 +500,7 @@ export function TemplateDetailsPanel({
                     {template.promptConfig.parameters.length > 0 && (
                       <div>
                         <details className="group">
-                          <summary className="cursor-pointer hover:bg-muted/50 p-2 rounded-md transition-colors list-none">
+                          <summary className="cursor-pointer hover:bg-muted/50 p-3 rounded-md transition-colors list-none">
                             <h4 className="font-medium text-sm text-muted-foreground inline-flex items-center gap-2">
                               <svg 
                                 className="h-4 w-4 transition-transform group-open:rotate-90" 
@@ -513,18 +513,18 @@ export function TemplateDetailsPanel({
                               Template Parameters ({template.promptConfig.parameters.length})
                             </h4>
                           </summary>
-                          <div className="mt-2 space-y-2">
+                          <div className="mt-3 space-y-3">
                       {template.promptConfig.parameters.map((param) => (
-                        <div key={param.name} className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                        <div key={param.name} className="flex items-center justify-between p-4 bg-muted rounded-lg">
                           <div className="space-y-1">
                             <div className="flex items-center space-x-2">
-                              <span className="font-medium">{param.name}</span>
-                              <Badge variant="outline" className="text-xs">{param.type}</Badge>
-                              {param.required && <Badge variant="destructive" className="text-xs">Required</Badge>}
+                              <span className="font-medium text-base">{param.name}</span>
+                              <Badge variant="outline" className="text-sm">{param.type}</Badge>
+                              {param.required && <Badge variant="destructive" className="text-sm">Required</Badge>}
                             </div>
                             <p className="text-sm text-muted-foreground">{param.description}</p>
                             {param.defaultValue && (
-                              <p className="text-xs text-muted-foreground">Default: {param.defaultValue}</p>
+                              <p className="text-sm text-muted-foreground">Default: {param.defaultValue}</p>
                             )}
                           </div>
                         </div>
@@ -539,21 +539,21 @@ export function TemplateDetailsPanel({
                 {/* MCP Servers Block */}
                 <Card>
                   <CardHeader>
-                    <CardTitle className="flex items-center space-x-2">
+                    <CardTitle className="flex items-center space-x-2 text-lg">
                       <div className="h-8 w-8 rounded-lg bg-accent/10 flex items-center justify-center">
-                        <Database className="h-4 w-4 text-accent" />
+                        <Database className="h-5 w-5 text-accent" />
                       </div>
                       <span>MCP Servers</span>
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
                     {template.mcpServers.length > 0 ? (
-                      <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2">
+                      <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2">
                         {template.mcpServers.map((server, index) => (
-                          <div key={index} className="border rounded-lg p-3 space-y-2">
+                          <div key={index} className="border rounded-lg p-4 space-y-3">
                             <div className="flex items-center justify-between">
                               <div className="space-y-1">
-                                <h4 className="font-medium">{server.serverId}</h4>
+                                <h4 className="font-medium text-base">{server.serverId}</h4>
                                 <p className="text-sm text-muted-foreground">
                                   {server.serverType === 'firecrawl' && 'Web scraping and content extraction from websites and documents'}
                                   {server.serverType === 'api-integrator' && 'Unified interface for external API integrations and data processing'}
@@ -561,10 +561,10 @@ export function TemplateDetailsPanel({
                                   {server.serverType === 'custom' && 'Custom server implementation with specialized functionality'}
                                 </p>
                               </div>
-                              <Badge variant="outline">{server.tools.length} tools</Badge>
+                              <Badge variant="outline" className="text-sm">{server.tools.length} tools</Badge>
                             </div>
                             <details className="group">
-                              <summary className="cursor-pointer hover:bg-muted/50 p-2 rounded-md transition-colors list-none">
+                              <summary className="cursor-pointer hover:bg-muted/50 p-3 rounded-md transition-colors list-none">
                                 <h5 className="font-medium text-sm text-muted-foreground inline-flex items-center gap-2">
                                   <svg 
                                     className="h-4 w-4 transition-transform group-open:rotate-90" 
@@ -577,9 +577,9 @@ export function TemplateDetailsPanel({
                                   JSON Configuration
                                 </h5>
                               </summary>
-                              <div className="mt-2">
+                              <div className="mt-3">
                                 <div className="relative max-h-64 overflow-y-auto bg-muted rounded-md">
-                                  <pre className="text-xs p-3 whitespace-pre-wrap">
+                                  <pre className="text-sm p-4 whitespace-pre-wrap font-mono leading-relaxed">
                                     {JSON.stringify(server.configuration, null, 2)}
                                   </pre>
                                 </div>
@@ -593,8 +593,8 @@ export function TemplateDetailsPanel({
                         <div className="h-12 w-12 rounded-lg bg-muted mx-auto mb-3 flex items-center justify-center">
                           <div className="h-6 w-6 rounded-sm bg-muted-foreground/20" />
                         </div>
-                        <p className="text-sm">No MCP servers configured</p>
-                        <p className="text-xs mt-1">This template operates without external MCP server integrations</p>
+                        <p className="text-base">No MCP servers configured</p>
+                        <p className="text-sm mt-1">This template operates without external MCP server integrations</p>
                       </div>
                     )}
                   </CardContent>
@@ -603,33 +603,33 @@ export function TemplateDetailsPanel({
                 {/* SaaS API Block */}
                 <Card>
                   <CardHeader>
-                    <CardTitle className="flex items-center space-x-2">
+                    <CardTitle className="flex items-center space-x-2 text-lg">
                       <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
-                        <Cloud className="h-4 w-4 text-primary" />
+                        <Cloud className="h-5 w-5 text-primary" />
                       </div>
                       <span>SaaS API Integrations</span>
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
                     {template.saasIntegrations.length > 0 ? (
-                      <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2">
+                      <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2">
                         {template.saasIntegrations.map((integration, index) => (
-                          <div key={index} className="border rounded-lg p-3 space-y-2">
+                          <div key={index} className="border rounded-lg p-4 space-y-3">
                             <div className="flex items-center justify-between">
                               <div className="space-y-1">
-                                <h4 className="font-medium">{integration.provider}</h4>
+                                <h4 className="font-medium text-base">{integration.provider}</h4>
                                 <p className="text-sm text-muted-foreground">{integration.service}</p>
                               </div>
-                              <Badge variant="outline">{integration.configuration.version}</Badge>
+                              <Badge variant="outline" className="text-sm">{integration.configuration.version}</Badge>
                             </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                                <h5 className="font-medium text-sm text-muted-foreground mb-1">Provider Name</h5>
-                                <p className="text-sm bg-muted p-2 rounded">{integration.provider}</p>
+                                <h5 className="font-medium text-sm text-muted-foreground mb-2">Provider Name</h5>
+                                <p className="text-sm bg-muted p-3 rounded">{integration.provider}</p>
                               </div>
                               <div>
-                                <h5 className="font-medium text-sm text-muted-foreground mb-1">API Endpoint URL</h5>
-                                <p className="text-sm bg-muted p-2 rounded font-mono text-xs break-all">
+                                <h5 className="font-medium text-sm text-muted-foreground mb-2">API Endpoint URL</h5>
+                                <p className="text-sm bg-muted p-3 rounded font-mono break-all">
                                   {integration.configuration.endpoint}
                                 </p>
                               </div>
@@ -638,7 +638,7 @@ export function TemplateDetailsPanel({
                               <h5 className="font-medium text-sm text-muted-foreground">Capabilities</h5>
                               <div className="flex flex-wrap gap-2">
                                 {integration.capabilities.map((capability, capIndex) => (
-                                  <Badge key={capIndex} variant="secondary" className="text-xs">
+                                  <Badge key={capIndex} variant="secondary" className="text-sm">
                                     {capability.type.replace('-', ' ')}
                                   </Badge>
                                 ))}
@@ -652,8 +652,8 @@ export function TemplateDetailsPanel({
                         <div className="h-12 w-12 rounded-lg bg-muted mx-auto mb-3 flex items-center justify-center">
                           <div className="h-6 w-6 rounded-full bg-muted-foreground/20" />
                         </div>
-                        <p className="text-sm">No SaaS API integrations configured</p>
-                        <p className="text-xs mt-1">This template operates with standard model capabilities only</p>
+                        <p className="text-base">No SaaS API integrations configured</p>
+                        <p className="text-sm mt-1">This template operates with standard model capabilities only</p>
                       </div>
                     )}
                   </CardContent>
@@ -665,16 +665,16 @@ export function TemplateDetailsPanel({
               <TabsContent value="code" className="space-y-6 mt-0 h-full overflow-y-auto">
                 <Card>
                   <CardHeader>
-                    <CardTitle>Template JSON</CardTitle>
+                    <CardTitle className="text-lg">Template JSON</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="relative">
-                      <div className="text-xs bg-slate-950 text-slate-100 p-4 rounded-md overflow-x-auto max-h-96 border font-mono">
+                      <div className="text-sm bg-slate-950 text-slate-100 p-4 rounded-md overflow-x-auto max-h-96 border font-mono">
                         <details className="cursor-pointer">
-                          <summary className="text-slate-400 hover:text-slate-200 transition-colors mb-2 select-none">
+                          <summary className="text-slate-400 hover:text-slate-200 transition-colors mb-3 select-none text-base">
                             📋 Click to expand/collapse JSON structure
                           </summary>
-                          <pre className="whitespace-pre-wrap text-slate-100">
+                          <pre className="whitespace-pre-wrap text-slate-100 leading-relaxed">
                       {JSON.stringify(template, null, 2)}
                     </pre>
                         </details>
@@ -687,7 +687,7 @@ export function TemplateDetailsPanel({
                             description: "Template JSON has been copied to your clipboard."
                           })
                         }}
-                        className="absolute top-2 right-2 text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 px-2 py-1 rounded border border-slate-600 transition-colors"
+                        className="absolute top-2 right-2 text-sm bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-2 rounded border border-slate-600 transition-colors"
                       >
                         Copy JSON
                       </button>

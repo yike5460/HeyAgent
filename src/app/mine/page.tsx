@@ -20,6 +20,7 @@ export default function MyTemplatesPage() {
   const [loading, setLoading] = useState(true)
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const [isPreviewOpen, setIsPreviewOpen] = useState(false)
+  const [editingTemplate, setEditingTemplate] = useState<PromptTemplate | null>(null)
 
   // Load templates from local storage on component mount
   useEffect(() => {
@@ -464,27 +465,6 @@ export default function MyTemplatesPage() {
             </CardContent>
           </Card>
 
-          {/* Create Template Dialog - Available in Overview Tab */}
-          <CreateTemplateDialog
-            open={isCreateDialogOpen}
-            onOpenChange={setIsCreateDialogOpen}
-            onTemplateCreate={handleTemplateCreate}
-          />
-
-          {/* Template Details Panel - Available in Overview Tab */}
-          <TemplateDetailsPanel
-            template={selectedTemplate}
-            isOpen={isPreviewOpen}
-            onOpenChange={setIsPreviewOpen}
-            onUseTemplate={(template) => {
-              toast({
-                title: "Use Template",
-                description: `Template "${template.title}" will be used in sandbox.`
-              })
-            }}
-            onCloneTemplate={(template) => handleTemplateClone(template.id)}
-            onForkTemplate={(template) => handleTemplateClone(template.id)}
-          />
         </TabsContent>
 
         <TabsContent value="management" className="space-y-6">
@@ -525,8 +505,16 @@ export default function MyTemplatesPage() {
                     setSelectedTemplate(template)
                     setIsPreviewOpen(true)
                   }}
+                  onEdit={(template) => {
+                    setEditingTemplate(template)
+                  }}
                   onClone={(template) => handleTemplateClone(template.id)}
                   onFork={(template) => handleTemplateClone(template.id)}
+                  onDelete={(template) => {
+                    if (confirm(`Are you sure you want to delete "${template.title}"? This action cannot be undone.`)) {
+                      handleTemplateDelete(template.id)
+                    }
+                  }}
                   onExport={(template) => {
                     const blob = new Blob([JSON.stringify(template, null, 2)], {
                       type: 'application/json'
@@ -665,6 +653,32 @@ export default function MyTemplatesPage() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Global Dialog Components - Available from all tabs */}
+      <CreateTemplateDialog
+        open={isCreateDialogOpen || !!editingTemplate}
+        onOpenChange={(open) => {
+          setIsCreateDialogOpen(open)
+          if (!open) setEditingTemplate(null)
+        }}
+        onTemplateCreate={handleTemplateCreate}
+        onTemplateUpdate={handleTemplateUpdate}
+        editingTemplate={editingTemplate}
+      />
+
+      <TemplateDetailsPanel
+        template={selectedTemplate}
+        isOpen={isPreviewOpen}
+        onOpenChange={setIsPreviewOpen}
+        onUseTemplate={(template) => {
+          toast({
+            title: "Use Template",
+            description: `Template "${template.title}" will be used in sandbox.`
+          })
+        }}
+        onCloneTemplate={(template) => handleTemplateClone(template.id)}
+        onForkTemplate={(template) => handleTemplateClone(template.id)}
+      />
     </div>
   )
 }

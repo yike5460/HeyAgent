@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -24,13 +24,15 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { X, Plus, Brain, MessageSquare, Database, Cloud, Settings } from "lucide-react"
+import { X, Plus, Brain, MessageSquare, Database, Cloud, Settings, Edit } from "lucide-react"
 import { PromptTemplate, IndustryVertical, MCPServerConfig, SaaSIntegration, TemplateParameter } from "@/types"
 
 interface CreateTemplateDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   onTemplateCreate?: (template: Partial<PromptTemplate>) => void
+  onTemplateUpdate?: (id: string, template: Partial<PromptTemplate>) => void
+  editingTemplate?: PromptTemplate | null
 }
 
 const industries: IndustryVertical[] = [
@@ -69,7 +71,7 @@ const commonSaaSProviders = [
   { provider: 'custom', service: 'custom-service', name: 'Custom Service', capabilities: ['custom'] }
 ]
 
-export function CreateTemplateDialog({ open, onOpenChange, onTemplateCreate }: CreateTemplateDialogProps) {
+export function CreateTemplateDialog({ open, onOpenChange, onTemplateCreate, onTemplateUpdate, editingTemplate }: CreateTemplateDialogProps) {
   const [activeTab, setActiveTab] = useState('basic')
   const [formData, setFormData] = useState({
     // Basic Information
@@ -113,6 +115,116 @@ export function CreateTemplateDialog({ open, onOpenChange, onTemplateCreate }: C
     // Dependencies
     dependencies: [] as string[]
   })
+  
+  // State for editing MCP servers
+  const [editingMCPIndex, setEditingMCPIndex] = useState<number | null>(null)
+  
+  // State for validation errors
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({})
+  
+  // State for available models
+  const [availableModels, setAvailableModels] = useState<Record<string, string[]>>({
+    openai: ['gpt-4', 'gpt-4-turbo', 'gpt-3.5-turbo', 'gpt-4o', 'gpt-4o-mini'],
+    anthropic: ['claude-3-5-sonnet-20241022', 'claude-3-5-haiku-20241022', 'claude-3-opus-20240229', 'claude-3-sonnet-20240229', 'claude-3-haiku-20240307']
+  })
+  const [loadingModels, setLoadingModels] = useState(false)
+  
+  // Pre-fill form data when editing a template
+  useEffect(() => {
+    if (editingTemplate) {
+      setFormData({
+        title: editingTemplate.title || "",
+        description: editingTemplate.description || "",
+        industry: editingTemplate.industry || "" as IndustryVertical,
+        useCase: editingTemplate.useCase || "",
+        category: editingTemplate.metadata?.category || "Custom",
+        complexity: editingTemplate.metadata?.complexity || "intermediate",
+        estimatedRuntime: editingTemplate.metadata?.estimatedRuntime || 60,
+        tags: editingTemplate.tags || [],
+        modelProvider: "openai", // Default since this might not be in stored data
+        modelName: "gpt-4", // Default since this might not be in stored data
+        temperature: editingTemplate.promptConfig?.constraints?.temperature || 0.7,
+        maxTokens: editingTemplate.promptConfig?.constraints?.maxTokens || 2000,
+        topP: editingTemplate.promptConfig?.constraints?.topP || 1.0,
+        systemPrompt: editingTemplate.promptConfig?.systemPrompt || "",
+        userPromptTemplate: editingTemplate.promptConfig?.userPromptTemplate || "",
+        parameters: editingTemplate.promptConfig?.parameters || [],
+        mcpServers: editingTemplate.mcpServers?.map(server => ({
+          name: server.tools?.[0]?.name?.replace('_tool', '') || server.serverType || '',
+          description: server.tools?.[0]?.description || '',
+          configuration: JSON.stringify(server.tools?.[0]?.inputSchema || {}, null, 2)
+        })) || [],
+        saasIntegrations: editingTemplate.saasIntegrations?.map(integration => ({
+          name: integration.service || '',
+          description: '',
+          apiUrl: integration.configuration?.endpoint || ''
+        })) || [],
+        dependencies: editingTemplate.metadata?.dependencies || []
+      })
+    } else {
+      // Reset form when not editing
+      setFormData({
+        title: "",
+        description: "",
+        industry: "" as IndustryVertical,
+        useCase: "",
+        category: "Custom",
+        complexity: "intermediate",
+        estimatedRuntime: 60,
+        tags: [],
+        modelProvider: "openai",
+        modelName: "gpt-4",
+        temperature: 0.7,
+        maxTokens: 2000,
+        topP: 1.0,
+        systemPrompt: "",
+        userPromptTemplate: "",
+        parameters: [],
+        mcpServers: [],
+        saasIntegrations: [],
+        dependencies: []
+      })
+    }
+    setValidationErrors({})
+    setEditingMCPIndex(null)
+  }, [editingTemplate])
+  
+  // Fetch available models based on provider
+  const fetchAvailableModels = async (provider: string) => {
+    setLoadingModels(true)
+    try {
+      // Mock API call - in real implementation, you'd use firecrawl MCP server
+      await new Promise(resolve => setTimeout(resolve, 1000))
+      
+      const modelLists: Record<string, string[]> = {
+        openai: [
+          'gpt-4o', 'gpt-4o-mini', 'gpt-4-turbo', 'gpt-4',
+          'gpt-3.5-turbo', 'gpt-3.5-turbo-16k'
+        ],
+        anthropic: [
+          'claude-3-5-sonnet-20241022', 'claude-3-5-haiku-20241022',
+          'claude-3-opus-20240229', 'claude-3-sonnet-20240229',
+          'claude-3-haiku-20240307'
+        ]
+      }
+      
+      setAvailableModels(prev => ({
+        ...prev,
+        [provider]: modelLists[provider] || []
+      }))
+    } catch (error) {
+      console.error('Error fetching models:', error)
+    } finally {
+      setLoadingModels(false)
+    }
+  }
+  
+  // Fetch models when provider changes
+  useEffect(() => {
+    if (formData.modelProvider && !availableModels[formData.modelProvider]) {
+      fetchAvailableModels(formData.modelProvider)
+    }
+  }, [formData.modelProvider])
   
   const [newTag, setNewTag] = useState("")
   const [newParameter, setNewParameter] = useState({
@@ -174,12 +286,50 @@ export function CreateTemplateDialog({ open, onOpenChange, onTemplateCreate }: C
     }))
   }
 
+  const validateJSON = (jsonString: string): boolean => {
+    try {
+      JSON.parse(jsonString)
+      return true
+    } catch {
+      return false
+    }
+  }
+
   const handleAddMCPServer = () => {
-    if (newMCPServer.name.trim() && newMCPServer.configuration.trim()) {
-      setFormData(prev => ({
-        ...prev,
-        mcpServers: [...prev.mcpServers, { ...newMCPServer }]
-      }))
+    // Clear previous errors
+    const newErrors = { ...validationErrors }
+    delete newErrors.mcpServerName
+    delete newErrors.mcpServerConfig
+    
+    if (!newMCPServer.name.trim()) {
+      newErrors.mcpServerName = "Server name is required"
+    }
+    
+    if (!newMCPServer.configuration.trim()) {
+      newErrors.mcpServerConfig = "JSON configuration is required"
+    } else if (!validateJSON(newMCPServer.configuration)) {
+      newErrors.mcpServerConfig = "Invalid JSON format. Please check your syntax."
+    }
+    
+    setValidationErrors(newErrors)
+    
+    if (Object.keys(newErrors).length === 0) {
+      if (editingMCPIndex !== null) {
+        // Update existing server
+        setFormData(prev => ({
+          ...prev,
+          mcpServers: prev.mcpServers.map((server, index) => 
+            index === editingMCPIndex ? { ...newMCPServer } : server
+          )
+        }))
+        setEditingMCPIndex(null)
+      } else {
+        // Add new server
+        setFormData(prev => ({
+          ...prev,
+          mcpServers: [...prev.mcpServers, { ...newMCPServer }]
+        }))
+      }
       setNewMCPServer({
         name: "",
         description: "",
@@ -188,11 +338,40 @@ export function CreateTemplateDialog({ open, onOpenChange, onTemplateCreate }: C
     }
   }
 
+  const handleEditMCPServer = (index: number) => {
+    const server = formData.mcpServers[index]
+    setNewMCPServer({ ...server })
+    setEditingMCPIndex(index)
+    // Clear any existing validation errors
+    const newErrors = { ...validationErrors }
+    delete newErrors.mcpServerName
+    delete newErrors.mcpServerConfig
+    setValidationErrors(newErrors)
+  }
+
+  const handleCancelEditMCPServer = () => {
+    setEditingMCPIndex(null)
+    setNewMCPServer({
+      name: "",
+      description: "",
+      configuration: ""
+    })
+    // Clear any validation errors
+    const newErrors = { ...validationErrors }
+    delete newErrors.mcpServerName
+    delete newErrors.mcpServerConfig
+    setValidationErrors(newErrors)
+  }
+
   const handleRemoveMCPServer = (index: number) => {
     setFormData(prev => ({
       ...prev,
       mcpServers: prev.mcpServers.filter((_, i) => i !== index)
     }))
+    // If we're editing this server, cancel the edit
+    if (editingMCPIndex === index) {
+      handleCancelEditMCPServer()
+    }
   }
 
   const handleAddSaaSIntegration = () => {
@@ -240,8 +419,17 @@ export function CreateTemplateDialog({ open, onOpenChange, onTemplateCreate }: C
     if (!formData.description.trim()) errors.push("Description is required")
     if (!formData.industry) errors.push("Industry is required")
     if (!formData.useCase.trim()) errors.push("Use case is required")
+    if (!formData.userPromptTemplate.trim()) errors.push("User Prompt Template is required")
     if (formData.title.length < 3) errors.push("Title must be at least 3 characters")
     if (formData.description.length < 10) errors.push("Description must be at least 10 characters")
+    if (formData.userPromptTemplate.length < 10) errors.push("User Prompt Template must be at least 10 characters")
+    
+    // Validate MCP server JSON configurations
+    formData.mcpServers.forEach((server, index) => {
+      if (server.configuration && !validateJSON(server.configuration)) {
+        errors.push(`MCP Server #${index + 1} (${server.name}): Invalid JSON configuration`)
+      }
+    })
     
     return errors
   }
@@ -249,9 +437,21 @@ export function CreateTemplateDialog({ open, onOpenChange, onTemplateCreate }: C
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    const validationErrors = validateForm()
-    if (validationErrors.length > 0) {
-      alert(validationErrors.join(", "))
+    // Clear previous validation errors
+    setValidationErrors({})
+    
+    // Check for user prompt template specifically since it's required
+    const errors: Record<string, string> = {}
+    if (!formData.userPromptTemplate.trim()) {
+      errors.userPromptTemplate = "User Prompt Template is required"
+    } else if (formData.userPromptTemplate.length < 10) {
+      errors.userPromptTemplate = "User Prompt Template must be at least 10 characters"
+    }
+    
+    const validationErrorsList = validateForm()
+    if (validationErrorsList.length > 0 || Object.keys(errors).length > 0) {
+      setValidationErrors(errors)
+      alert(validationErrorsList.join(", "))
       return
     }
 
@@ -381,7 +581,9 @@ export function CreateTemplateDialog({ open, onOpenChange, onTemplateCreate }: C
       }
     }
 
-    if (onTemplateCreate) {
+    if (editingTemplate && onTemplateUpdate) {
+      onTemplateUpdate(editingTemplate.id, templateData)
+    } else if (onTemplateCreate) {
       onTemplateCreate(templateData)
     }
     
@@ -415,9 +617,12 @@ export function CreateTemplateDialog({ open, onOpenChange, onTemplateCreate }: C
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden">
         <DialogHeader>
-          <DialogTitle>Create New Template</DialogTitle>
+          <DialogTitle>{editingTemplate ? 'Edit Template' : 'Create New Template'}</DialogTitle>
           <DialogDescription>
-            Create a comprehensive AI template with model configuration, prompts, MCP servers, and SaaS integrations.
+            {editingTemplate 
+              ? 'Update your AI template with model configuration, prompts, MCP servers, and SaaS integrations.'
+              : 'Create a comprehensive AI template with model configuration, prompts, MCP servers, and SaaS integrations.'
+            }
           </DialogDescription>
         </DialogHeader>
 
@@ -596,7 +801,15 @@ export function CreateTemplateDialog({ open, onOpenChange, onTemplateCreate }: C
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="modelProvider">Provider</Label>
-                      <Select value={formData.modelProvider} onValueChange={(value) => setFormData(prev => ({ ...prev, modelProvider: value }))}>
+                      <Select 
+                        value={formData.modelProvider} 
+                        onValueChange={(value) => {
+                          setFormData(prev => ({ ...prev, modelProvider: value, modelName: "" }))
+                          if (!availableModels[value] && value !== "custom") {
+                            fetchAvailableModels(value)
+                          }
+                        }}
+                      >
                         <SelectTrigger>
                           <SelectValue />
                         </SelectTrigger>
@@ -609,12 +822,31 @@ export function CreateTemplateDialog({ open, onOpenChange, onTemplateCreate }: C
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="modelName">Model</Label>
-                      <Input
-                        id="modelName"
-                        value={formData.modelName}
-                        onChange={(e) => setFormData(prev => ({ ...prev, modelName: e.target.value }))}
-                        placeholder="e.g., gpt-4, claude-3"
-                      />
+                      {formData.modelProvider === "custom" ? (
+                        <Input
+                          id="modelName"
+                          value={formData.modelName}
+                          onChange={(e) => setFormData(prev => ({ ...prev, modelName: e.target.value }))}
+                          placeholder="e.g., custom-model-name"
+                        />
+                      ) : (
+                        <Select 
+                          value={formData.modelName} 
+                          onValueChange={(value) => setFormData(prev => ({ ...prev, modelName: value }))}
+                          disabled={loadingModels}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder={loadingModels ? "Loading models..." : "Select a model"} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {availableModels[formData.modelProvider]?.map((model) => (
+                              <SelectItem key={model} value={model}>
+                                {model}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
                     </div>
                   </div>
 
@@ -684,10 +916,28 @@ export function CreateTemplateDialog({ open, onOpenChange, onTemplateCreate }: C
                     <Textarea
                       id="userPromptTemplate"
                       value={formData.userPromptTemplate}
-                      onChange={(e) => setFormData(prev => ({ ...prev, userPromptTemplate: e.target.value }))}
+                      onChange={(e) => {
+                        setFormData(prev => ({ ...prev, userPromptTemplate: e.target.value }))
+                        // Clear validation error when user starts typing
+                        if (validationErrors.userPromptTemplate) {
+                          setValidationErrors(prev => {
+                            const newErrors = { ...prev }
+                            delete newErrors.userPromptTemplate
+                            return newErrors
+                          })
+                        }
+                      }}
                       placeholder="Create a {type} for {product} with {features}..."
                       rows={3}
+                      className={validationErrors.userPromptTemplate ? "border-red-500" : ""}
+                      required
                     />
+                    {validationErrors.userPromptTemplate && (
+                      <p className="text-sm text-red-500">{validationErrors.userPromptTemplate}</p>
+                    )}
+                    <p className="text-xs text-muted-foreground">
+                      Use {"{parameter_name}"} syntax to define template variables. Example: "Generate a {'{content_type}'} for {'{target_audience}'}"
+                    </p>
                   </div>
 
                   {/* Template Parameters */}
@@ -751,47 +1001,111 @@ export function CreateTemplateDialog({ open, onOpenChange, onTemplateCreate }: C
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
-                    <Input
-                      placeholder="Server name (required)"
-                      value={newMCPServer.name}
-                      onChange={(e) => setNewMCPServer(prev => ({ ...prev, name: e.target.value }))}
-                    />
+                    <div className="space-y-2">
+                      <Input
+                        placeholder="Server name (required)"
+                        value={newMCPServer.name}
+                        onChange={(e) => {
+                          setNewMCPServer(prev => ({ ...prev, name: e.target.value }))
+                          // Clear validation error when user types
+                          if (validationErrors.mcpServerName) {
+                            setValidationErrors(prev => {
+                              const newErrors = { ...prev }
+                              delete newErrors.mcpServerName
+                              return newErrors
+                            })
+                          }
+                        }}
+                        className={validationErrors.mcpServerName ? "border-red-500" : ""}
+                      />
+                      {validationErrors.mcpServerName && (
+                        <p className="text-sm text-red-500">{validationErrors.mcpServerName}</p>
+                      )}
+                    </div>
+                    
                     <Input
                       placeholder="Description (optional)"
                       value={newMCPServer.description}
                       onChange={(e) => setNewMCPServer(prev => ({ ...prev, description: e.target.value }))}
                     />
-                    <textarea
-                      className="flex min-h-[60px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                      placeholder="JSON configuration (required)"
-                      value={newMCPServer.configuration}
-                      onChange={(e) => setNewMCPServer(prev => ({ ...prev, configuration: e.target.value }))}
-                      rows={3}
-                    />
-                    <Button
-                      type="button"
-                      onClick={handleAddMCPServer}
-                      disabled={!newMCPServer.name.trim() || !newMCPServer.configuration.trim()}
-                      size="sm"
-                    >
-                      Add MCP Server
-                    </Button>
+                    
+                    <div className="space-y-2">
+                      <textarea
+                        className={`flex min-h-[60px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${validationErrors.mcpServerConfig ? "border-red-500" : ""}`}
+                        placeholder="JSON configuration (required) - e.g., {'{'}&quot;type&quot;: &quot;object&quot;, &quot;properties&quot;: {'{'}&quot;input&quot;: {'{'}&quot;type&quot;: &quot;string&quot;{'}'}{'}'}, &quot;required&quot;: [&quot;input&quot;]{'}'}"
+                        value={newMCPServer.configuration}
+                        onChange={(e) => {
+                          setNewMCPServer(prev => ({ ...prev, configuration: e.target.value }))
+                          // Clear validation error when user types
+                          if (validationErrors.mcpServerConfig) {
+                            setValidationErrors(prev => {
+                              const newErrors = { ...prev }
+                              delete newErrors.mcpServerConfig
+                              return newErrors
+                            })
+                          }
+                        }}
+                        rows={3}
+                      />
+                      {validationErrors.mcpServerConfig && (
+                        <p className="text-sm text-red-500">{validationErrors.mcpServerConfig}</p>
+                      )}
+                      <p className="text-xs text-muted-foreground">
+                        Enter valid JSON schema for the server configuration
+                      </p>
+                    </div>
+                    
+                    <div className="flex gap-2">
+                      <Button
+                        type="button"
+                        onClick={handleAddMCPServer}
+                        size="sm"
+                        className="flex-1"
+                      >
+                        {editingMCPIndex !== null ? "Update MCP Server" : "Add MCP Server"}
+                      </Button>
+                      {editingMCPIndex !== null && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={handleCancelEditMCPServer}
+                          size="sm"
+                        >
+                          Cancel
+                        </Button>
+                      )}
+                    </div>
                   </div>
+                  
                   <div className="space-y-2">
                     {formData.mcpServers.map((server, index) => (
                       <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
-                        <div>
+                        <div className="flex-1 min-w-0">
                           <div className="font-medium">{server.name}</div>
                           {server.description && <div className="text-sm text-muted-foreground">{server.description}</div>}
+                          <div className="text-xs text-muted-foreground mt-1 truncate">
+                            Config: {server.configuration.substring(0, 50)}...
+                          </div>
                         </div>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleRemoveMCPServer(index)}
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
+                        <div className="flex gap-1">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleEditMCPServer(index)}
+                            disabled={editingMCPIndex === index}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleRemoveMCPServer(index)}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -896,7 +1210,9 @@ export function CreateTemplateDialog({ open, onOpenChange, onTemplateCreate }: C
           <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button onClick={handleSubmit}>Create Template</Button>
+                      <Button onClick={handleSubmit}>
+              {editingTemplate ? 'Update Template' : 'Create Template'}
+            </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
