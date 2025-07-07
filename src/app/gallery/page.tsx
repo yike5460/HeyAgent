@@ -503,14 +503,14 @@ export default function TemplateGalleryPage() {
             <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-primary/50 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300" />
           </CardContent>
         </Card>
-
+        
         {/* Total Usage */}
         <Card className="relative overflow-hidden group hover:shadow-xl transition-all duration-300 border-2 hover:border-primary/50 bg-card">
           <CardContent className="p-4">
             <div className="space-y-1">
               <div className="flex items-center justify-between">
                 <div className="text-2xl font-bold text-primary tabular-nums">
-                  {templates.reduce((sum, t) => sum + t.usageCount, 0).toLocaleString()}
+              {templates.reduce((sum, t) => sum + t.usageCount, 0).toLocaleString()}
                 </div>
                 <div className="w-8 h-8 bg-accent rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
                   <Activity className="h-4 w-4 text-accent-foreground group-hover:animate-pulse" />
@@ -522,14 +522,14 @@ export default function TemplateGalleryPage() {
             <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-primary/50 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300" />
           </CardContent>
         </Card>
-
+        
         {/* Average Rating */}
         <Card className="relative overflow-hidden group hover:shadow-xl transition-all duration-300 border-2 hover:border-primary/50 bg-card">
           <CardContent className="p-4">
             <div className="space-y-1">
               <div className="flex items-center justify-between">
                 <div className="text-2xl font-bold text-primary tabular-nums">
-                  {(templates.reduce((sum, t) => sum + t.rating, 0) / templates.length).toFixed(1)}
+              {(templates.reduce((sum, t) => sum + t.rating, 0) / templates.length).toFixed(1)}
                 </div>
                 <div className="w-8 h-8 bg-muted rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
                   <Star className="h-4 w-4 text-primary group-hover:fill-primary transition-colors duration-300" />
@@ -541,14 +541,14 @@ export default function TemplateGalleryPage() {
             <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-primary/50 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300" />
           </CardContent>
         </Card>
-
+        
         {/* Total Forks */}
         <Card className="relative overflow-hidden group hover:shadow-xl transition-all duration-300 border-2 hover:border-primary/50 bg-card">
           <CardContent className="p-4">
             <div className="space-y-1">
               <div className="flex items-center justify-between">
                 <div className="text-2xl font-bold text-primary tabular-nums">
-                  {templates.reduce((sum, t) => sum + t.forkCount, 0)}
+              {templates.reduce((sum, t) => sum + t.forkCount, 0)}
                 </div>
                 <div className="w-8 h-8 bg-secondary/20 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
                   <GitBranch className="h-4 w-4 text-secondary-foreground group-hover:animate-bounce" />

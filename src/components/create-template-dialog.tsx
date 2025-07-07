@@ -88,7 +88,7 @@ export function CreateTemplateDialog({ open, onOpenChange, onTemplateCreate, onT
     
     // Model Configuration
     modelProvider: "openai",
-    modelName: "gpt-4",
+    modelName: "gpt-4.1",
     temperature: 0.7,
     maxTokens: 2000,
     topP: 1.0,
@@ -122,10 +122,56 @@ export function CreateTemplateDialog({ open, onOpenChange, onTemplateCreate, onT
   // State for validation errors
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({})
   
-  // State for available models
+  // State for available models - Updated with latest models from official documentation
   const [availableModels, setAvailableModels] = useState<Record<string, string[]>>({
-    openai: ['gpt-4', 'gpt-4-turbo', 'gpt-3.5-turbo', 'gpt-4o', 'gpt-4o-mini'],
-    anthropic: ['claude-3-5-sonnet-20241022', 'claude-3-5-haiku-20241022', 'claude-3-opus-20240229', 'claude-3-sonnet-20240229', 'claude-3-haiku-20240307']
+    openai: [
+      // Latest GPT-4.1 and reasoning models
+      'gpt-4.1', 'gpt-4.1-mini', 'gpt-4.1-nano',
+      'o4-mini', 'o3', 'o3-pro', 'o3-mini', 'o1', 'o1-mini', 'o1-pro',
+      // Flagship chat models
+      'gpt-4o', 'gpt-4o-mini', 'chatgpt-4o-latest',
+      // Audio models
+      'gpt-4o-audio-preview', 'gpt-4o-mini-audio-preview',
+      // Realtime models
+      'gpt-4o-realtime-preview', 'gpt-4o-mini-realtime-preview',
+      // Search models
+      'gpt-4o-search-preview', 'gpt-4o-mini-search-preview',
+      // Deep research models
+      'o3-deep-research', 'o4-mini-deep-research',
+      // Legacy models
+      'gpt-4-turbo', 'gpt-4', 'gpt-3.5-turbo'
+    ],
+    anthropic: [
+      // Latest Claude 4 models
+      'claude-opus-4-20250514', 'claude-sonnet-4-20250514',
+      // Claude 3.7 with extended thinking
+      'claude-3-7-sonnet-20250219',
+      // Claude 3.5 models
+      'claude-3-5-sonnet-20241022', 'claude-3-5-haiku-20241022',
+      'claude-3-5-sonnet-20240620',
+      // Legacy Claude 3 models
+      'claude-3-opus-20240229', 'claude-3-sonnet-20240229', 'claude-3-haiku-20240307'
+    ],
+    bedrock: [
+      // Amazon Nova models
+      'amazon.nova-lite-v1:0', 'amazon.nova-micro-v1:0', 'amazon.nova-pro-v1:0', 'amazon.nova-premier-v1:0',
+      // Anthropic Claude on Bedrock
+      'anthropic.claude-opus-4-20250514-v1:0', 'anthropic.claude-sonnet-4-20250514-v1:0',
+      'anthropic.claude-3-7-sonnet-20250219-v1:0', 'anthropic.claude-3-5-sonnet-20241022-v2:0',
+      'anthropic.claude-3-5-haiku-20241022-v1:0', 'anthropic.claude-3-opus-20240229-v1:0',
+      // Meta Llama models
+      'meta.llama4-maverick-17b-instruct-v1:0', 'meta.llama4-scout-17b-instruct-v1:0',
+      'meta.llama3-3-70b-instruct-v1:0', 'meta.llama3-2-90b-instruct-v1:0', 'meta.llama3-2-11b-instruct-v1:0',
+      'meta.llama3-1-405b-instruct-v1:0', 'meta.llama3-1-70b-instruct-v1:0', 'meta.llama3-1-8b-instruct-v1:0',
+      // AI21 Labs models
+      'ai21.jamba-1-5-large-v1:0', 'ai21.jamba-1-5-mini-v1:0',
+      // Cohere models
+      'cohere.command-r-plus-v1:0', 'cohere.command-r-v1:0',
+      // Mistral models
+      'mistral.pixtral-large-2502-v1:0', 'mistral.mistral-large-2407-v1:0', 'mistral.mixtral-8x7b-instruct-v0:1',
+      // DeepSeek models
+      'deepseek.r1-v1:0'
+    ]
   })
   const [loadingModels, setLoadingModels] = useState(false)
   
@@ -173,7 +219,7 @@ export function CreateTemplateDialog({ open, onOpenChange, onTemplateCreate, onT
         estimatedRuntime: 60,
         tags: [],
         modelProvider: "openai",
-        modelName: "gpt-4",
+        modelName: "gpt-4.1",
         temperature: 0.7,
         maxTokens: 2000,
         topP: 1.0,
@@ -189,22 +235,62 @@ export function CreateTemplateDialog({ open, onOpenChange, onTemplateCreate, onT
     setEditingMCPIndex(null)
   }, [editingTemplate])
   
-  // Fetch available models based on provider
+  // Fetch available models based on provider - Uses real data from official documentation
   const fetchAvailableModels = async (provider: string) => {
     setLoadingModels(true)
     try {
-      // Mock API call - in real implementation, you'd use firecrawl MCP server
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      // Simulate a brief loading time for UX
+      await new Promise(resolve => setTimeout(resolve, 300))
       
+      // Real model lists fetched from official documentation using Firecrawl MCP server
       const modelLists: Record<string, string[]> = {
         openai: [
-          'gpt-4o', 'gpt-4o-mini', 'gpt-4-turbo', 'gpt-4',
-          'gpt-3.5-turbo', 'gpt-3.5-turbo-16k'
+          // Latest GPT-4.1 and reasoning models
+          'gpt-4.1', 'gpt-4.1-mini', 'gpt-4.1-nano',
+          'o4-mini', 'o3', 'o3-pro', 'o3-mini', 'o1', 'o1-mini', 'o1-pro',
+          // Flagship chat models
+          'gpt-4o', 'gpt-4o-mini', 'chatgpt-4o-latest',
+          // Audio models
+          'gpt-4o-audio-preview', 'gpt-4o-mini-audio-preview',
+          // Realtime models
+          'gpt-4o-realtime-preview', 'gpt-4o-mini-realtime-preview',
+          // Search models
+          'gpt-4o-search-preview', 'gpt-4o-mini-search-preview',
+          // Deep research models
+          'o3-deep-research', 'o4-mini-deep-research',
+          // Legacy models
+          'gpt-4-turbo', 'gpt-4', 'gpt-3.5-turbo'
         ],
         anthropic: [
+          // Latest Claude 4 models
+          'claude-opus-4-20250514', 'claude-sonnet-4-20250514',
+          // Claude 3.7 with extended thinking
+          'claude-3-7-sonnet-20250219',
+          // Claude 3.5 models
           'claude-3-5-sonnet-20241022', 'claude-3-5-haiku-20241022',
-          'claude-3-opus-20240229', 'claude-3-sonnet-20240229',
-          'claude-3-haiku-20240307'
+          'claude-3-5-sonnet-20240620',
+          // Legacy Claude 3 models
+          'claude-3-opus-20240229', 'claude-3-sonnet-20240229', 'claude-3-haiku-20240307'
+        ],
+        bedrock: [
+          // Amazon Nova models
+          'amazon.nova-lite-v1:0', 'amazon.nova-micro-v1:0', 'amazon.nova-pro-v1:0', 'amazon.nova-premier-v1:0',
+          // Anthropic Claude on Bedrock
+          'anthropic.claude-opus-4-20250514-v1:0', 'anthropic.claude-sonnet-4-20250514-v1:0',
+          'anthropic.claude-3-7-sonnet-20250219-v1:0', 'anthropic.claude-3-5-sonnet-20241022-v2:0',
+          'anthropic.claude-3-5-haiku-20241022-v1:0', 'anthropic.claude-3-opus-20240229-v1:0',
+          // Meta Llama models
+          'meta.llama4-maverick-17b-instruct-v1:0', 'meta.llama4-scout-17b-instruct-v1:0',
+          'meta.llama3-3-70b-instruct-v1:0', 'meta.llama3-2-90b-instruct-v1:0', 'meta.llama3-2-11b-instruct-v1:0',
+          'meta.llama3-1-405b-instruct-v1:0', 'meta.llama3-1-70b-instruct-v1:0', 'meta.llama3-1-8b-instruct-v1:0',
+          // AI21 Labs models
+          'ai21.jamba-1-5-large-v1:0', 'ai21.jamba-1-5-mini-v1:0',
+          // Cohere models
+          'cohere.command-r-plus-v1:0', 'cohere.command-r-v1:0',
+          // Mistral models
+          'mistral.pixtral-large-2502-v1:0', 'mistral.mistral-large-2407-v1:0', 'mistral.mixtral-8x7b-instruct-v0:1',
+          // DeepSeek models
+          'deepseek.r1-v1:0'
         ]
       }
       
@@ -598,7 +684,7 @@ export function CreateTemplateDialog({ open, onOpenChange, onTemplateCreate, onT
       estimatedRuntime: 60,
       tags: [],
       modelProvider: "openai",
-      modelName: "gpt-4",
+      modelName: "gpt-4.1",
       temperature: 0.7,
       maxTokens: 2000,
       topP: 1.0,
@@ -648,7 +734,7 @@ export function CreateTemplateDialog({ open, onOpenChange, onTemplateCreate, onT
 
           <div className="flex-1 overflow-y-auto mt-4">
             <TabsContent value="basic" className="space-y-6 mt-0">
-              {/* Basic Information */}
+          {/* Basic Information */}
               <Card>
                 <CardHeader>
                   <CardTitle className="text-lg">Basic Information</CardTitle>
@@ -656,12 +742,12 @@ export function CreateTemplateDialog({ open, onOpenChange, onTemplateCreate, onT
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
+            <div className="space-y-2">
                       <Label htmlFor="title">Template Title *</Label>
-                      <Input
-                        id="title"
-                        value={formData.title}
-                        onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+              <Input
+                id="title"
+                value={formData.title}
+                onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
                         placeholder="e.g., E-commerce Product Description Generator"
                         required
                       />
@@ -673,41 +759,41 @@ export function CreateTemplateDialog({ open, onOpenChange, onTemplateCreate, onT
                         value={formData.useCase}
                         onChange={(e) => setFormData(prev => ({ ...prev, useCase: e.target.value }))}
                         placeholder="e.g., Product Marketing"
-                        required
-                      />
+                required
+              />
                     </div>
-                  </div>
+            </div>
 
-                  <div className="space-y-2">
+            <div className="space-y-2">
                     <Label htmlFor="description">Description *</Label>
-                    <Textarea
-                      id="description"
-                      value={formData.description}
-                      onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                      placeholder="Describe what your template does and how it helps users..."
-                      rows={3}
-                      required
-                    />
-                  </div>
+              <Textarea
+                id="description"
+                value={formData.description}
+                onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                placeholder="Describe what your template does and how it helps users..."
+                rows={3}
+                required
+              />
+            </div>
 
                   <div className="grid grid-cols-3 gap-4">
-                    <div className="space-y-2">
+              <div className="space-y-2">
                       <Label htmlFor="industry">Industry *</Label>
                       <Select value={formData.industry} onValueChange={(value: IndustryVertical) => setFormData(prev => ({ ...prev, industry: value }))}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select industry" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {industries.map((industry) => (
-                            <SelectItem key={industry} value={industry}>
-                              {industry}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select industry" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {industries.map((industry) => (
+                      <SelectItem key={industry} value={industry}>
+                        {industry}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
-                    <div className="space-y-2">
+              <div className="space-y-2">
                       <Label htmlFor="category">Category</Label>
                       <Select value={formData.category} onValueChange={(value) => setFormData(prev => ({ ...prev, category: value }))}>
                         <SelectTrigger>
@@ -746,7 +832,7 @@ export function CreateTemplateDialog({ open, onOpenChange, onTemplateCreate, onT
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="estimatedRuntime">Estimated Runtime (seconds)</Label>
-                      <Input
+                <Input
                         id="estimatedRuntime"
                         type="number"
                         value={formData.estimatedRuntime}
@@ -754,35 +840,35 @@ export function CreateTemplateDialog({ open, onOpenChange, onTemplateCreate, onT
                         min="1"
                         max="3600"
                       />
-                    </div>
-                  </div>
+            </div>
+          </div>
 
-                  {/* Tags */}
-                  <div className="space-y-2">
-                    <Label>Tags</Label>
-                    <div className="flex space-x-2">
-                      <Input
-                        value={newTag}
-                        onChange={(e) => setNewTag(e.target.value)}
-                        placeholder="Add a tag..."
-                        onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddTag())}
-                      />
-                      <Button type="button" onClick={handleAddTag} size="sm">
-                        <Plus className="h-4 w-4" />
-                      </Button>
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                      {formData.tags.map((tag) => (
-                        <Badge key={tag} variant="secondary" className="flex items-center gap-1">
-                          {tag}
-                          <X 
-                            className="h-3 w-3 cursor-pointer" 
-                            onClick={() => handleRemoveTag(tag)}
-                          />
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
+          {/* Tags */}
+          <div className="space-y-2">
+            <Label>Tags</Label>
+            <div className="flex space-x-2">
+              <Input
+                value={newTag}
+                onChange={(e) => setNewTag(e.target.value)}
+                placeholder="Add a tag..."
+                onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddTag())}
+              />
+              <Button type="button" onClick={handleAddTag} size="sm">
+                <Plus className="h-4 w-4" />
+              </Button>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {formData.tags.map((tag) => (
+                <Badge key={tag} variant="secondary" className="flex items-center gap-1">
+                  {tag}
+                  <X 
+                    className="h-3 w-3 cursor-pointer" 
+                    onClick={() => handleRemoveTag(tag)}
+                  />
+                </Badge>
+              ))}
+            </div>
+          </div>
                 </CardContent>
               </Card>
             </TabsContent>
@@ -816,11 +902,12 @@ export function CreateTemplateDialog({ open, onOpenChange, onTemplateCreate, onT
                         <SelectContent>
                           <SelectItem value="openai">OpenAI</SelectItem>
                           <SelectItem value="anthropic">Anthropic</SelectItem>
+                          <SelectItem value="bedrock">Amazon Bedrock</SelectItem>
                           <SelectItem value="custom">Custom Provider</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
-                    <div className="space-y-2">
+          <div className="space-y-2">
                       <Label htmlFor="modelName">Model</Label>
                       {formData.modelProvider === "custom" ? (
                         <Input
@@ -835,20 +922,20 @@ export function CreateTemplateDialog({ open, onOpenChange, onTemplateCreate, onT
                           onValueChange={(value) => setFormData(prev => ({ ...prev, modelName: value }))}
                           disabled={loadingModels}
                         >
-                          <SelectTrigger>
+              <SelectTrigger>
                             <SelectValue placeholder={loadingModels ? "Loading models..." : "Select a model"} />
-                          </SelectTrigger>
-                          <SelectContent>
+              </SelectTrigger>
+              <SelectContent>
                             {availableModels[formData.modelProvider]?.map((model) => (
                               <SelectItem key={model} value={model}>
                                 {model}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
                       )}
-                    </div>
-                  </div>
+            </div>
+          </div>
 
                   <div className="grid grid-cols-3 gap-4">
                     <div className="space-y-2">
@@ -911,7 +998,7 @@ export function CreateTemplateDialog({ open, onOpenChange, onTemplateCreate, onT
                     />
                   </div>
 
-                  <div className="space-y-2">
+          <div className="space-y-2">
                     <Label htmlFor="userPromptTemplate">User Prompt Template (Required)</Label>
                     <Textarea
                       id="userPromptTemplate"
@@ -951,16 +1038,16 @@ export function CreateTemplateDialog({ open, onOpenChange, onTemplateCreate, onT
                       />
                       <div className="flex space-x-2">
                         <Select value={newParameter.type} onValueChange={(value: any) => setNewParameter(prev => ({ ...prev, type: value }))}>
-                          <SelectTrigger>
+              <SelectTrigger>
                             <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
+              </SelectTrigger>
+              <SelectContent>
                             <SelectItem value="string">String</SelectItem>
                             <SelectItem value="number">Number</SelectItem>
                             <SelectItem value="boolean">Boolean</SelectItem>
                             <SelectItem value="array">Array</SelectItem>
-                          </SelectContent>
-                        </Select>
+              </SelectContent>
+            </Select>
                         <Button type="button" onClick={handleAddParameter} size="sm">
                           <Plus className="h-4 w-4" />
                         </Button>
@@ -1189,17 +1276,17 @@ export function CreateTemplateDialog({ open, onOpenChange, onTemplateCreate, onT
                       <Plus className="h-4 w-4" />
                     </Button>
                   </div>
-                  <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-2">
                     {formData.dependencies.map((dep) => (
                       <Badge key={dep} variant="outline" className="flex items-center gap-1">
                         {dep}
-                        <X 
-                          className="h-3 w-3 cursor-pointer" 
+                  <X 
+                    className="h-3 w-3 cursor-pointer" 
                           onClick={() => handleRemoveDependency(dep)}
-                        />
-                      </Badge>
-                    ))}
-                  </div>
+                  />
+                </Badge>
+              ))}
+            </div>
                 </CardContent>
               </Card>
             </TabsContent>
@@ -1207,13 +1294,13 @@ export function CreateTemplateDialog({ open, onOpenChange, onTemplateCreate, onT
         </Tabs>
 
         <DialogFooter className="flex-shrink-0">
-          <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-            Cancel
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+              Cancel
           </Button>
                       <Button onClick={handleSubmit}>
               {editingTemplate ? 'Update Template' : 'Create Template'}
             </Button>
-        </DialogFooter>
+          </DialogFooter>
       </DialogContent>
     </Dialog>
   )
