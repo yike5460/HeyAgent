@@ -23,7 +23,8 @@ import {
   Brain,
   MessageSquare,
   Database,
-  Cloud
+  Cloud,
+  BarChart3
 } from 'lucide-react'
 
 interface TemplateDetailsPanelProps {
@@ -153,9 +154,9 @@ export function TemplateDetailsPanel({
                 <Eye className="h-4 w-4" />
                 <span>Overview</span>
               </TabsTrigger>
-              <TabsTrigger value="visualization" className="flex items-center space-x-2">
-                <GitMerge className="h-4 w-4" />
-                <span>Workflow</span>
+              <TabsTrigger value="analytic" className="flex items-center space-x-2">
+                <BarChart3 className="h-4 w-4" />
+                <span>Analytic</span>
               </TabsTrigger>
               <TabsTrigger value="configuration" className="flex items-center space-x-2">
                 <Settings className="h-4 w-4" />
@@ -272,128 +273,134 @@ export function TemplateDetailsPanel({
                 )}
               </TabsContent>
 
-              <TabsContent value="visualization" className="mt-0 h-full overflow-y-auto">
+              <TabsContent value="analytic" className="mt-0 h-full overflow-y-auto">
                 <Card>
                   <CardHeader>
-                    <CardTitle>Template Workflow</CardTitle>
+                    <CardTitle className="flex items-center space-x-2">
+                      <BarChart3 className="h-5 w-5 text-primary" />
+                      <span>Template Analytics</span>
+                    </CardTitle>
                     <CardDescription>
-                      Visual representation of how this template orchestrates AI components
+                      Performance insights and usage statistics for this template
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <div className="py-8 px-4">
-                      {/* Main Orchestration Container */}
-                      <div className="relative border-2 border-dashed border-muted-foreground/30 rounded-xl p-8 mb-6">
-                        {/* Orchestration Label */}
-                        <div className="absolute -top-3 left-6 bg-background px-2">
-                          <span className="text-sm font-semibold text-muted-foreground">Orchestration</span>
-                        </div>
+                    <div className="space-y-6">
+                      {/* Performance Overview */}
+                      <div className="grid gap-4 md:grid-cols-3">
+                        <Card>
+                          <CardHeader className="pb-2">
+                            <CardTitle className="text-sm font-medium">Usage Count</CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="text-2xl font-bold">{template.usageCount.toLocaleString()}</div>
+                            <div className="text-xs text-muted-foreground">Total executions</div>
+                          </CardContent>
+                        </Card>
 
-                        {/* Components Flow */}
-                        <div className="flex items-center justify-center space-x-4 overflow-x-auto">
-                          {/* Prompt Component */}
-                          <div className="flex flex-col items-center min-w-0">
-                            <div className="w-28 h-16 border-2 border-blue-200 dark:border-blue-800 rounded-lg flex items-center justify-center bg-blue-50 dark:bg-blue-950 shadow-sm transition-colors">
-                              <span className="text-sm font-medium text-blue-700 dark:text-blue-300 text-center px-2">Prompt</span>
+                        <Card>
+                          <CardHeader className="pb-2">
+                            <CardTitle className="text-sm font-medium">Fork Count</CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="text-2xl font-bold">{template.forkCount}</div>
+                            <div className="text-xs text-muted-foreground">Times forked</div>
+                          </CardContent>
+                        </Card>
+
+                        <Card>
+                          <CardHeader className="pb-2">
+                            <CardTitle className="text-sm font-medium">Rating</CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="text-2xl font-bold flex items-center space-x-1">
+                              <span>{template.rating}</span>
+                              <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
                             </div>
-                          </div>
-
-                          {/* Arrow */}
-                          <div className="flex items-center flex-shrink-0">
-                            <div className="w-6 h-0.5 bg-muted-foreground/60"></div>
-                            <div className="w-0 h-0 border-l-[6px] border-l-muted-foreground/60 border-t-[4px] border-t-transparent border-b-[4px] border-b-transparent"></div>
-                          </div>
-
-                          {/* Model Component */}
-                          <div className="flex flex-col items-center min-w-0">
-                            <div className="w-28 h-16 border-2 border-emerald-200 dark:border-emerald-800 rounded-lg flex items-center justify-center bg-emerald-50 dark:bg-emerald-950 shadow-sm transition-colors">
-                              <span className="text-sm font-medium text-emerald-700 dark:text-emerald-300 text-center px-2">Model</span>
-                            </div>
-                          </div>
-
-                          {/* Conditional MCP Servers */}
-                          {template.mcpServers.length > 0 && (
-                            <>
-                              {/* Arrow */}
-                              <div className="flex items-center flex-shrink-0">
-                                <div className="w-6 h-0.5 bg-muted-foreground/60"></div>
-                                <div className="w-0 h-0 border-l-[6px] border-l-muted-foreground/60 border-t-[4px] border-t-transparent border-b-[4px] border-b-transparent"></div>
-                              </div>
-
-                              {/* Tool/MCP Server Component */}
-                              <div className="flex flex-col items-center min-w-0">
-                                <div className="w-28 h-16 border-2 border-purple-200 dark:border-purple-800 rounded-lg flex flex-col items-center justify-center bg-purple-50 dark:bg-purple-950 shadow-sm transition-colors px-1">
-                                  <span className="text-xs font-medium text-purple-700 dark:text-purple-300 text-center leading-tight">Tool/MCP</span>
-                                  <span className="text-xs font-medium text-purple-700 dark:text-purple-300 text-center leading-tight">Server</span>
-                                </div>
-                              </div>
-                            </>
-                          )}
-
-                          {/* Conditional SaaS API */}
-                          {template.saasIntegrations.filter(s => !s.capabilities.some(c => c.type === 'text-generation')).length > 0 && (
-                            <>
-                              {/* Arrow */}
-                              <div className="flex items-center flex-shrink-0">
-                                <div className="w-6 h-0.5 bg-muted-foreground/60"></div>
-                                <div className="w-0 h-0 border-l-[6px] border-l-muted-foreground/60 border-t-[4px] border-t-transparent border-b-[4px] border-b-transparent"></div>
-                              </div>
-
-                              {/* SaaS API Component */}
-                              <div className="flex flex-col items-center min-w-0">
-                                <div className="w-28 h-16 border-2 border-orange-200 dark:border-orange-800 rounded-lg flex items-center justify-center bg-orange-50 dark:bg-orange-950 shadow-sm transition-colors">
-                                  <span className="text-sm font-medium text-orange-700 dark:text-orange-300 text-center px-2">SaaS API</span>
-                                </div>
-                              </div>
-                            </>
-                          )}
-
-                          {/* Conditional Memory/Vector Database */}
-                          {template.mcpServers.some(s => s.serverType === 'file-processor') && (
-                            <>
-                              {/* Arrow */}
-                              <div className="flex items-center flex-shrink-0">
-                                <div className="w-6 h-0.5 bg-muted-foreground/60"></div>
-                                <div className="w-0 h-0 border-l-[6px] border-l-muted-foreground/60 border-t-[4px] border-t-transparent border-b-[4px] border-b-transparent"></div>
-                              </div>
-
-                              {/* Memory/Vector Database Component */}
-                              <div className="flex flex-col items-center min-w-0">
-                                <div className="w-28 h-16 border-2 border-violet-200 dark:border-violet-800 rounded-lg flex flex-col items-center justify-center bg-violet-50 dark:bg-violet-950 shadow-sm transition-colors px-1">
-                                  <span className="text-xs font-medium text-violet-700 dark:text-violet-300 text-center leading-tight">Memory/Vector</span>
-                                  <span className="text-xs font-medium text-violet-700 dark:text-violet-300 text-center leading-tight">Database</span>
-                                </div>
-                              </div>
-                            </>
-                          )}
-                        </div>
+                            <div className="text-xs text-muted-foreground">Average rating</div>
+                          </CardContent>
+                        </Card>
                       </div>
 
-                      {/* E2B/Sandbox Component - Aligned with Orchestration width */}
-                      <div className="relative border-2 border-dashed border-amber-200 dark:border-amber-800 rounded-xl p-4 bg-amber-50/50 dark:bg-amber-950/20">
-                        <div className="flex items-center justify-center">
-                          <span className="text-sm font-medium text-amber-700 dark:text-amber-300">E2B/Sandbox</span>
-                        </div>
-                      </div>
-                    </div>
+                      {/* Template Composition */}
+                      <Card>
+                        <CardHeader>
+                          <CardTitle className="text-lg">Template Composition</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="grid gap-4 md:grid-cols-2">
+                            <div>
+                              <h4 className="font-medium mb-2">Components</h4>
+                              <div className="space-y-2">
+                                <div className="flex items-center justify-between p-2 border rounded">
+                                  <span className="text-sm">MCP Servers</span>
+                                  <Badge variant="outline">{template.mcpServers.length}</Badge>
+                                </div>
+                                <div className="flex items-center justify-between p-2 border rounded">
+                                  <span className="text-sm">SaaS Integrations</span>
+                                  <Badge variant="outline">{template.saasIntegrations.length}</Badge>
+                                </div>
+                                <div className="flex items-center justify-between p-2 border rounded">
+                                  <span className="text-sm">Parameters</span>
+                                  <Badge variant="outline">{template.promptConfig.parameters.length}</Badge>
+                                </div>
+                                <div className="flex items-center justify-between p-2 border rounded">
+                                  <span className="text-sm">Dependencies</span>
+                                  <Badge variant="outline">{template.metadata.dependencies.length}</Badge>
+                                </div>
+                              </div>
+                            </div>
+                            
+                            <div>
+                              <h4 className="font-medium mb-2">Metadata</h4>
+                              <div className="space-y-2">
+                                <div className="flex items-center justify-between p-2 border rounded">
+                                  <span className="text-sm">Complexity</span>
+                                  <Badge variant={
+                                    template.metadata.complexity === 'beginner' ? 'default' :
+                                    template.metadata.complexity === 'intermediate' ? 'secondary' :
+                                    'destructive'
+                                  }>
+                                    {template.metadata.complexity}
+                                  </Badge>
+                                </div>
+                                <div className="flex items-center justify-between p-2 border rounded">
+                                  <span className="text-sm">Runtime (est.)</span>
+                                  <Badge variant="outline">{template.metadata.estimatedRuntime}min</Badge>
+                                </div>
+                                <div className="flex items-center justify-between p-2 border rounded">
+                                  <span className="text-sm">Category</span>
+                                  <Badge variant="outline">{template.metadata.category}</Badge>
+                                </div>
+                                <div className="flex items-center justify-between p-2 border rounded">
+                                  <span className="text-sm">Industry</span>
+                                  <Badge variant="outline">{template.industry}</Badge>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
 
-                    {/* Workflow Description */}
-                    <div className="mt-6 p-4 bg-muted/50 rounded-lg">
-                      <h4 className="font-medium text-sm mb-2">Workflow Description</h4>
-                      <p className="text-xs text-muted-foreground leading-relaxed">
-                        This template follows a linear orchestration flow within a controlled environment: 
-                        The <strong>Prompt</strong> is processed by the <strong>Model</strong> to generate responses.
-                        {template.mcpServers.length > 0 && (
-                          <span> <strong>Tool/MCP Servers</strong> provide enhanced capabilities for data processing and external tool access.</span>
-                        )}
-                        {template.saasIntegrations.filter(s => !s.capabilities.some(c => c.type === 'text-generation')).length > 0 && (
-                          <span> <strong>SaaS APIs</strong> integrate external services for specialized functionality.</span>
-                        )}
-                        {template.mcpServers.some(s => s.serverType === 'file-processor') && (
-                          <span> <strong>Memory/Vector Database</strong> systems store and retrieve contextual information.</span>
-                        )}
-                        <span> The entire workflow runs within an <strong>E2B/Sandbox</strong> environment for secure execution.</span>
-                      </p>
+                      {/* Usage Trend */}
+                      <Card>
+                        <CardHeader>
+                          <CardTitle className="text-lg">Usage Trend</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="text-center py-8">
+                            <div className="w-full h-24 bg-muted rounded-lg flex items-center justify-center mb-4">
+                              <div className="text-muted-foreground">
+                                <BarChart3 className="h-8 w-8 mx-auto mb-2" />
+                                <p className="text-sm">Usage analytics chart would appear here</p>
+                              </div>
+                            </div>
+                            <p className="text-sm text-muted-foreground">
+                              This template has been used {template.usageCount} times with a {template.rating}/5 average rating
+                            </p>
+                          </div>
+                        </CardContent>
+                      </Card>
                     </div>
                   </CardContent>
                 </Card>

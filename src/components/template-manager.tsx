@@ -24,7 +24,7 @@ import {
   Save,
   X
 } from "lucide-react"
-import { PromptTemplate, IndustryVertical, MCPServerConfig, SaaSIntegration } from "@/types"
+import { PromptTemplate, IndustryVertical, MCPServerConfig, SaaSIntegration, TemplateParameter } from "@/types"
 
 interface TemplateManagerProps {
   templates: PromptTemplate[]
@@ -40,11 +40,21 @@ interface TemplateFormData {
   description: string
   industry: IndustryVertical
   useCase: string
+  category: string
+  complexity: 'beginner' | 'intermediate' | 'advanced'
   systemPrompt: string
   userPromptTemplate: string
+  parameters: TemplateParameter[]
+  constraints: {
+    maxTokens: number
+    temperature: number
+    topP: number
+  }
   tags: string[]
-  mcpServers: string[]
-  saasIntegrations: string[]
+  mcpServers: MCPServerConfig[]
+  saasIntegrations: SaaSIntegration[]
+  estimatedRuntime: number
+  dependencies: string[]
 }
 
 const industryOptions: IndustryVertical[] = [
@@ -81,11 +91,21 @@ export function TemplateManager({
     description: '',
     industry: 'Media & Entertainment',
     useCase: '',
+    category: 'Custom',
+    complexity: 'intermediate',
     systemPrompt: '',
     userPromptTemplate: '',
+    parameters: [],
+    constraints: {
+      maxTokens: 2000,
+      temperature: 0.7,
+      topP: 1.0
+    },
     tags: [],
     mcpServers: [],
-    saasIntegrations: []
+    saasIntegrations: [],
+    estimatedRuntime: 60,
+    dependencies: []
   })
 
   const resetForm = () => {
@@ -94,11 +114,21 @@ export function TemplateManager({
       description: '',
       industry: 'Media & Entertainment',
       useCase: '',
+      category: 'Custom',
+      complexity: 'intermediate',
       systemPrompt: '',
       userPromptTemplate: '',
+      parameters: [],
+      constraints: {
+        maxTokens: 2000,
+        temperature: 0.7,
+        topP: 1.0
+      },
       tags: [],
       mcpServers: [],
-      saasIntegrations: []
+      saasIntegrations: [],
+      estimatedRuntime: 60,
+      dependencies: []
     })
     setCreationMode('scratch')
     setParentTemplate(null)

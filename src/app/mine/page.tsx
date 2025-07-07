@@ -1,7 +1,9 @@
 "use client"
 
 import { useState, useEffect } from 'react'
-import { TemplateManager } from '@/components/template-manager'
+import { TemplateCard } from '@/components/template-card'
+import { TemplateDetailsPanel } from '@/components/template-details-panel'
+import { CreateTemplateDialog } from '@/components/create-template-dialog'
 import { TemplateVisualization } from '@/components/template-visualization'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -10,12 +12,14 @@ import { Badge } from '@/components/ui/badge'
 import { toast } from '@/components/ui/use-toast'
 import { PromptTemplate } from '@/types'
 import { localStorageService } from '@/services/local-storage'
-import { Brain, Database, Settings, Workflow, Plus, Upload, Download } from 'lucide-react'
+import { Brain, Database, Settings, Workflow, Plus, Upload, Download, TrendingUp, BarChart3, Activity } from 'lucide-react'
 
 export default function MyTemplatesPage() {
   const [templates, setTemplates] = useState<PromptTemplate[]>([])
   const [selectedTemplate, setSelectedTemplate] = useState<PromptTemplate | null>(null)
   const [loading, setLoading] = useState(true)
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false)
 
   // Load templates from local storage on component mount
   useEffect(() => {
@@ -285,7 +289,7 @@ export default function MyTemplatesPage() {
         <TabsList>
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="management">Management</TabsTrigger>
-          <TabsTrigger value="visualization">Visualization</TabsTrigger>
+          <TabsTrigger value="analytic">Analytic</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6">
@@ -349,101 +353,316 @@ export default function MyTemplatesPage() {
             </Card>
           </div>
 
-          {selectedTemplate ? (
-            <Card>
-              <CardHeader>
-                <CardTitle>Featured Template: {selectedTemplate.title}</CardTitle>
-                <CardDescription>{selectedTemplate.description}</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex flex-wrap gap-2">
-                  <Badge>{selectedTemplate.industry}</Badge>
-                  <Badge variant="outline">{selectedTemplate.useCase}</Badge>
-                  <Badge variant="outline">{selectedTemplate.metadata.complexity}</Badge>
-                  <Badge variant="outline" className={
-                    selectedTemplate.status === 'published' ? 'bg-green-100 text-green-800' :
-                    selectedTemplate.status === 'draft' ? 'bg-yellow-100 text-yellow-800' :
-                    'bg-gray-100 text-gray-800'
-                  }>
-                    {selectedTemplate.status}
-                  </Badge>
-                  {selectedTemplate.isForked && (
-                    <Badge variant="outline" className="bg-blue-100 text-blue-800">
-                      Forked
-                    </Badge>
+          {/* Analytics Panel */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <BarChart3 className="h-5 w-5 text-primary" />
+                <span>Template Analytics</span>
+              </CardTitle>
+              <CardDescription>Performance metrics and insights for your templates</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {templates.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-12">
+                  <Brain className="h-12 w-12 text-muted-foreground mb-4" />
+                  <h3 className="text-lg font-medium mb-2">No Templates Yet</h3>
+                  <p className="text-muted-foreground text-center mb-4">
+                    Create your first template to get started with AI prompt management.
+                  </p>
+                  <Button onClick={() => setIsCreateDialogOpen(true)}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Create Template
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {templates.slice(0, 5).map((template, index) => (
+                    <div key={template.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center space-x-3">
+                          <div className="flex-shrink-0">
+                            <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                              <span className="text-sm font-bold text-primary">#{index + 1}</span>
+                            </div>
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <h4 className="text-sm font-medium truncate">{template.title}</h4>
+                            <div className="flex items-center space-x-2 mt-1">
+                              <Badge variant="outline" className="text-xs">{template.industry}</Badge>
+                              <Badge variant="outline" className="text-xs">{template.metadata.complexity}</Badge>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center space-x-6 ml-4">
+                        {/* Usage Count */}
+                        <div className="text-center">
+                          <div className="flex items-center space-x-1 text-xs text-muted-foreground mb-1">
+                            <Activity className="h-3 w-3" />
+                            <span>Usage</span>
+                          </div>
+                          <div className="text-sm font-bold">{template.usageCount.toLocaleString()}</div>
+                        </div>
+                        
+                        {/* Fork Count */}
+                        <div className="text-center">
+                          <div className="flex items-center space-x-1 text-xs text-muted-foreground mb-1">
+                            <Database className="h-3 w-3" />
+                            <span>Forks</span>
+                          </div>
+                          <div className="text-sm font-bold">{template.forkCount}</div>
+                        </div>
+                        
+                        {/* Rating */}
+                        <div className="text-center">
+                          <div className="flex items-center space-x-1 text-xs text-muted-foreground mb-1">
+                            <Badge className="h-3 w-3 rounded-full p-0" />
+                            <span>Rating</span>
+                          </div>
+                          <div className="text-sm font-bold">{template.rating}/5</div>
+                        </div>
+                        
+                        {/* Trending Indicator */}
+                        <div className="text-center">
+                          <div className="flex items-center space-x-1 text-xs text-muted-foreground mb-1">
+                            <TrendingUp className="h-3 w-3" />
+                            <span>Trend</span>
+                          </div>
+                          <div className="flex items-center space-x-1">
+                            <div className="w-8 h-2 bg-muted rounded-full overflow-hidden">
+                              <div 
+                                className="h-full bg-gradient-to-r from-green-500 to-blue-500 rounded-full transition-all duration-1000"
+                                style={{ 
+                                  width: `${Math.min(100, (template.usageCount / Math.max(...templates.map(t => t.usageCount))) * 100)}%` 
+                                }}
+                              />
+                            </div>
+                            <span className="text-xs font-medium text-green-600">
+                              {template.usageCount > templates.reduce((sum, t) => sum + t.usageCount, 0) / templates.length ? '↑' : '→'}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  
+                  {templates.length > 5 && (
+                    <div className="text-center pt-2">
+                      <Button variant="outline" size="sm" onClick={() => {
+                        // Switch to management tab
+                        const managementTab = document.querySelector('[value="management"]') as HTMLElement
+                        managementTab?.click()
+                      }}>
+                        View All {templates.length} Templates
+                      </Button>
+                    </div>
                   )}
                 </div>
+              )}
+            </CardContent>
+          </Card>
 
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div>
-                    <h4 className="font-medium mb-2">Tags</h4>
-                    <div className="flex flex-wrap gap-1">
-                      {selectedTemplate.tags.map((tag) => (
-                        <Badge key={tag} variant="outline" className="text-xs">
-                          {tag}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div>
-                    <h4 className="font-medium mb-2">Statistics</h4>
-                    <div className="space-y-1 text-sm">
-                      <div>Usage Count: {selectedTemplate.usageCount}</div>
-                      <div>Fork Count: {selectedTemplate.forkCount}</div>
-                      <div>Rating: {selectedTemplate.rating}/5</div>
-                      <div>Created: {new Date(selectedTemplate.createdAt).toLocaleDateString()}</div>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ) : (
-            <Card>
-              <CardContent className="flex flex-col items-center justify-center py-12">
-                <Brain className="h-12 w-12 text-muted-foreground mb-4" />
-                <h3 className="text-lg font-medium mb-2">No Templates Yet</h3>
-                <p className="text-muted-foreground text-center mb-4">
-                  Create your first template to get started with AI prompt management.
-                </p>
-                <Button onClick={() => {
-                  // Switch to management tab
-                  const managementTab = document.querySelector('[value="management"]') as HTMLElement
-                  managementTab?.click()
-                }}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Create Template
-                </Button>
-              </CardContent>
-            </Card>
-          )}
-        </TabsContent>
-
-        <TabsContent value="management">
-          <TemplateManager
-            templates={templates}
+          {/* Create Template Dialog - Available in Overview Tab */}
+          <CreateTemplateDialog
+            open={isCreateDialogOpen}
+            onOpenChange={setIsCreateDialogOpen}
             onTemplateCreate={handleTemplateCreate}
-            onTemplateUpdate={handleTemplateUpdate}
-            onTemplateDelete={handleTemplateDelete}
-            onTemplateClone={handleTemplateClone}
-            onTemplateImport={handleTemplateImport}
+          />
+
+          {/* Template Details Panel - Available in Overview Tab */}
+          <TemplateDetailsPanel
+            template={selectedTemplate}
+            isOpen={isPreviewOpen}
+            onOpenChange={setIsPreviewOpen}
+            onUseTemplate={(template) => {
+              toast({
+                title: "Use Template",
+                description: `Template "${template.title}" will be used in sandbox.`
+              })
+            }}
+            onCloneTemplate={(template) => handleTemplateClone(template.id)}
+            onForkTemplate={(template) => handleTemplateClone(template.id)}
           />
         </TabsContent>
 
-        <TabsContent value="visualization">
-          {selectedTemplate ? (
-            <TemplateVisualization template={selectedTemplate} />
-          ) : (
-            <Card>
-              <CardContent className="flex flex-col items-center justify-center py-12">
-                <Workflow className="h-12 w-12 text-muted-foreground mb-4" />
-                <h3 className="text-lg font-medium mb-2">No Template Selected</h3>
-                <p className="text-muted-foreground text-center">
-                  Select a template from the management tab to view its visualization.
+        <TabsContent value="management" className="space-y-6">
+          {/* Action Bar */}
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-bold">Template Management</h2>
+            <div className="flex space-x-2">
+              <Button variant="outline" onClick={() => {}}>
+                <Download className="h-4 w-4 mr-2" />
+                Export All
+              </Button>
+              <Button onClick={() => setIsCreateDialogOpen(true)}>
+                <Plus className="h-4 w-4 mr-2" />
+                Create Template
+              </Button>
+            </div>
+          </div>
+
+          {/* Templates Grid */}
+          <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-3">
+            {templates.length === 0 ? (
+              <div className="col-span-full text-center py-12">
+                <p className="text-muted-foreground text-lg">No templates found</p>
+                <p className="text-sm text-muted-foreground mt-2">
+                  Create your first template to get started
                 </p>
-              </CardContent>
-            </Card>
-          )}
+                <Button onClick={() => setIsCreateDialogOpen(true)} className="mt-4">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Create Template
+                </Button>
+              </div>
+            ) : (
+              templates.map((template) => (
+                <TemplateCard
+                  key={template.id}
+                  template={template}
+                  onPreview={(template) => {
+                    setSelectedTemplate(template)
+                    setIsPreviewOpen(true)
+                  }}
+                  onClone={(template) => handleTemplateClone(template.id)}
+                  onFork={(template) => handleTemplateClone(template.id)}
+                  onExport={(template) => {
+                    const blob = new Blob([JSON.stringify(template, null, 2)], {
+                      type: 'application/json'
+                    })
+                    const url = URL.createObjectURL(blob)
+                    const a = document.createElement('a')
+                    a.href = url
+                    a.download = `${template.title.replace(/\s+/g, '_').toLowerCase()}.json`
+                    document.body.appendChild(a)
+                    a.click()
+                    document.body.removeChild(a)
+                    URL.revokeObjectURL(url)
+                    
+                    toast({
+                      title: "Export Complete",
+                      description: `Template "${template.title}" exported successfully.`
+                    })
+                  }}
+                />
+              ))
+            )}
+          </div>
+
+
+        </TabsContent>
+
+        <TabsContent value="analytic">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <BarChart3 className="h-5 w-5 text-primary" />
+                <span>Template Analytics Dashboard</span>
+              </CardTitle>
+              <CardDescription>Detailed insights and performance metrics for your templates</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {templates.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-12">
+                  <BarChart3 className="h-12 w-12 text-muted-foreground mb-4" />
+                  <h3 className="text-lg font-medium mb-2">No Analytics Data</h3>
+                  <p className="text-muted-foreground text-center">
+                    Create templates to see detailed analytics and performance insights.
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  {/* Template Performance Metrics */}
+                  <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                    <Card>
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-sm font-medium">Top Performing Template</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        {(() => {
+                          const topTemplate = templates.sort((a, b) => b.usageCount - a.usageCount)[0]
+                          return (
+                            <div>
+                              <div className="text-lg font-bold truncate">{topTemplate.title}</div>
+                              <div className="text-sm text-muted-foreground">{topTemplate.usageCount} uses</div>
+                            </div>
+                          )
+                        })()}
+                      </CardContent>
+                    </Card>
+                    
+                    <Card>
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-sm font-medium">Most Forked</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        {(() => {
+                          const mostForked = templates.sort((a, b) => b.forkCount - a.forkCount)[0]
+                          return (
+                            <div>
+                              <div className="text-lg font-bold truncate">{mostForked.title}</div>
+                              <div className="text-sm text-muted-foreground">{mostForked.forkCount} forks</div>
+                            </div>
+                          )
+                        })()}
+                      </CardContent>
+                    </Card>
+                    
+                    <Card>
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-sm font-medium">Highest Rated</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        {(() => {
+                          const highestRated = templates.sort((a, b) => b.rating - a.rating)[0]
+                          return (
+                            <div>
+                              <div className="text-lg font-bold truncate">{highestRated.title}</div>
+                              <div className="text-sm text-muted-foreground">{highestRated.rating}/5 stars</div>
+                            </div>
+                          )
+                        })()}
+                      </CardContent>
+                    </Card>
+                  </div>
+                  
+                  {/* Category Distribution */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg">Template Distribution by Industry</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-3">
+                        {(() => {
+                          const industryCount = templates.reduce((acc, template) => {
+                            acc[template.industry] = (acc[template.industry] || 0) + 1
+                            return acc
+                          }, {} as Record<string, number>)
+                          
+                          const total = templates.length
+                          return Object.entries(industryCount).map(([industry, count]) => (
+                            <div key={industry} className="flex items-center justify-between">
+                              <span className="text-sm font-medium">{industry}</span>
+                              <div className="flex items-center space-x-2">
+                                <div className="w-24 h-2 bg-muted rounded-full overflow-hidden">
+                                  <div 
+                                    className="h-full bg-primary rounded-full"
+                                    style={{ width: `${(count / total) * 100}%` }}
+                                  />
+                                </div>
+                                <span className="text-sm text-muted-foreground w-8">{count}</span>
+                              </div>
+                            </div>
+                          ))
+                        })()}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
     </div>

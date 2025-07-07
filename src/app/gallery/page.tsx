@@ -12,7 +12,7 @@ import { Badge } from '@/components/ui/badge'
 
 import { toast } from '@/components/ui/use-toast'
 import { PromptTemplate, IndustryVertical } from '@/types'
-import { Search, Filter, Eye, Copy, GitBranch, Star, Download } from 'lucide-react'
+import { Search, Filter, Eye, Copy, GitBranch, Star, Download, Activity } from 'lucide-react'
 
 // Mock public templates data
 const mockPublicTemplates: PromptTemplate[] = [
@@ -513,7 +513,7 @@ export default function TemplateGalleryPage() {
                   {templates.reduce((sum, t) => sum + t.usageCount, 0).toLocaleString()}
                 </div>
                 <div className="w-8 h-8 bg-accent rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                  <Star className="h-4 w-4 text-accent-foreground group-hover:animate-spin" style={{ animationDuration: '3s' }} />
+                  <Activity className="h-4 w-4 text-accent-foreground group-hover:animate-pulse" />
                 </div>
               </div>
               <div className="text-sm font-medium text-foreground">Total Executions</div>
