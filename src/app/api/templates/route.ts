@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { PromptTemplate, APIResponse } from '@/types'
 
+export const runtime = 'edge'
+
 // Mock data for demonstration
 const mockTemplates: PromptTemplate[] = [
   {

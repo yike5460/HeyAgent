@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { PromptTemplate, APIResponse } from '@/types'
 
+export const runtime = 'edge'
+
 // This would normally come from your database
 // For now, we'll import the mock data from the main route
 const mockTemplates: PromptTemplate[] = [
