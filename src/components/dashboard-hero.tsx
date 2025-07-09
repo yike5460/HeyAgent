@@ -6,9 +6,6 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { 
   Brain, 
-  Database, 
-  Settings, 
-  Workflow, 
   Users, 
   User,
   ArrowRight,
@@ -102,14 +99,14 @@ export function DashboardHero({
               </div>
 
               <div className="flex flex-wrap gap-3">
-                <Link href="/templates/gallery">
+                <Link href="#templates">
                   <Button size="lg" className="group bg-primary hover:bg-primary/90 text-primary-foreground">
                     <Play className="h-4 w-4 mr-2" />
                     Browse Templates
                     <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
                   </Button>
                 </Link>
-                <Link href="/templates/mine">
+                <Link href="/mine">
                   <Button variant="outline" size="lg" className="group border-primary/20 hover:bg-primary/5 hover:border-primary/40">
                     <User className="h-4 w-4 mr-2" />
                     My Templates
@@ -247,38 +244,7 @@ export function DashboardHero({
         </CardContent>
       </Card>
 
-      {/* Quick Actions */}
-      <Card className="bg-card border-dashed border-2 border-primary/20">
-        <CardContent className="p-6">
-          <div className="flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0">
-            <div className="space-y-2">
-              <h3 className="text-lg font-semibold flex items-center space-x-2 text-foreground">
-                <Workflow className="h-5 w-5 text-primary" />
-                <span>Ready to build your first AI workflow?</span>
-              </h3>
-              <p className="text-muted-foreground">
-                Start with a template or create from scratch with our visual editor
-              </p>
-            </div>
-            <div className="flex space-x-3">
-              <Link href="/templates/gallery">
-                <Button variant="outline" className="group border-primary/20 hover:bg-primary/5 hover:border-primary/40">
-                  <Database className="h-4 w-4 mr-2" />
-                  Browse Templates
-                  <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
-                </Button>
-              </Link>
-              <Link href="/templates/mine">
-                <Button className="group bg-primary hover:bg-primary/90 text-primary-foreground">
-                  <Settings className="h-4 w-4 mr-2" />
-                  Create New
-                  <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+
     </div>
   )
 }

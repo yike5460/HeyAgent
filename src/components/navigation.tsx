@@ -26,9 +26,15 @@ import {
   Diamond,
   Orbit,
   Triangle,
-  Menu
+  Menu,
+  Share2,
+  Twitter,
+  Linkedin,
+  Facebook,
+  Copy
 } from "lucide-react"
 import { useTheme } from "next-themes"
+import { toast } from "@/components/ui/use-toast"
 
 export function Navigation() {
   const { data: session } = useSession()
@@ -58,16 +64,10 @@ export function Navigation() {
         {/* Navigation Links */}
         <nav className="flex items-center space-x-6 text-sm font-medium ml-8">
           <Link
-            href="/gallery"
-            className="transition-colors hover:text-foreground/80 text-foreground/60"
-          >
-            Gallery
-          </Link>
-          <Link
             href="/mine"
             className="transition-colors hover:text-foreground/80 text-foreground/60"
           >
-            Mine
+            My Templates
           </Link>
           <Link
             href="/sandbox"
@@ -98,6 +98,51 @@ export function Navigation() {
             <Search className="h-4 w-4 mr-2" />
             Search...
           </Button>
+
+          {/* Social Media Share */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="sm" className="hidden sm:flex">
+                <Share2 className="h-4 w-4" />
+                <span className="sr-only">Share</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>Share HeyAgent</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem 
+                onClick={() => window.open(`https://twitter.com/intent/tweet?text=Check%20out%20HeyAgent%20-%20Marketplace%20for%20Agentic%20Templates!&url=${encodeURIComponent(window.location.origin)}`, '_blank')}
+              >
+                <Twitter className="mr-2 h-4 w-4" />
+                Share on Twitter
+              </DropdownMenuItem>
+              <DropdownMenuItem 
+                onClick={() => window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(window.location.origin)}`, '_blank')}
+              >
+                <Linkedin className="mr-2 h-4 w-4" />
+                Share on LinkedIn
+              </DropdownMenuItem>
+              <DropdownMenuItem 
+                onClick={() => window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.origin)}`, '_blank')}
+              >
+                <Facebook className="mr-2 h-4 w-4" />
+                Share on Facebook
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem 
+                onClick={() => {
+                  navigator.clipboard.writeText(window.location.origin)
+                  toast({
+                    title: "Link Copied!",
+                    description: "HeyAgent link has been copied to your clipboard."
+                  })
+                }}
+              >
+                <Copy className="mr-2 h-4 w-4" />
+                Copy Link
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
 
           {/* Theme Toggle */}
           <Button

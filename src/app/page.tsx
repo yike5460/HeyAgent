@@ -4,90 +4,276 @@ import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { Input } from '@/components/ui/input'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { TemplateCard } from '@/components/template-card'
 import { TemplateDetailsPanel } from '@/components/template-details-panel'
 import { DashboardHero } from '@/components/dashboard-hero'
-import { PromptTemplate } from '@/types'
+import { PromptTemplate, IndustryVertical } from '@/types'
 import { localStorageService } from '@/services/local-storage'
 import { useSession } from "next-auth/react"
+import { toast } from '@/components/ui/use-toast'
 import {
-  Brain,
-  Database,
-  Settings,
-  Workflow,
-  Plus,
   Search,
-  Users,
-  User,
-  ArrowRight,
   Star,
   GitBranch,
-  Download,
-  Upload
+  Activity,
+  Eye,
+  Copy,
+  Download
 } from 'lucide-react'
 import Link from 'next/link'
 
-// Mock public templates for stats - Industry-focused
-const mockPublicTemplates = [
+// Mock public templates with full PromptTemplate structure
+const mockPublicTemplates: PromptTemplate[] = [
   {
     id: '1',
     title: 'Short Drama Production Assistant',
-    description: 'Automated script generation, character development, and scene planning for short-form video content with Kling video generation integration',
+    description: 'Automated script generation, character development, and scene planning for short-form video content',
+    industry: 'Media & Entertainment',
+    useCase: 'Short Drama Production',
+    promptConfig: {
+      systemPrompt: 'You are an expert script writer and video production assistant specializing in short-form drama content.',
+      userPromptTemplate: 'Create a {genre} short drama script with {duration} minutes duration. Focus on {theme} and target {audience} audience.',
+      parameters: [
+        {
+          name: 'genre',
+          type: 'string',
+          description: 'The genre of the drama (romance, thriller, comedy, etc.)',
+          required: true
+        },
+        {
+          name: 'duration',
+          type: 'number',
+          description: 'Duration in minutes',
+          required: true,
+          defaultValue: 5
+        }
+      ],
+      constraints: {
+        maxTokens: 2000,
+        temperature: 0.7
+      }
+    },
+    mcpServers: [],
+    saasIntegrations: [],
+    agentConfig: {
+      workflow: [],
+      errorHandling: {
+        retryPolicy: { maxRetries: 3, backoffStrategy: 'exponential', baseDelay: 1000, maxDelay: 10000 },
+        fallbackActions: [],
+        errorNotifications: []
+      },
+      monitoring: {
+        metricsCollection: true,
+        performanceTracking: true,
+        costTracking: true,
+        alerting: []
+      },
+      scaling: {
+        autoScaling: true,
+        minInstances: 1,
+        maxInstances: 10,
+        scaleUpThreshold: 80,
+        scaleDownThreshold: 20
+      }
+    },
+    metadata: {
+      category: 'Content Creation',
+      complexity: 'intermediate',
+      estimatedRuntime: 120,
+      resourceRequirements: {
+        cpu: '0.5',
+        memory: '1Gi',
+        storage: '10Gi',
+        network: true
+      },
+      dependencies: ['openai'],
+      changelog: []
+    },
+    version: 1,
+    status: 'published',
+    createdAt: '2024-01-15T10:00:00Z',
+    updatedAt: '2024-01-15T10:00:00Z',
+    userId: 'user1',
     author: 'MediaPro Studios',
     rating: 4.8,
     usageCount: 2150,
+    tags: ['video', 'script', 'automation', 'content-creation', 'drama'],
     forkCount: 34,
-    tags: ['media-entertainment', 'video-generation', 'script', 'kling-api', 'production']
+    isForked: false,
+    collaborators: [],
+    isPublic: true,
+    license: 'MIT'
   },
   {
     id: '2',
-    title: 'ASMR Content Creation Workflow',
-    description: 'End-to-end ASMR content generation with audio processing, script optimization, and audience targeting using MCP servers',
-    author: 'SoundScape AI',
-    rating: 4.6,
-    usageCount: 890,
-    forkCount: 18,
-    tags: ['media-entertainment', 'asmr', 'audio', 'mcp-servers', 'content-creation']
-  },
-  {
-    id: '3',
     title: 'Healthcare Patient Analysis Agent',
     description: 'Comprehensive patient workflow automation with symptom analysis, treatment recommendations, and compliance monitoring',
+    industry: 'Healthcare & Life Science',
+    useCase: 'Patient Analysis',
+    promptConfig: {
+      systemPrompt: 'You are a medical AI assistant with expertise in patient data analysis and healthcare workflows.',
+      userPromptTemplate: 'Analyze patient symptoms: {symptoms}. Consider medical history: {history}. Provide treatment recommendations for {condition}.',
+      parameters: [
+        {
+          name: 'symptoms',
+          type: 'string',
+          description: 'Patient reported symptoms',
+          required: true
+        },
+        {
+          name: 'history',
+          type: 'string',
+          description: 'Patient medical history',
+          required: false
+        }
+      ],
+      constraints: {
+        maxTokens: 1500,
+        temperature: 0.3
+      }
+    },
+    mcpServers: [],
+    saasIntegrations: [],
+    agentConfig: {
+      workflow: [],
+      errorHandling: {
+        retryPolicy: { maxRetries: 3, backoffStrategy: 'exponential', baseDelay: 1000, maxDelay: 10000 },
+        fallbackActions: [],
+        errorNotifications: []
+      },
+      monitoring: {
+        metricsCollection: true,
+        performanceTracking: true,
+        costTracking: true,
+        alerting: []
+      },
+      scaling: {
+        autoScaling: false,
+        minInstances: 1,
+        maxInstances: 5,
+        scaleUpThreshold: 80,
+        scaleDownThreshold: 20
+      }
+    },
+    metadata: {
+      category: 'Healthcare',
+      complexity: 'advanced',
+      estimatedRuntime: 180,
+      resourceRequirements: {
+        cpu: '1',
+        memory: '2Gi',
+        storage: '15Gi',
+        network: true
+      },
+      dependencies: ['anthropic'],
+      changelog: []
+    },
+    version: 1,
+    status: 'published',
+    createdAt: '2024-01-10T10:00:00Z',
+    updatedAt: '2024-01-10T10:00:00Z',
+    userId: 'user2',
     author: 'MedTech Solutions',
     rating: 4.9,
     usageCount: 3200,
+    tags: ['healthcare', 'patient-analysis', 'compliance', 'medical-workflows'],
     forkCount: 47,
-    tags: ['healthcare', 'patient-analysis', 'compliance', 'medical-workflows', 'firecrawl']
+    isForked: false,
+    collaborators: [],
+    isPublic: true,
+    license: 'Apache-2.0'
   },
   {
-    id: '4',
-    title: 'Automated Customer Service Agent',
-    description: 'Intelligent customer support with sentiment analysis, issue routing, and satisfaction tracking for retail environments',
+    id: '3',
+    title: 'E-commerce Product Description Generator',
+    description: 'Generate compelling product descriptions for online stores with SEO optimization and competitive analysis',
+    industry: 'Retail',
+    useCase: 'Product Marketing',
+    promptConfig: {
+      systemPrompt: 'You are an expert copywriter specializing in e-commerce product descriptions.',
+      userPromptTemplate: 'Create a product description for {product_name} in the {category} category. Highlight {key_features} for {target_audience}.',
+      parameters: [
+        {
+          name: 'product_name',
+          type: 'string',
+          description: 'Name of the product',
+          required: true
+        },
+        {
+          name: 'category',
+          type: 'string',
+          description: 'Product category',
+          required: true
+        }
+      ],
+      constraints: {
+        maxTokens: 1000,
+        temperature: 0.8
+      }
+    },
+    mcpServers: [],
+    saasIntegrations: [],
+    agentConfig: {
+      workflow: [],
+      errorHandling: {
+        retryPolicy: { maxRetries: 3, backoffStrategy: 'exponential', baseDelay: 1000, maxDelay: 10000 },
+        fallbackActions: [],
+        errorNotifications: []
+      },
+      monitoring: {
+        metricsCollection: true,
+        performanceTracking: true,
+        costTracking: true,
+        alerting: []
+      },
+      scaling: {
+        autoScaling: true,
+        minInstances: 1,
+        maxInstances: 8,
+        scaleUpThreshold: 70,
+        scaleDownThreshold: 30
+      }
+    },
+    metadata: {
+      category: 'Marketing',
+      complexity: 'beginner',
+      estimatedRuntime: 60,
+      resourceRequirements: {
+        cpu: '0.25',
+        memory: '512Mi',
+        storage: '5Gi',
+        network: true
+      },
+      dependencies: ['openai'],
+      changelog: []
+    },
+    version: 1,
+    status: 'published',
+    createdAt: '2024-01-12T10:00:00Z',
+    updatedAt: '2024-01-12T10:00:00Z',
+    userId: 'user3',
     author: 'RetailBot Inc',
     rating: 4.7,
     usageCount: 1850,
+    tags: ['retail', 'ecommerce', 'copywriting', 'seo', 'marketing'],
     forkCount: 29,
-    tags: ['retail', 'customer-service', 'sentiment-analysis', 'automation', 'support']
-  },
-  {
-    id: '5',
-    title: 'Financial Risk Assessment Pipeline',
-    description: 'Real-time risk evaluation with market data analysis, compliance checking, and automated reporting for FSI',
-    author: 'FinanceAI Corp',
-    rating: 4.8,
-    usageCount: 1650,
-    forkCount: 22,
-    tags: ['financial-services', 'risk-assessment', 'compliance', 'market-data', 'automation']
-  },
-  {
-    id: '6',
-    title: 'Manufacturing Quality Control Agent',
-    description: 'Automated quality inspection with vision processing, defect detection, and supply chain optimization',
-    author: 'IndustryBot Systems',
-    rating: 4.5,
-    usageCount: 980,
-    forkCount: 15,
-    tags: ['manufacturing', 'quality-control', 'vision-processing', 'defect-detection', 'optimization']
+    isForked: false,
+    collaborators: [],
+    isPublic: true,
+    license: 'MIT'
   }
+]
+
+const industryOptions: IndustryVertical[] = [
+  'Media & Entertainment',
+  'Healthcare & Life Science',
+  'Retail',
+  'Manufacturing',
+  'Automotive',
+  'Financial Services',
+  'Gaming'
 ]
 
 export default function HomePage() {
@@ -97,10 +283,52 @@ export default function HomePage() {
   const [loading, setLoading] = useState(true)
   const [selectedTemplate, setSelectedTemplate] = useState<PromptTemplate | null>(null)
   const [isTemplateDetailsOpen, setIsTemplateDetailsOpen] = useState(false)
+  
+  // Gallery functionality states
+  const [templates, setTemplates] = useState<PromptTemplate[]>(mockPublicTemplates)
+  const [filteredTemplates, setFilteredTemplates] = useState<PromptTemplate[]>(mockPublicTemplates)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [industryFilter, setIndustryFilter] = useState<IndustryVertical | 'all'>('all')
+  const [complexityFilter, setComplexityFilter] = useState<'all' | 'beginner' | 'intermediate' | 'advanced'>('all')
+  const [sortBy, setSortBy] = useState<'rating' | 'usageCount' | 'createdAt' | 'forkCount'>('rating')
 
   useEffect(() => {
     loadMyTemplatesStats()
   }, [])
+
+  // Filter and sort templates when filters change
+  useEffect(() => {
+    let filtered = templates.filter(template => {
+      const matchesSearch = searchQuery === '' || 
+        template.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        template.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        template.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        template.author.toLowerCase().includes(searchQuery.toLowerCase())
+      
+      const matchesIndustry = industryFilter === 'all' || template.industry === industryFilter
+      const matchesComplexity = complexityFilter === 'all' || template.metadata.complexity === complexityFilter
+      
+      return matchesSearch && matchesIndustry && matchesComplexity
+    })
+
+    // Sort templates
+    filtered.sort((a, b) => {
+      switch (sortBy) {
+        case 'rating':
+          return b.rating - a.rating
+        case 'usageCount':
+          return b.usageCount - a.usageCount
+        case 'forkCount':
+          return b.forkCount - a.forkCount
+        case 'createdAt':
+          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        default:
+          return 0
+      }
+    })
+
+    setFilteredTemplates(filtered)
+  }, [templates, searchQuery, industryFilter, complexityFilter, sortBy])
 
   const loadMyTemplatesStats = async () => {
     try {
@@ -117,80 +345,42 @@ export default function HomePage() {
     }
   }
 
-  const handleUseTemplate = (template: any) => {
-    // Convert the mock template to PromptTemplate format
-    const fullTemplate: PromptTemplate = {
-      ...template,
-      industry: template.industry || 'Media & Entertainment',
-      useCase: template.useCase || 'General',
-      promptConfig: {
-        systemPrompt: 'You are a helpful AI assistant.',
-        userPromptTemplate: 'Please help me with: {request}',
-        parameters: [
-          {
-            name: 'request',
-            type: 'string',
-            description: 'The user request',
-            required: true
-          }
-        ],
-        constraints: {
-          maxTokens: 2000,
-          temperature: 0.7
-        }
-      },
-      mcpServers: [],
-      saasIntegrations: [],
-      agentConfig: {
-        workflow: [],
-        errorHandling: {
-          retryPolicy: { maxRetries: 3, backoffStrategy: 'exponential', baseDelay: 1000, maxDelay: 10000 },
-          fallbackActions: [],
-          errorNotifications: []
-        },
-        monitoring: {
-          metricsCollection: true,
-          performanceTracking: true,
-          costTracking: true,
-          alerting: []
-        },
-        scaling: {
-          autoScaling: false,
-          minInstances: 1,
-          maxInstances: 5,
-          scaleUpThreshold: 80,
-          scaleDownThreshold: 20
-        }
-      },
-      metadata: {
-        category: 'General',
-        complexity: 'beginner',
-        estimatedRuntime: 60,
-        resourceRequirements: {
-          cpu: '0.25',
-          memory: '512Mi',
-          storage: '5Gi',
-          network: true
-        },
-        dependencies: [],
-        changelog: []
-      },
-      version: 1,
-      status: 'published',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      userId: 'mock-user',
-      parentTemplateId: undefined,
-      isForked: false,
-      inheritanceConfig: undefined,
-      exportMetadata: undefined,
-      collaborators: [],
-      isPublic: true,
-      license: 'MIT'
-    }
-    
-    setSelectedTemplate(fullTemplate)
+  const handlePreview = (template: PromptTemplate) => {
+    setSelectedTemplate(template)
     setIsTemplateDetailsOpen(true)
+  }
+
+  const handleClone = (template: PromptTemplate) => {
+    toast({
+      title: "Clone Template",
+      description: `Template "${template.title}" will be cloned to your workspace.`
+    })
+  }
+
+  const handleFork = (template: PromptTemplate) => {
+    toast({
+      title: "Fork Template",
+      description: `Template "${template.title}" will be forked to your workspace.`
+    })
+  }
+
+  const handleExport = (template: PromptTemplate) => {
+    const blob = new Blob([JSON.stringify(template, null, 2)], {
+      type: 'application/json'
+    })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `${template.title.replace(/\s+/g, '_').toLowerCase()}.json`
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+    
+    toast({
+      title: "Export Complete",
+      description: `Template "${template.title}" exported successfully.`
+    })
   }
 
   const publicStats = {
@@ -210,156 +400,164 @@ export default function HomePage() {
         loading={loading}
       />
 
-      {/* Features Overview */}
-      <div className="space-y-6">
-        <div className="text-center space-y-2">
-          <h2 className="text-3xl font-bold">Platform Capabilities</h2>
-          <p className="text-muted-foreground max-w-2xl mx-auto">
-            Enterprise-grade agent template platform designed for deterministic application prototyping across industry verticals
-          </p>
+      {/* Enhanced Stats Grid with Animations - Ultra Compact */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        {/* Community Templates */}
+        <Card className="relative overflow-hidden group hover:shadow-xl transition-all duration-300 border-2 hover:border-primary/50 bg-card">
+          <CardContent className="p-4">
+            <div className="space-y-1">
+              <div className="flex items-center justify-between">
+                <div className="text-2xl font-bold text-primary tabular-nums">{templates.length}</div>
+                <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                  <Search className="h-4 w-4 text-primary group-hover:animate-pulse" />
+                </div>
+              </div>
+              <div className="text-sm font-medium text-foreground">Community Templates</div>
+              <div className="text-xs text-muted-foreground">Public templates available</div>
+            </div>
+            <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-primary/50 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300" />
+          </CardContent>
+        </Card>
+        
+        {/* Total Usage */}
+        <Card className="relative overflow-hidden group hover:shadow-xl transition-all duration-300 border-2 hover:border-primary/50 bg-card">
+          <CardContent className="p-4">
+            <div className="space-y-1">
+              <div className="flex items-center justify-between">
+                <div className="text-2xl font-bold text-primary tabular-nums">
+                  {templates.reduce((sum, t) => sum + t.usageCount, 0).toLocaleString()}
+                </div>
+                <div className="w-8 h-8 bg-accent rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                  <Activity className="h-4 w-4 text-accent-foreground group-hover:animate-pulse" />
+                </div>
+              </div>
+              <div className="text-sm font-medium text-foreground">Total Executions</div>
+              <div className="text-xs text-muted-foreground">AI workflows run</div>
+            </div>
+            <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-primary/50 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300" />
+          </CardContent>
+        </Card>
+        
+        {/* Average Rating */}
+        <Card className="relative overflow-hidden group hover:shadow-xl transition-all duration-300 border-2 hover:border-primary/50 bg-card">
+          <CardContent className="p-4">
+            <div className="space-y-1">
+              <div className="flex items-center justify-between">
+                <div className="text-2xl font-bold text-primary tabular-nums">
+                  {(templates.reduce((sum, t) => sum + t.rating, 0) / templates.length).toFixed(1)}
+                </div>
+                <div className="w-8 h-8 bg-muted rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                  <Star className="h-4 w-4 text-primary group-hover:fill-primary transition-colors duration-300" />
+                </div>
+              </div>
+              <div className="text-sm font-medium text-foreground">Avg Rating</div>
+              <div className="text-xs text-muted-foreground">Community rating</div>
+            </div>
+            <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-primary/50 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300" />
+          </CardContent>
+        </Card>
+        
+        {/* Total Forks */}
+        <Card className="relative overflow-hidden group hover:shadow-xl transition-all duration-300 border-2 hover:border-primary/50 bg-card">
+          <CardContent className="p-4">
+            <div className="space-y-1">
+              <div className="flex items-center justify-between">
+                <div className="text-2xl font-bold text-primary tabular-nums">
+                  {templates.reduce((sum, t) => sum + t.forkCount, 0)}
+                </div>
+                <div className="w-8 h-8 bg-secondary/20 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                  <GitBranch className="h-4 w-4 text-secondary-foreground group-hover:animate-bounce" />
+                </div>
+              </div>
+              <div className="text-sm font-medium text-foreground">Total Forks</div>
+              <div className="text-xs text-muted-foreground">Templates forked by users</div>
+            </div>
+            <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-primary/50 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300" />
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Search and Filters */}
+      <div className="flex flex-wrap gap-4 items-center p-4 bg-muted/50 rounded-lg">
+        <div className="flex-1 min-w-[300px]">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+            <Input
+              placeholder="Search templates by title, description, tags, or author..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10"
+            />
+          </div>
         </div>
         
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-          <Card className="group hover:shadow-lg transition-shadow duration-300">
-            <CardHeader className="text-center pb-4">
-              <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:bg-primary/20 transition-colors duration-300">
-                <Brain className="h-6 w-6 text-primary" />
-              </div>
-              <CardTitle className="text-lg">Production-Tested Prompts</CardTitle>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <p className="text-sm text-muted-foreground text-center">
-                Sophisticated prompt templates with validated parameters, constraints, and deterministic workflow orchestration.
-              </p>
-            </CardContent>
-          </Card>
+        <div className="flex gap-2">
+          <Select value={industryFilter} onValueChange={(value: any) => setIndustryFilter(value)}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Industry" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Industries</SelectItem>
+              {industryOptions.map((industry) => (
+                <SelectItem key={industry} value={industry}>
+                  {industry}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
 
-          <Card className="group hover:shadow-lg transition-shadow duration-300">
-            <CardHeader className="text-center pb-4">
-              <div className="w-12 h-12 bg-secondary/10 rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:bg-secondary/20 transition-colors duration-300">
-                <Database className="h-6 w-6 text-secondary-foreground" />
-              </div>
-              <CardTitle className="text-lg">Mature MCP Servers</CardTitle>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <p className="text-sm text-muted-foreground text-center">
-                Integrated agent tools like Firecrawl for web crawling, content extraction, and industry-specific data processing.
-              </p>
-            </CardContent>
-          </Card>
+          <Select value={complexityFilter} onValueChange={(value: any) => setComplexityFilter(value)}>
+            <SelectTrigger className="w-[140px]">
+              <SelectValue placeholder="Complexity" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Levels</SelectItem>
+              <SelectItem value="beginner">Beginner</SelectItem>
+              <SelectItem value="intermediate">Intermediate</SelectItem>
+              <SelectItem value="advanced">Advanced</SelectItem>
+            </SelectContent>
+          </Select>
 
-          <Card className="group hover:shadow-lg transition-shadow duration-300">
-            <CardHeader className="text-center pb-4">
-              <div className="w-12 h-12 bg-accent/10 rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:bg-accent/20 transition-colors duration-300">
-                <Settings className="h-6 w-6 text-accent-foreground" />
-              </div>
-              <CardTitle className="text-lg">SaaS Integrations</CardTitle>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <p className="text-sm text-muted-foreground text-center">
-                Pre-configured APIs for Kling, Veo3 video generation, and specialized industry tools with fallback behaviors.
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card className="group hover:shadow-lg transition-shadow duration-300">
-            <CardHeader className="text-center pb-4">
-              <div className="w-12 h-12 bg-muted/20 rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:bg-muted/30 transition-colors duration-300">
-                <Workflow className="h-6 w-6 text-muted-foreground" />
-              </div>
-              <CardTitle className="text-lg">E2B Sandbox</CardTitle>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <p className="text-sm text-muted-foreground text-center">
-                Containerized testing environments with performance metrics, cost analysis, and real-time validation.
-              </p>
-            </CardContent>
-          </Card>
+          <Select value={sortBy} onValueChange={(value: any) => setSortBy(value)}>
+            <SelectTrigger className="w-[140px]">
+              <SelectValue placeholder="Sort by" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="rating">Rating</SelectItem>
+              <SelectItem value="usageCount">Usage</SelectItem>
+              <SelectItem value="forkCount">Forks</SelectItem>
+              <SelectItem value="createdAt">Newest</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
-      {/* Key Features */}
-      <div className="space-y-6">
-        <div className="text-center space-y-2">
-          <h2 className="text-3xl font-bold">Advanced Capabilities</h2>
-          <p className="text-muted-foreground max-w-2xl mx-auto">
-            Comprehensive toolset for professional agent development and deployment
-          </p>
-        </div>
-        
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          <Card className="p-6 space-y-4">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
-                <GitBranch className="h-5 w-5 text-primary" />
-              </div>
-              <h3 className="font-semibold">Template Inheritance</h3>
-            </div>
-            <p className="text-sm text-muted-foreground">
-              Clone and customize optimized workflow templates with deterministic replication of proven architectures.
-            </p>
-          </Card>
+      {/* Results Count */}
+      <div className="text-sm text-muted-foreground">
+        Showing {filteredTemplates.length} of {templates.length} templates
+      </div>
 
-          <Card className="p-6 space-y-4">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-secondary/10 rounded-lg flex items-center justify-center">
-                <Search className="h-5 w-5 text-secondary-foreground" />
-              </div>
-              <h3 className="font-semibold">Visual Architecture</h3>
-            </div>
-            <p className="text-sm text-muted-foreground">
-              Structural visualization showing LLM integration, tool dependencies, and API workflows in modern IDEs.
+      {/* Templates Grid - Responsive Layout */}
+      <div id="templates" className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-3">
+        {filteredTemplates.length === 0 ? (
+          <div className="col-span-full text-center py-12">
+            <p className="text-muted-foreground text-lg">No templates found</p>
+            <p className="text-sm text-muted-foreground mt-2">
+              Try adjusting your search or filters
             </p>
-          </Card>
-
-          <Card className="p-6 space-y-4">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-accent/10 rounded-lg flex items-center justify-center">
-                <Settings className="h-5 w-5 text-accent-foreground" />
-              </div>
-              <h3 className="font-semibold">Advanced Customization</h3>
-            </div>
-            <p className="text-sm text-muted-foreground">
-              Modify prompts, adjust MCP servers, configure API endpoints, and define custom fallback behaviors.
-            </p>
-          </Card>
-
-          <Card className="p-6 space-y-4">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-muted/20 rounded-lg flex items-center justify-center">
-                <Users className="h-5 w-5 text-muted-foreground" />
-              </div>
-              <h3 className="font-semibold">Collaborative Development</h3>
-            </div>
-            <p className="text-sm text-muted-foreground">
-              Version control, collaborative editing, template rating systems, and comprehensive usage analytics.
-            </p>
-          </Card>
-
-          <Card className="p-6 space-y-4">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
-                <Star className="h-5 w-5 text-primary" />
-              </div>
-              <h3 className="font-semibold">Quality Assurance</h3>
-            </div>
-            <p className="text-sm text-muted-foreground">
-              Performance metrics, cost analysis, error handling demonstrations, and output quality assessments.
-            </p>
-          </Card>
-
-          <Card className="p-6 space-y-4">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-secondary/10 rounded-lg flex items-center justify-center">
-                <Upload className="h-5 w-5 text-secondary-foreground" />
-              </div>
-              <h3 className="font-semibold">Deployment Ready</h3>
-            </div>
-            <p className="text-sm text-muted-foreground">
-              Seamless deployment workflows to production environments with dependency management and scaling.
-            </p>
-          </Card>
-        </div>
+          </div>
+        ) : (
+          filteredTemplates.map((template) => (
+            <TemplateCard
+              key={template.id}
+              template={template}
+              onPreview={handlePreview}
+              onClone={handleClone}
+              onFork={handleFork}
+              onExport={handleExport}
+            />
+          ))
+        )}
       </div>
 
       {/* Getting Started */}
@@ -376,9 +574,9 @@ export default function HomePage() {
               <div className="w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center mx-auto font-bold">
                 1
               </div>
-              <h4 className="font-medium">Explore Gallery</h4>
+              <h4 className="font-medium">Explore Templates</h4>
               <p className="text-sm text-muted-foreground">
-                Browse community templates to understand different use cases and patterns.
+                Browse and filter community templates to find the perfect starting point for your use case.
               </p>
             </div>
             <div className="text-center space-y-2">
@@ -387,16 +585,16 @@ export default function HomePage() {
               </div>
               <h4 className="font-medium">Clone & Customize</h4>
               <p className="text-sm text-muted-foreground">
-                Clone interesting templates to your workspace and customize them for your needs.
+                Clone interesting templates to your workspace and customize them for your specific needs.
               </p>
             </div>
             <div className="text-center space-y-2">
               <div className="w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center mx-auto font-bold">
                 3
               </div>
-              <h4 className="font-medium">Create Original</h4>
+              <h4 className="font-medium">Create & Share</h4>
               <p className="text-sm text-muted-foreground">
-                Build your own templates from scratch with advanced configuration options.
+                Build your own templates from scratch and share them with the community.
               </p>
             </div>
           </div>
@@ -408,6 +606,14 @@ export default function HomePage() {
         template={selectedTemplate}
         isOpen={isTemplateDetailsOpen}
         onOpenChange={setIsTemplateDetailsOpen}
+        onUseTemplate={(template) => {
+          toast({
+            title: "Use Template",
+            description: `Template "${template.title}" will be used in sandbox.`
+          })
+        }}
+        onCloneTemplate={handleClone}
+        onForkTemplate={handleFork}
       />
     </div>
   )
