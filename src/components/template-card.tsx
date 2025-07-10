@@ -68,7 +68,7 @@ export function TemplateCard({
         return 'bg-red-500/10 text-red-700 border-red-500/20 hover:bg-red-500/15 dark:text-red-400 dark:border-red-400/20'
       default:
         return 'bg-muted/50 text-muted-foreground border-muted hover:bg-muted/70'
-    }
+  }
   }
 
   const mcpServers = template.mcpServers || []
@@ -83,23 +83,23 @@ export function TemplateCard({
           <div className="flex items-start justify-between mb-2">
             <div className="space-y-1.5 flex-1 min-w-0">
               <CardTitle className="text-base line-clamp-2 group-hover:text-primary transition-colors cursor-pointer leading-tight">
-                <Link href={`/templates/${template.id}`}>
-                  {template.title}
-                </Link>
-              </CardTitle>
+              <Link href={`/templates/${template.id}`}>
+                {template.title}
+              </Link>
+            </CardTitle>
               <div className="flex items-center space-x-1.5 flex-wrap gap-1">
                 <Badge 
                   variant="outline" 
                   className={`${getIndustryColor(template.industry)} transition-colors text-xs font-medium px-2 py-0.5`}
                 >
-                  {template.industry}
-                </Badge>
+                {template.industry}
+              </Badge>
                 <Badge 
                   variant="outline" 
                   className={`${getComplexityColor(template.metadata.complexity)} transition-colors text-xs font-medium px-2 py-0.5`}
                 >
                   {template.metadata.complexity}
-                </Badge>
+              </Badge>
               </div>
             </div>
             <div className="flex items-center space-x-1 text-sm text-muted-foreground flex-shrink-0">
@@ -112,32 +112,32 @@ export function TemplateCard({
             {template.description}
           </CardDescription>
         </div>
-
+        
         {/* Content Area - Flexible Height */}
         <div className="flex-1 px-4 min-h-0 flex flex-col">
           {/* Tags Section - Unified Style */}
           <div className="mb-3">
-            <div className="flex flex-wrap gap-1">
-              {template.tags.slice(0, 3).map((tag) => (
+        <div className="flex flex-wrap gap-1">
+          {template.tags.slice(0, 3).map((tag) => (
                 <Badge 
                   key={tag} 
                   variant="outline" 
                   className="text-xs font-normal rounded-full bg-muted/20 text-muted-foreground border-muted/40 hover:bg-muted/30 transition-colors px-2 py-0.5"
                 >
-                  {tag}
-                </Badge>
-              ))}
-              {template.tags.length > 3 && (
+              {tag}
+            </Badge>
+          ))}
+          {template.tags.length > 3 && (
                 <Badge 
                   variant="outline" 
                   className="text-xs font-normal rounded-full bg-muted/20 text-muted-foreground border-muted/40 hover:bg-muted/30 transition-colors px-2 py-0.5"
                 >
-                  +{template.tags.length - 3}
+              +{template.tags.length - 3}
                 </Badge>
               )}
             </div>
           </div>
-
+          
           {/* Configuration Section - Fixed Height */}
           <div className="mb-3 min-h-[60px] flex items-start">
             {(mcpServers.length > 0 || saasIntegrations.length > 0) ? (
@@ -178,7 +178,7 @@ export function TemplateCard({
                         >
                           {integration.provider}
                         </span>
-                      ))}
+              ))}
                       {saasIntegrations.length > 2 && (
                         <span 
                           className="text-xs bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-colors px-2 py-1 rounded font-medium dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-800 dark:hover:bg-emerald-900"
@@ -188,8 +188,8 @@ export function TemplateCard({
                       )}
                     </div>
                   </div>
-                )}
-              </div>
+              )}
+            </div>
             ) : (
               <div className="flex items-center justify-center w-full h-full opacity-50">
                 <span className="text-xs text-muted-foreground">Standard model integration</span>
@@ -206,17 +206,17 @@ export function TemplateCard({
           {/* Stats Row - Fixed Position */}
           <div className="flex items-center justify-between text-xs text-muted-foreground border-t border-border/50 pt-2.5">
             <div className="flex items-center space-x-3">
-              <div className="flex items-center space-x-1">
+            <div className="flex items-center space-x-1">
                 <Users className="h-3 w-3 text-primary" />
                 <span className="font-medium">{template.usageCount.toLocaleString()}</span>
-              </div>
-              <div className="flex items-center space-x-1">
+            </div>
+            <div className="flex items-center space-x-1">
                 <GitBranch className="h-3 w-3 text-secondary" />
                 <span className="font-medium">{template.forkCount}</span>
               </div>
             </div>
             <span className="text-xs truncate max-w-[100px]">by {template.author}</span>
-          </div>
+            </div>
 
           {/* Action Buttons - Fixed Position */}
           <div className="flex gap-1 w-full">
@@ -306,8 +306,8 @@ export function TemplateCard({
             )}
           </div>
         </div>
-      </div>
-      
+        </div>
+
       {/* Hover effect bar */}
       <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-primary/50 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300" />
     </Card>

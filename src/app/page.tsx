@@ -32,15 +32,15 @@ const mockPublicTemplates: PromptTemplate[] = [
     description: 'Automated script generation, character development, and scene planning for short-form video content',
     industry: 'Media & Entertainment',
     useCase: 'Short Drama Production',
-    promptConfig: {
+      promptConfig: {
       systemPrompt: 'You are an expert script writer and video production assistant specializing in short-form drama content.',
       userPromptTemplate: 'Create a {genre} short drama script with {duration} minutes duration. Focus on {theme} and target {audience} audience.',
-      parameters: [
-        {
+        parameters: [
+          {
           name: 'genre',
-          type: 'string',
+            type: 'string',
           description: 'The genre of the drama (romance, thriller, comedy, etc.)',
-          required: true
+            required: true
         },
         {
           name: 'duration',
@@ -48,13 +48,13 @@ const mockPublicTemplates: PromptTemplate[] = [
           description: 'Duration in minutes',
           required: true,
           defaultValue: 5
+          }
+        ],
+        constraints: {
+          maxTokens: 2000,
+          temperature: 0.7
         }
-      ],
-      constraints: {
-        maxTokens: 2000,
-        temperature: 0.7
-      }
-    },
+      },
     mcpServers: [],
     saasIntegrations: [],
     agentConfig: {
@@ -134,30 +134,30 @@ const mockPublicTemplates: PromptTemplate[] = [
         temperature: 0.3
       }
     },
-    mcpServers: [],
-    saasIntegrations: [],
-    agentConfig: {
-      workflow: [],
-      errorHandling: {
-        retryPolicy: { maxRetries: 3, backoffStrategy: 'exponential', baseDelay: 1000, maxDelay: 10000 },
-        fallbackActions: [],
-        errorNotifications: []
+      mcpServers: [],
+      saasIntegrations: [],
+      agentConfig: {
+        workflow: [],
+        errorHandling: {
+          retryPolicy: { maxRetries: 3, backoffStrategy: 'exponential', baseDelay: 1000, maxDelay: 10000 },
+          fallbackActions: [],
+          errorNotifications: []
+        },
+        monitoring: {
+          metricsCollection: true,
+          performanceTracking: true,
+          costTracking: true,
+          alerting: []
+        },
+        scaling: {
+          autoScaling: false,
+          minInstances: 1,
+          maxInstances: 5,
+          scaleUpThreshold: 80,
+          scaleDownThreshold: 20
+        }
       },
-      monitoring: {
-        metricsCollection: true,
-        performanceTracking: true,
-        costTracking: true,
-        alerting: []
-      },
-      scaling: {
-        autoScaling: false,
-        minInstances: 1,
-        maxInstances: 5,
-        scaleUpThreshold: 80,
-        scaleDownThreshold: 20
-      }
-    },
-    metadata: {
+      metadata: {
       category: 'Healthcare',
       complexity: 'advanced',
       estimatedRuntime: 180,
@@ -238,19 +238,19 @@ const mockPublicTemplates: PromptTemplate[] = [
     },
     metadata: {
       category: 'Marketing',
-      complexity: 'beginner',
-      estimatedRuntime: 60,
-      resourceRequirements: {
-        cpu: '0.25',
-        memory: '512Mi',
-        storage: '5Gi',
-        network: true
-      },
+        complexity: 'beginner',
+        estimatedRuntime: 60,
+        resourceRequirements: {
+          cpu: '0.25',
+          memory: '512Mi',
+          storage: '5Gi',
+          network: true
+        },
       dependencies: ['openai'],
-      changelog: []
-    },
-    version: 1,
-    status: 'published',
+        changelog: []
+      },
+      version: 1,
+      status: 'published',
     createdAt: '2024-01-12T10:00:00Z',
     updatedAt: '2024-01-12T10:00:00Z',
     userId: 'user3',
@@ -259,11 +259,11 @@ const mockPublicTemplates: PromptTemplate[] = [
     usageCount: 1850,
     tags: ['retail', 'ecommerce', 'copywriting', 'seo', 'marketing'],
     forkCount: 29,
-    isForked: false,
-    collaborators: [],
-    isPublic: true,
-    license: 'MIT'
-  }
+      isForked: false,
+      collaborators: [],
+      isPublic: true,
+      license: 'MIT'
+    }
 ]
 
 const industryOptions: IndustryVertical[] = [
@@ -406,12 +406,12 @@ export default function HomePage() {
         <Card className="relative overflow-hidden group hover:shadow-xl transition-all duration-300 border-2 hover:border-primary/50 bg-card">
           <CardContent className="p-4">
             <div className="space-y-1">
-              <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between">
                 <div className="text-2xl font-bold text-primary tabular-nums">{templates.length}</div>
                 <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
                   <Search className="h-4 w-4 text-primary group-hover:animate-pulse" />
-                </div>
-              </div>
+          </div>
+        </div>
               <div className="text-sm font-medium text-foreground">Community Templates</div>
               <div className="text-xs text-muted-foreground">Public templates available</div>
             </div>
@@ -429,8 +429,8 @@ export default function HomePage() {
                 </div>
                 <div className="w-8 h-8 bg-accent rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
                   <Activity className="h-4 w-4 text-accent-foreground group-hover:animate-pulse" />
-                </div>
-              </div>
+                    </div>
+                  </div>
               <div className="text-sm font-medium text-foreground">Total Executions</div>
               <div className="text-xs text-muted-foreground">AI workflows run</div>
             </div>
@@ -449,7 +449,7 @@ export default function HomePage() {
                 <div className="w-8 h-8 bg-muted rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
                   <Star className="h-4 w-4 text-primary group-hover:fill-primary transition-colors duration-300" />
                 </div>
-              </div>
+        </div>
               <div className="text-sm font-medium text-foreground">Avg Rating</div>
               <div className="text-xs text-muted-foreground">Community rating</div>
             </div>
@@ -473,8 +473,8 @@ export default function HomePage() {
               <div className="text-xs text-muted-foreground">Templates forked by users</div>
             </div>
             <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-primary/50 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300" />
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
       </div>
 
       {/* Search and Filters */}
@@ -490,7 +490,7 @@ export default function HomePage() {
             />
           </div>
         </div>
-        
+
         <div className="flex gap-2">
           <Select value={industryFilter} onValueChange={(value: any) => setIndustryFilter(value)}>
             <SelectTrigger className="w-[180px]">

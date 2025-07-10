@@ -73,6 +73,64 @@ const commonSaaSProviders = [
 
 export function CreateTemplateDialog({ open, onOpenChange, onTemplateCreate, onTemplateUpdate, editingTemplate }: CreateTemplateDialogProps) {
   const [activeTab, setActiveTab] = useState('basic')
+  
+  // Helper function to get provider-specific default values
+  const getProviderDefaults = (provider: string) => {
+    const baseDefaults = {
+      temperature: 0.7,
+      maxTokens: 2000,
+      topP: 1.0,
+      frequencyPenalty: 0.0,
+      presencePenalty: 0.0,
+      stopSequences: [] as string[],
+      parallelToolCalls: true,
+      stream: false,
+      topK: 0,
+      thinking: false,
+      streaming: true,
+      guardrailId: '',
+      guardrailVersion: ''
+    }
+
+    switch (provider) {
+      case 'openai':
+        return {
+          ...baseDefaults,
+          temperature: 1.0,
+          maxTokens: 16,
+          topP: 1.0,
+          frequencyPenalty: 0.0,
+          presencePenalty: 0.0,
+          stopSequences: [],
+          parallelToolCalls: true,
+          stream: false
+        }
+      case 'anthropic':
+        return {
+          ...baseDefaults,
+          temperature: 0.0,
+          maxTokens: 256,
+          topP: 1.0,
+          topK: 0,
+          stopSequences: [],
+          thinking: false
+        }
+      case 'bedrock':
+        return {
+          ...baseDefaults,
+          temperature: 1.0,
+          maxTokens: 4096, // Model-specific maximum
+          topP: 1.0,
+          stopSequences: [],
+          streaming: true,
+          guardrailId: '',
+          guardrailVersion: ''
+        }
+      default:
+        return baseDefaults
+    }
+  }
+
   const [formData, setFormData] = useState({
     // Basic Information
     title: "",
@@ -86,12 +144,22 @@ export function CreateTemplateDialog({ open, onOpenChange, onTemplateCreate, onT
     // Tags
     tags: [] as string[],
     
-    // Model Configuration
+    // Model Configuration with provider-specific defaults
     modelProvider: "openai",
     modelName: "gpt-4.1",
-    temperature: 0.7,
-    maxTokens: 2000,
-    topP: 1.0,
+    ...getProviderDefaults("openai"),
+    
+    // Additional provider-specific parameters
+    frequencyPenalty: 0.0,
+    presencePenalty: 0.0,
+    stopSequences: [] as string[],
+    parallelToolCalls: true,
+    stream: false,
+    topK: 0,
+    thinking: false,
+    streaming: true,
+    guardrailId: '',
+    guardrailVersion: '',
     
     // Prompt Configuration
     systemPrompt: "",
@@ -178,6 +246,7 @@ export function CreateTemplateDialog({ open, onOpenChange, onTemplateCreate, onT
   // Pre-fill form data when editing a template
   useEffect(() => {
     if (editingTemplate) {
+      const providerDefaults = getProviderDefaults("openai")
       setFormData({
         title: editingTemplate.title || "",
         description: editingTemplate.description || "",
@@ -189,9 +258,19 @@ export function CreateTemplateDialog({ open, onOpenChange, onTemplateCreate, onT
         tags: editingTemplate.tags || [],
         modelProvider: "openai", // Default since this might not be in stored data
         modelName: "gpt-4", // Default since this might not be in stored data
-        temperature: editingTemplate.promptConfig?.constraints?.temperature || 0.7,
-        maxTokens: editingTemplate.promptConfig?.constraints?.maxTokens || 2000,
-        topP: editingTemplate.promptConfig?.constraints?.topP || 1.0,
+        temperature: editingTemplate.promptConfig?.constraints?.temperature || providerDefaults.temperature,
+        maxTokens: editingTemplate.promptConfig?.constraints?.maxTokens || providerDefaults.maxTokens,
+        topP: editingTemplate.promptConfig?.constraints?.topP || providerDefaults.topP,
+        frequencyPenalty: providerDefaults.frequencyPenalty || 0.0,
+        presencePenalty: providerDefaults.presencePenalty || 0.0,
+        stopSequences: providerDefaults.stopSequences || [],
+        parallelToolCalls: providerDefaults.parallelToolCalls || true,
+        stream: providerDefaults.stream || false,
+        topK: providerDefaults.topK || 0,
+        thinking: providerDefaults.thinking || false,
+        streaming: providerDefaults.streaming || true,
+        guardrailId: providerDefaults.guardrailId || '',
+        guardrailVersion: providerDefaults.guardrailVersion || '',
         systemPrompt: editingTemplate.promptConfig?.systemPrompt || "",
         userPromptTemplate: editingTemplate.promptConfig?.userPromptTemplate || "",
         parameters: editingTemplate.promptConfig?.parameters || [],
@@ -209,6 +288,7 @@ export function CreateTemplateDialog({ open, onOpenChange, onTemplateCreate, onT
       })
     } else {
       // Reset form when not editing
+      const providerDefaults = getProviderDefaults("openai")
       setFormData({
         title: "",
         description: "",
@@ -220,9 +300,7 @@ export function CreateTemplateDialog({ open, onOpenChange, onTemplateCreate, onT
         tags: [],
         modelProvider: "openai",
         modelName: "gpt-4.1",
-        temperature: 0.7,
-        maxTokens: 2000,
-        topP: 1.0,
+        ...providerDefaults,
         systemPrompt: "",
         userPromptTemplate: "",
         parameters: [],
@@ -674,6 +752,7 @@ export function CreateTemplateDialog({ open, onOpenChange, onTemplateCreate, onT
     }
     
     // Reset form
+    const resetDefaults = getProviderDefaults("openai")
     setFormData({
       title: "",
       description: "",
@@ -685,9 +764,7 @@ export function CreateTemplateDialog({ open, onOpenChange, onTemplateCreate, onT
       tags: [],
       modelProvider: "openai",
       modelName: "gpt-4.1",
-      temperature: 0.7,
-      maxTokens: 2000,
-      topP: 1.0,
+      ...resetDefaults,
       systemPrompt: "",
       userPromptTemplate: "",
       parameters: [],
@@ -839,7 +916,7 @@ export function CreateTemplateDialog({ open, onOpenChange, onTemplateCreate, onT
                         onChange={(e) => setFormData(prev => ({ ...prev, estimatedRuntime: parseInt(e.target.value) || 60 }))}
                         min="1"
                         max="3600"
-                      />
+                />
             </div>
           </div>
 
@@ -890,7 +967,13 @@ export function CreateTemplateDialog({ open, onOpenChange, onTemplateCreate, onT
                       <Select 
                         value={formData.modelProvider} 
                         onValueChange={(value) => {
-                          setFormData(prev => ({ ...prev, modelProvider: value, modelName: "" }))
+                          const providerDefaults = getProviderDefaults(value)
+                          setFormData(prev => ({ 
+                            ...prev, 
+                            modelProvider: value, 
+                            modelName: "",
+                            ...providerDefaults
+                          }))
                           if (!availableModels[value] && value !== "custom") {
                             fetchAvailableModels(value)
                           }
@@ -937,41 +1020,208 @@ export function CreateTemplateDialog({ open, onOpenChange, onTemplateCreate, onT
             </div>
           </div>
 
-                  <div className="grid grid-cols-3 gap-4">
+                  {/* Core Parameters - Available for all providers */}
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium text-muted-foreground">Core Parameters</Label>
+                    <div className="grid grid-cols-3 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="temperature">
+                          Temperature
+                          <span className="text-xs text-muted-foreground ml-1">
+                            ({formData.modelProvider === 'openai' ? '0-2, default: 1.0' : 
+                              formData.modelProvider === 'anthropic' ? '0-1, default: 0.0' : 
+                              '0-2, default: 1.0'})
+                          </span>
+                        </Label>
+                        <Input
+                          id="temperature"
+                          type="number"
+                          step="0.1"
+                          min="0"
+                          max={formData.modelProvider === 'anthropic' ? "1" : "2"}
+                          value={formData.temperature}
+                          onChange={(e) => setFormData(prev => ({ ...prev, temperature: parseFloat(e.target.value) || getProviderDefaults(prev.modelProvider).temperature }))}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="maxTokens">
+                          Max Tokens
+                          <span className="text-xs text-muted-foreground ml-1">
+                            (default: {formData.modelProvider === 'openai' ? '16' : 
+                                     formData.modelProvider === 'anthropic' ? '256' : 
+                                     '4096'})
+                          </span>
+                        </Label>
+                        <Input
+                          id="maxTokens"
+                          type="number"
+                          min="1"
+                          max="8000"
+                          value={formData.maxTokens}
+                          onChange={(e) => setFormData(prev => ({ ...prev, maxTokens: parseInt(e.target.value) || getProviderDefaults(prev.modelProvider).maxTokens }))}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="topP">
+                          Top P
+                          <span className="text-xs text-muted-foreground ml-1">(0-1, default: 1.0)</span>
+                        </Label>
+                        <Input
+                          id="topP"
+                          type="number"
+                          step="0.1"
+                          min="0"
+                          max="1"
+                          value={formData.topP}
+                          onChange={(e) => setFormData(prev => ({ ...prev, topP: parseFloat(e.target.value) || 1.0 }))}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* OpenAI-specific Parameters */}
+                  {formData.modelProvider === 'openai' && (
                     <div className="space-y-2">
-                      <Label htmlFor="temperature">Temperature</Label>
+                      <Label className="text-sm font-medium text-muted-foreground">OpenAI-specific Parameters</Label>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="frequencyPenalty">
+                            Frequency Penalty
+                            <span className="text-xs text-muted-foreground ml-1">(-2.0 to 2.0, default: 0.0)</span>
+                          </Label>
+                          <Input
+                            id="frequencyPenalty"
+                            type="number"
+                            step="0.1"
+                            min="-2"
+                            max="2"
+                            value={formData.frequencyPenalty}
+                            onChange={(e) => setFormData(prev => ({ ...prev, frequencyPenalty: parseFloat(e.target.value) || 0.0 }))}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="presencePenalty">
+                            Presence Penalty
+                            <span className="text-xs text-muted-foreground ml-1">(-2.0 to 2.0, default: 0.0)</span>
+                          </Label>
+                          <Input
+                            id="presencePenalty"
+                            type="number"
+                            step="0.1"
+                            min="-2"
+                            max="2"
+                            value={formData.presencePenalty}
+                            onChange={(e) => setFormData(prev => ({ ...prev, presencePenalty: parseFloat(e.target.value) || 0.0 }))}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Anthropic-specific Parameters */}
+                  {formData.modelProvider === 'anthropic' && (
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium text-muted-foreground">Anthropic-specific Parameters</Label>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="topK">
+                            Top K
+                            <span className="text-xs text-muted-foreground ml-1">(limits sampling pool, default: 0)</span>
+                          </Label>
+                          <Input
+                            id="topK"
+                            type="number"
+                            min="0"
+                            value={formData.topK}
+                            onChange={(e) => setFormData(prev => ({ ...prev, topK: parseInt(e.target.value) || 0 }))}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="thinking">Extended Thinking</Label>
+                          <Select 
+                            value={formData.thinking ? "true" : "false"} 
+                            onValueChange={(value) => setFormData(prev => ({ ...prev, thinking: value === "true" }))}
+                          >
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="false">Disabled</SelectItem>
+                              <SelectItem value="true">Enabled</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Bedrock-specific Parameters */}
+                  {formData.modelProvider === 'bedrock' && (
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium text-muted-foreground">Amazon Bedrock Parameters</Label>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="guardrailId">
+                            Guardrail ID
+                            <span className="text-xs text-muted-foreground ml-1">(optional)</span>
+                          </Label>
+                          <Input
+                            id="guardrailId"
+                            value={formData.guardrailId}
+                            onChange={(e) => setFormData(prev => ({ ...prev, guardrailId: e.target.value }))}
+                            placeholder="e.g., guardrail-12345"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="guardrailVersion">
+                            Guardrail Version
+                            <span className="text-xs text-muted-foreground ml-1">(optional)</span>
+                          </Label>
+                          <Input
+                            id="guardrailVersion"
+                            value={formData.guardrailVersion}
+                            onChange={(e) => setFormData(prev => ({ ...prev, guardrailVersion: e.target.value }))}
+                            placeholder="e.g., 1.0"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Stop Sequences - Available for all providers */}
+                  <div className="space-y-2">
+                    <Label>Stop Sequences</Label>
+                    <div className="flex space-x-2">
                       <Input
-                        id="temperature"
-                        type="number"
-                        step="0.1"
-                        min="0"
-                        max="2"
-                        value={formData.temperature}
-                        onChange={(e) => setFormData(prev => ({ ...prev, temperature: parseFloat(e.target.value) || 0.7 }))}
+                        placeholder="Add stop sequence..."
+                        onKeyPress={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault()
+                            const value = (e.target as HTMLInputElement).value.trim()
+                            if (value && !formData.stopSequences.includes(value)) {
+                              setFormData(prev => ({
+                                ...prev,
+                                stopSequences: [...prev.stopSequences, value]
+                              }));
+                              (e.target as HTMLInputElement).value = ""
+                            }
+                          }
+                        }}
                       />
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="maxTokens">Max Tokens</Label>
-                      <Input
-                        id="maxTokens"
-                        type="number"
-                        min="1"
-                        max="8000"
-                        value={formData.maxTokens}
-                        onChange={(e) => setFormData(prev => ({ ...prev, maxTokens: parseInt(e.target.value) || 2000 }))}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="topP">Top P</Label>
-                      <Input
-                        id="topP"
-                        type="number"
-                        step="0.1"
-                        min="0"
-                        max="1"
-                        value={formData.topP}
-                        onChange={(e) => setFormData(prev => ({ ...prev, topP: parseFloat(e.target.value) || 1.0 }))}
-                      />
+                    <div className="flex flex-wrap gap-2">
+                      {formData.stopSequences.map((sequence, index) => (
+                        <Badge key={index} variant="secondary" className="flex items-center gap-1">
+                          {sequence}
+                          <X 
+                            className="h-3 w-3 cursor-pointer" 
+                            onClick={() => setFormData(prev => ({
+                              ...prev,
+                              stopSequences: prev.stopSequences.filter((_, i) => i !== index)
+                            }))}
+                          />
+                        </Badge>
+                      ))}
                     </div>
                   </div>
                 </CardContent>

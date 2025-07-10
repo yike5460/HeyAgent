@@ -355,14 +355,14 @@ export default function MyTemplatesPage() {
           </div>
 
           {/* Analytics Panel */}
-          <Card>
-            <CardHeader>
+            <Card>
+              <CardHeader>
               <CardTitle className="flex items-center space-x-2">
                 <BarChart3 className="h-5 w-5 text-primary" />
                 <span>Template Analytics</span>
               </CardTitle>
               <CardDescription>Performance metrics and insights for your templates</CardDescription>
-            </CardHeader>
+              </CardHeader>
             <CardContent>
               {templates.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-12">
@@ -394,9 +394,9 @@ export default function MyTemplatesPage() {
                               <Badge variant="outline" className="text-xs">{template.metadata.complexity}</Badge>
                             </div>
                           </div>
-                        </div>
-                      </div>
-                      
+                    </div>
+                  </div>
+
                       <div className="flex items-center space-x-6 ml-4">
                         {/* Usage Count */}
                         <div className="text-center">
@@ -458,12 +458,12 @@ export default function MyTemplatesPage() {
                       }}>
                         View All {templates.length} Templates
                       </Button>
-                    </div>
+                  </div>
                   )}
                 </div>
               )}
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
 
         </TabsContent>
 
@@ -533,7 +533,7 @@ export default function MyTemplatesPage() {
                       description: `Template "${template.title}" exported successfully.`
                     })
                   }}
-                />
+          />
               ))
             )}
           </div>
@@ -542,7 +542,7 @@ export default function MyTemplatesPage() {
         </TabsContent>
 
         <TabsContent value="analytic">
-          <Card>
+            <Card>
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
                 <BarChart3 className="h-5 w-5 text-primary" />
@@ -555,7 +555,7 @@ export default function MyTemplatesPage() {
                 <div className="flex flex-col items-center justify-center py-12">
                   <BarChart3 className="h-12 w-12 text-muted-foreground mb-4" />
                   <h3 className="text-lg font-medium mb-2">No Analytics Data</h3>
-                  <p className="text-muted-foreground text-center">
+                <p className="text-muted-foreground text-center">
                     Create templates to see detailed analytics and performance insights.
                   </p>
                 </div>
@@ -645,10 +645,10 @@ export default function MyTemplatesPage() {
                           ))
                         })()}
                       </div>
-                    </CardContent>
-                  </Card>
+              </CardContent>
+            </Card>
                 </div>
-              )}
+          )}
             </CardContent>
           </Card>
         </TabsContent>
