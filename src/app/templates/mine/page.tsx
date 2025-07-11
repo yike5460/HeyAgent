@@ -1,33 +1,46 @@
 "use client"
 
 import { useState, useEffect } from 'react'
+import { useSession } from "next-auth/react"
 import { TemplateManager } from '@/components/template-manager'
 import { TemplateVisualization } from '@/components/template-visualization'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 import { toast } from '@/components/ui/use-toast'
 import { PromptTemplate } from '@/types'
 import { localStorageService } from '@/services/local-storage'
-import { Brain, Database, Settings, Workflow, Plus, Upload, Download } from 'lucide-react'
+import { Brain, Database, Settings, Workflow, Plus, Upload, Download, LogIn, UserPlus, Sparkles, Lock, AlertCircle } from 'lucide-react'
+import Link from 'next/link'
 
 export default function MyTemplatesPage() {
+  const { data: session, status } = useSession()
   const [templates, setTemplates] = useState<PromptTemplate[]>([])
   const [selectedTemplate, setSelectedTemplate] = useState<PromptTemplate | null>(null)
   const [loading, setLoading] = useState(true)
 
   // Load templates from local storage on component mount
   useEffect(() => {
-    loadTemplates()
-  }, [])
+    if (session?.user) {
+      loadTemplates()
+    } else if (status === "unauthenticated") {
+      setLoading(false)
+    }
+  }, [session, status])
 
   const loadTemplates = async () => {
     try {
       setLoading(true)
       const userTemplates = await localStorageService.getAllTemplates()
       // Filter to show only current user's templates (in real app, this would be based on userId)
-      const myTemplates = userTemplates.filter(t => t.userId === 'current-user' || t.author === 'Current User')
+      const myTemplates = userTemplates.filter(t => 
+        t.userId === session?.user?.id || 
+        t.userId === 'current-user' || 
+        t.author === 'Current User' ||
+        t.author === session?.user?.name
+      )
       setTemplates(myTemplates)
       if (myTemplates.length > 0 && !selectedTemplate) {
         setSelectedTemplate(myTemplates[0])
@@ -251,7 +264,7 @@ export default function MyTemplatesPage() {
     }
   }
 
-  if (loading) {
+  if (status === "loading" || loading) {
     return (
       <div className="container mx-auto py-8">
         <div className="flex items-center justify-center h-64">
@@ -264,13 +277,118 @@ export default function MyTemplatesPage() {
     )
   }
 
+  // Show sign-in prompt for unauthenticated users
+  if (status === "unauthenticated") {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-muted/20 px-4">
+        <div className="max-w-md w-full space-y-8">
+          {/* Hero Section */}
+          <div className="text-center space-y-6">
+            <div className="mx-auto w-24 h-24 bg-primary/10 rounded-full flex items-center justify-center">
+              <Lock className="h-12 w-12 text-primary" />
+            </div>
+            <div className="space-y-2">
+              <h1 className="text-3xl font-bold">Sign in to view your templates</h1>
+              <p className="text-muted-foreground">
+                Access your personal collection of AI templates and create new ones
+              </p>
+            </div>
+          </div>
+
+          {/* Features */}
+          <Card className="border-2 border-primary/10">
+            <CardHeader>
+              <CardTitle className="text-center">What you'll get access to:</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center space-x-3">
+                <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
+                  <Brain className="h-4 w-4 text-primary" />
+                </div>
+                <div>
+                  <p className="font-medium">Personal Template Library</p>
+                  <p className="text-sm text-muted-foreground">Store and organize your AI templates</p>
+                </div>
+              </div>
+              
+              <div className="flex items-center space-x-3">
+                <div className="w-8 h-8 bg-green-500/10 rounded-full flex items-center justify-center">
+                  <Plus className="h-4 w-4 text-green-500" />
+                </div>
+                <div>
+                  <p className="font-medium">Create New Templates</p>
+                  <p className="text-sm text-muted-foreground">Build custom AI workflows and prompts</p>
+                </div>
+              </div>
+              
+              <div className="flex items-center space-x-3">
+                <div className="w-8 h-8 bg-blue-500/10 rounded-full flex items-center justify-center">
+                  <Database className="h-4 w-4 text-blue-500" />
+                </div>
+                <div>
+                  <p className="font-medium">Template Management</p>
+                  <p className="text-sm text-muted-foreground">Edit, share, and collaborate on templates</p>
+                </div>
+              </div>
+              
+              <div className="flex items-center space-x-3">
+                <div className="w-8 h-8 bg-purple-500/10 rounded-full flex items-center justify-center">
+                  <Sparkles className="h-4 w-4 text-purple-500" />
+                </div>
+                <div>
+                  <p className="font-medium">Advanced Features</p>
+                  <p className="text-sm text-muted-foreground">Version control, analytics, and integrations</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Action Buttons */}
+          <div className="space-y-3">
+            <Button asChild size="lg" className="w-full">
+              <Link href="/auth/signin?callbackUrl=/templates/mine">
+                <LogIn className="h-5 w-5 mr-2" />
+                Sign In to Continue
+              </Link>
+            </Button>
+            
+            <p className="text-center text-sm text-muted-foreground">
+              New to HeyAgent?{" "}
+              <Link href="/auth/signin?callbackUrl=/templates/mine" className="text-primary hover:underline">
+                Create an account
+              </Link>{" "}
+              - it's free!
+            </p>
+          </div>
+
+          {/* Additional Info */}
+          <Alert>
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              Your account will be created automatically when you sign in for the first time using Google or GitHub.
+            </AlertDescription>
+          </Alert>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="container mx-auto py-8 space-y-8">
       <div className="flex items-center justify-between">
         <div className="space-y-4">
-          <h1 className="text-4xl font-bold">My Templates</h1>
+          <div className="flex items-center space-x-4">
+            <h1 className="text-4xl font-bold">My Templates</h1>
+            {session?.user && (
+              <div className="flex items-center space-x-2">
+                <Badge variant="secondary" className="text-sm">
+                  {session.user.name || session.user.email}
+                </Badge>
+              </div>
+            )}
+          </div>
           <p className="text-lg text-muted-foreground">
-            Create, manage, and organize your AI prompt templates with local storage persistence.
+            Create, manage, and organize your personal AI prompt templates. Your templates are stored securely and only visible to you.
           </p>
         </div>
         <div className="flex space-x-2">
