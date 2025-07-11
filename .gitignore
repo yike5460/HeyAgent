@@ -229,4 +229,8 @@ dump.rdb
 # SvelteKit build / generate output
 .svelte-kit
 
+# wrangler
+wrangler.toml
+.wrangler
+
 # End of https://www.toptal.com/developers/gitignore/api/node

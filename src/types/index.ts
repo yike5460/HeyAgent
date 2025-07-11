@@ -290,13 +290,16 @@ export interface ChangelogEntry {
 export interface User {
   id: string
   email: string
-  username: string
-  displayName: string
-  profile: UserProfile
-  roles: UserRole[]
-  createdAt: string
-  updatedAt: string
-  cognitoId: string
+  username?: string
+  name?: string
+  displayName?: string
+  image?: string
+  profile?: UserProfile
+  roles?: UserRole[]
+  role?: string
+  createdAt?: string
+  updatedAt?: string
+  emailVerified?: boolean
 }
 
 export interface UserProfile {

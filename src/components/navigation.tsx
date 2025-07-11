@@ -171,7 +171,7 @@ export function Navigation() {
                   <Avatar className="h-8 w-8">
                     <AvatarImage src={session.user?.image || ""} alt={session.user?.name || ""} />
                     <AvatarFallback>
-                      {session.user?.name?.charAt(0) || "U"}
+                      {session.user?.name?.charAt(0) || session.user?.email?.charAt(0) || "U"}
                     </AvatarFallback>
                   </Avatar>
                 </Button>
@@ -180,11 +180,16 @@ export function Navigation() {
                 <DropdownMenuLabel className="font-normal">
                   <div className="flex flex-col space-y-1">
                     <p className="text-sm font-medium leading-none">
-                      {session.user?.name}
+                      {session.user?.name || 'User'}
                     </p>
                     <p className="text-xs leading-none text-muted-foreground">
                       {session.user?.email}
                     </p>
+                    {session.user?.username && (
+                      <p className="text-xs leading-none text-muted-foreground">
+                        @{session.user.username}
+                      </p>
+                    )}
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
@@ -201,15 +206,19 @@ export function Navigation() {
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => signOut()}>
-                  <LogOut className="mr-2 h-4 w-4" />
-                  Log out
+                <DropdownMenuItem asChild>
+                  <Link href="/auth/signout">
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Sign out
+                  </Link>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
-            <Button size="sm" onClick={() => signIn()}>
-              Sign In
+            <Button size="sm" asChild>
+              <Link href="/auth/signin">
+                Sign In
+              </Link>
             </Button>
           )}
         </div>

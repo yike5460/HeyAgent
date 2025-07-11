@@ -1,0 +1,24 @@
+name = "heyprompt-platform"
+main = "src/index.js"
+compatibility_date = "2024-01-01"
+
+[vars]
+# Environment variables
+NEXTAUTH_URL = "http://localhost:3000"
+NEXTAUTH_SECRET = "your-nextauth-secret"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "heyprompt-auth"
+database_id = "your-database-id"
+
+[[d1_databases]]
+binding = "PROD_DB"
+database_name = "heyprompt-auth-prod"
+database_id = "your-prod-database-id"
+
+[env.preview]
+vars = { ENV = "preview" }
+
+[env.production]
+vars = { ENV = "production" } 
