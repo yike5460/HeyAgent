@@ -64,10 +64,129 @@ const commonMCPServerTypes = [
 const commonSaaSProviders = [
   { provider: 'openai', service: 'gpt-4', name: 'OpenAI GPT-4', capabilities: ['text-generation'] },
   { provider: 'anthropic', service: 'claude-3', name: 'Anthropic Claude', capabilities: ['text-generation'] },
+  { provider: 'bedrock', service: 'claude-3-sonnet', name: 'Amazon Bedrock', capabilities: ['text-generation'] },
   { provider: 'elevenlabs', service: 'speech-synthesis', name: 'ElevenLabs TTS', capabilities: ['audio-synthesis'] },
   { provider: 'kling', service: 'video-generation', name: 'Kling Video', capabilities: ['video-generation'] },
   { provider: 'custom', service: 'custom-service', name: 'Custom Service', capabilities: ['custom'] }
 ]
+
+// Model series mapping based on provider information
+const modelsByProvider = {
+  openai: {
+    reasoning: [
+      { id: 'o4-mini', name: 'o4-mini', description: 'Faster, more affordable reasoning model' },
+      { id: 'o3', name: 'o3', description: 'Our most powerful reasoning model' },
+      { id: 'o3-pro', name: 'o3-pro', description: 'Version of o3 with more compute for better responses' },
+      { id: 'o3-mini', name: 'o3-mini', description: 'A small model alternative to o3' },
+      { id: 'o1', name: 'o1', description: 'Previous full o-series reasoning model' },
+      { id: 'o1-mini', name: 'o1-mini', description: 'A small model alternative to o1' },
+      { id: 'o1-pro', name: 'o1-pro', description: 'Version of o1 with more compute for better responses' }
+    ],
+    flagship: [
+      { id: 'gpt-4.1', name: 'GPT-4.1', description: 'Flagship GPT model for complex tasks' },
+      { id: 'gpt-4o', name: 'GPT-4o', description: 'Fast, intelligent, flexible GPT model' },
+      { id: 'gpt-4o-audio-preview', name: 'GPT-4o Audio', description: 'GPT-4o models capable of audio inputs and outputs' },
+      { id: 'chatgpt-4o-latest', name: 'ChatGPT-4o', description: 'GPT-4o model used in ChatGPT' }
+    ],
+    costOptimized: [
+      { id: 'gpt-4.1-mini', name: 'GPT-4.1 mini', description: 'Balanced for intelligence, speed, and cost' },
+      { id: 'gpt-4.1-nano', name: 'GPT-4.1 nano', description: 'Fastest, most cost-effective GPT-4.1 model' },
+      { id: 'gpt-4o-mini', name: 'GPT-4o mini', description: 'Fast, affordable small model for focused tasks' },
+      { id: 'gpt-4o-mini-audio-preview', name: 'GPT-4o mini Audio', description: 'Smaller model capable of audio inputs and outputs' }
+    ],
+    legacy: [
+      { id: 'gpt-4-turbo', name: 'GPT-4 Turbo', description: 'An older high-intelligence GPT model' },
+      { id: 'gpt-4', name: 'GPT-4', description: 'An older high-intelligence GPT model' },
+      { id: 'gpt-3.5-turbo', name: 'GPT-3.5 Turbo', description: 'Legacy GPT model for cheaper chat and non-chat tasks' }
+    ]
+  },
+  anthropic: {
+    claude4: [
+      { id: 'claude-opus-4-20250514', name: 'Claude Opus 4', description: 'Our most powerful and capable model' },
+      { id: 'claude-sonnet-4-20250514', name: 'Claude Sonnet 4', description: 'High-performance model with exceptional reasoning capabilities' }
+    ],
+    claude3_5: [
+      { id: 'claude-3-7-sonnet-20250219', name: 'Claude Sonnet 3.7', description: 'High-performance model with early extended thinking' },
+      { id: 'claude-3-5-sonnet-20241022', name: 'Claude Sonnet 3.5 v2', description: 'Our previous intelligent model' },
+      { id: 'claude-3-5-sonnet-20240620', name: 'Claude Sonnet 3.5', description: 'Previous version of Sonnet 3.5' },
+      { id: 'claude-3-5-haiku-20241022', name: 'Claude Haiku 3.5', description: 'Our fastest model' }
+    ],
+    claude3: [
+      { id: 'claude-3-opus-20240229', name: 'Claude Opus 3', description: 'Powerful model for complex tasks' },
+      { id: 'claude-3-haiku-20240307', name: 'Claude Haiku 3', description: 'Fast and compact model for near-instant responsiveness' }
+    ]
+  },
+  bedrock: {
+    claude: [
+      { id: 'anthropic.claude-opus-4-20250514-v1:0', name: 'Claude Opus 4', description: 'Most capable Claude model on Bedrock' },
+      { id: 'anthropic.claude-sonnet-4-20250514-v1:0', name: 'Claude Sonnet 4', description: 'High-performance Claude model' },
+      { id: 'anthropic.claude-3-5-sonnet-20241022-v2:0', name: 'Claude 3.5 Sonnet v2', description: 'Latest Claude 3.5 Sonnet' },
+      { id: 'anthropic.claude-3-5-haiku-20241022-v1:0', name: 'Claude 3.5 Haiku', description: 'Fastest Claude model' },
+      { id: 'anthropic.claude-3-opus-20240229-v1:0', name: 'Claude 3 Opus', description: 'Most capable Claude 3 model' },
+      { id: 'anthropic.claude-3-haiku-20240307-v1:0', name: 'Claude 3 Haiku', description: 'Fastest Claude 3 model' }
+    ],
+    titan: [
+      { id: 'amazon.titan-text-express-v1', name: 'Titan Text Express', description: 'Amazon\'s text generation model' },
+      { id: 'amazon.titan-text-lite-v1', name: 'Titan Text Lite', description: 'Lightweight Amazon text model' }
+    ]
+  },
+  google: {
+    gemini2_5: [
+      { id: 'gemini-2.5-pro', name: 'Gemini 2.5 Pro', description: 'Our most advanced reasoning Gemini model' },
+      { id: 'gemini-2.5-flash', name: 'Gemini 2.5 Flash', description: 'Best model in terms of price-performance' },
+      { id: 'gemini-2.5-flash-lite-preview-06-17', name: 'Gemini 2.5 Flash-Lite', description: 'Most cost-efficient model supporting high throughput' }
+    ],
+    gemini2: [
+      { id: 'gemini-2.0-flash-001', name: 'Gemini 2.0 Flash', description: 'Newest multimodal model with next generation features' },
+      { id: 'gemini-2.0-flash-lite-001', name: 'Gemini 2.0 Flash-Lite', description: 'Cost efficiency and low latency model' }
+    ],
+    gemini1_5: [
+      { id: 'gemini-1.5-pro', name: 'Gemini 1.5 Pro', description: 'Complex reasoning tasks requiring more intelligence' },
+      { id: 'gemini-1.5-flash', name: 'Gemini 1.5 Flash', description: 'Fast and versatile performance across diverse tasks' },
+      { id: 'gemini-1.5-flash-8b', name: 'Gemini 1.5 Flash-8B', description: 'High volume and lower intelligence tasks' }
+    ]
+  },
+  custom: []
+}
+
+// Provider-specific default parameters
+const providerDefaults = {
+  openai: {
+    temperature: 1.0,
+    maxTokens: 2000,
+    topP: 1.0,
+    frequencyPenalty: 0.0,
+    presencePenalty: 0.0,
+    stopSequences: [],
+    parallelToolCalls: true,
+    stream: false,
+  },
+  anthropic: {
+    temperature: 0.0,
+    maxTokens: 256,
+    topP: 1.0,
+    topK: 5,
+    stopSequences: [],
+    thinking: false,
+  },
+  bedrock: {
+    temperature: 0.5,
+    maxTokens: 2048,
+    topP: 1.0,
+    stopSequences: [],
+    streaming: true,
+    guardrailId: "",
+    guardrailVersion: "",
+  },
+  google: {
+    temperature: 0.7,
+    maxTokens: 8192,
+    topP: 1.0,
+    topK: 40,
+    stopSequences: [],
+    safetySettings: [],
+  }
+}
 
 export function CreateTemplateDialog({ open, onOpenChange, onTemplateCreate }: CreateTemplateDialogProps) {
   const [activeTab, setActiveTab] = useState('basic')
@@ -87,9 +206,29 @@ export function CreateTemplateDialog({ open, onOpenChange, onTemplateCreate }: C
     // Model Configuration
     modelProvider: "openai",
     modelName: "gpt-4",
-    temperature: 0.7,
+    temperature: 1.0,
     maxTokens: 2000,
     topP: 1.0,
+    
+    // Provider-specific parameters
+    // OpenAI
+    frequencyPenalty: 0.0,
+    presencePenalty: 0.0,
+    stopSequences: [],
+    parallelToolCalls: true,
+    stream: false,
+    
+    // Anthropic
+    topK: 5,
+    thinking: false,
+    
+              // Amazon Bedrock
+    guardrailId: "",
+    guardrailVersion: "",
+    streaming: true,
+    
+    // Google
+    safetySettings: "",
     
     // Prompt Configuration
     systemPrompt: "",
@@ -267,7 +406,22 @@ export function CreateTemplateDialog({ open, onOpenChange, onTemplateCreate }: C
         constraints: {
           maxTokens: formData.maxTokens,
           temperature: formData.temperature,
-          topP: formData.topP
+          topP: formData.topP,
+          ...(formData.modelProvider === 'openai' && {
+            frequencyPenalty: formData.frequencyPenalty,
+            presencePenalty: formData.presencePenalty,
+            parallelToolCalls: formData.parallelToolCalls,
+            stream: formData.stream
+          }),
+          ...(formData.modelProvider === 'anthropic' && {
+            topK: formData.topK,
+            thinking: formData.thinking
+          }),
+          ...(formData.modelProvider === 'bedrock' && {
+            guardrailId: formData.guardrailId,
+            guardrailVersion: formData.guardrailVersion,
+            streaming: formData.streaming
+          })
         }
       },
       tags: formData.tags,
@@ -397,9 +551,30 @@ export function CreateTemplateDialog({ open, onOpenChange, onTemplateCreate }: C
       tags: [],
       modelProvider: "openai",
       modelName: "gpt-4",
-      temperature: 0.7,
+      temperature: 1.0,
       maxTokens: 2000,
       topP: 1.0,
+      
+      // Provider-specific parameters
+      // OpenAI
+      frequencyPenalty: 0.0,
+      presencePenalty: 0.0,
+      stopSequences: [],
+      parallelToolCalls: true,
+      stream: false,
+      
+      // Anthropic
+      topK: 5,
+      thinking: false,
+      
+      // Amazon Bedrock
+      guardrailId: "",
+      guardrailVersion: "",
+      streaming: true,
+      
+      // Google
+      safetySettings: "",
+      
       systemPrompt: "",
       userPromptTemplate: "",
       parameters: [],
@@ -596,28 +771,93 @@ export function CreateTemplateDialog({ open, onOpenChange, onTemplateCreate }: C
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="modelProvider">Provider</Label>
-                      <Select value={formData.modelProvider} onValueChange={(value) => setFormData(prev => ({ ...prev, modelProvider: value }))}>
+                      <Select value={formData.modelProvider} onValueChange={(value) => {
+                        const defaults = providerDefaults[value as keyof typeof providerDefaults] || providerDefaults.openai;
+                        const providerModels = modelsByProvider[value as keyof typeof modelsByProvider];
+                        let defaultModel = 'gpt-4o';
+                        
+                        // Set default model based on provider
+                        if (value === 'openai') {
+                          defaultModel = 'gpt-4o';
+                        } else if (value === 'anthropic') {
+                          defaultModel = 'claude-3-5-sonnet-20241022';
+                        } else if (value === 'bedrock') {
+                          defaultModel = 'anthropic.claude-3-5-sonnet-20241022-v2:0';
+                        } else if (value === 'google') {
+                          defaultModel = 'gemini-2.5-flash';
+                        }
+                        
+                        setFormData(prev => ({ 
+                          ...prev, 
+                          modelProvider: value,
+                          modelName: defaultModel,
+                          temperature: defaults.temperature,
+                          maxTokens: defaults.maxTokens,
+                          topP: defaults.topP,
+                        }));
+                      }}>
                         <SelectTrigger>
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="openai">OpenAI</SelectItem>
                           <SelectItem value="anthropic">Anthropic</SelectItem>
+                          <SelectItem value="bedrock">Amazon Bedrock</SelectItem>
+                          <SelectItem value="google">Google</SelectItem>
                           <SelectItem value="custom">Custom Provider</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="modelName">Model</Label>
-                      <Input
-                        id="modelName"
-                        value={formData.modelName}
-                        onChange={(e) => setFormData(prev => ({ ...prev, modelName: e.target.value }))}
-                        placeholder="e.g., gpt-4, claude-3"
-                      />
+                      {formData.modelProvider === 'custom' ? (
+                        <Input
+                          id="modelName"
+                          value={formData.modelName}
+                          onChange={(e) => setFormData(prev => ({ ...prev, modelName: e.target.value }))}
+                          placeholder="Enter custom model name"
+                        />
+                      ) : (
+                        <Select value={formData.modelName} onValueChange={(value) => {
+                          setFormData(prev => ({ ...prev, modelName: value }));
+                        }}>
+                          <SelectTrigger className="text-left">
+                            <SelectValue placeholder="Select a model" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {Object.entries(modelsByProvider[formData.modelProvider as keyof typeof modelsByProvider] || {}).map(([category, models]) => (
+                              <div key={category}>
+                                <div className="px-2 py-2 text-sm font-semibold text-muted-foreground bg-muted/30 border-b border-border/50">
+                                  {category === 'reasoning' && 'Reasoning Models'}
+                                  {category === 'flagship' && 'Flagship Models'}
+                                  {category === 'costOptimized' && 'Cost-Optimized Models'}
+                                  {category === 'legacy' && 'Legacy Models'}
+                                  {category === 'claude4' && 'Claude 4 Series'}
+                                  {category === 'claude3_5' && 'Claude 3.5 Series'}
+                                  {category === 'claude3' && 'Claude 3 Series'}
+                                  {category === 'claude' && 'Claude Models'}
+                                  {category === 'titan' && 'Titan Models'}
+                                  {category === 'gemini2_5' && 'Gemini 2.5 Series'}
+                                  {category === 'gemini2' && 'Gemini 2.0 Series'}
+                                  {category === 'gemini1_5' && 'Gemini 1.5 Series'}
+                                </div>
+                                {models.map((model: any) => (
+                                  <SelectItem key={model.id} value={model.id}>
+                                    <div className="flex flex-col">
+                                      <span className="font-medium">{model.name}</span>
+                                      <span className="text-xs text-muted-foreground">{model.description}</span>
+                                    </div>
+                                  </SelectItem>
+                                ))}
+                              </div>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
                     </div>
                   </div>
 
+                  {/* Common Parameters for all providers */}
                   <div className="grid grid-cols-3 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="temperature">Temperature</Label>
@@ -626,10 +866,15 @@ export function CreateTemplateDialog({ open, onOpenChange, onTemplateCreate }: C
                         type="number"
                         step="0.1"
                         min="0"
-                        max="2"
+                        max={formData.modelProvider === 'openai' ? 2 : 1}
                         value={formData.temperature}
-                        onChange={(e) => setFormData(prev => ({ ...prev, temperature: parseFloat(e.target.value) || 0.7 }))}
+                        onChange={(e) => setFormData(prev => ({ ...prev, temperature: parseFloat(e.target.value) || providerDefaults[prev.modelProvider as keyof typeof providerDefaults].temperature }))}
                       />
+                      <p className="text-xs text-muted-foreground">
+                        {formData.modelProvider === 'openai' ? 'Ranges from 0-2. Higher values = more random output. Default: 1.0' : 
+                         formData.modelProvider === 'anthropic' ? 'Ranges from 0-1. Higher values = more random output. Default: 0.0' : 
+                         'Controls randomness of the output. Higher values = more random.'}
+                      </p>
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="maxTokens">Max Tokens</Label>
@@ -637,10 +882,15 @@ export function CreateTemplateDialog({ open, onOpenChange, onTemplateCreate }: C
                         id="maxTokens"
                         type="number"
                         min="1"
-                        max="8000"
+                        max={formData.modelProvider === 'openai' ? 8192 : formData.modelProvider === 'anthropic' ? 4096 : 8000}
                         value={formData.maxTokens}
-                        onChange={(e) => setFormData(prev => ({ ...prev, maxTokens: parseInt(e.target.value) || 2000 }))}
+                        onChange={(e) => setFormData(prev => ({ ...prev, maxTokens: parseInt(e.target.value) || providerDefaults[prev.modelProvider as keyof typeof providerDefaults].maxTokens }))}
                       />
+                      <p className="text-xs text-muted-foreground">
+                        {formData.modelProvider === 'openai' ? 'Maximum tokens to generate. Model-specific limits apply.' : 
+                         formData.modelProvider === 'anthropic' ? 'Maximum tokens to generate. Default: 256' : 
+                         'Maximum tokens to generate in response.'}
+                      </p>
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="topP">Top P</Label>
@@ -651,10 +901,118 @@ export function CreateTemplateDialog({ open, onOpenChange, onTemplateCreate }: C
                         min="0"
                         max="1"
                         value={formData.topP}
-                        onChange={(e) => setFormData(prev => ({ ...prev, topP: parseFloat(e.target.value) || 1.0 }))}
+                        onChange={(e) => setFormData(prev => ({ ...prev, topP: parseFloat(e.target.value) || providerDefaults[prev.modelProvider as keyof typeof providerDefaults].topP }))}
                       />
+                      <p className="text-xs text-muted-foreground">
+                        {formData.modelProvider === 'openai' ? 'Alternative to temperature. Default: 1.0' : 
+                         formData.modelProvider === 'anthropic' ? 'Controls diversity via nucleus sampling.' : 
+                         'Controls diversity of token selection.'}
+                      </p>
                     </div>
                   </div>
+                  
+                  {/* OpenAI Specific Parameters */}
+                  {formData.modelProvider === 'openai' && (
+                    <div className="grid grid-cols-3 gap-4 mt-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="frequencyPenalty">Frequency Penalty</Label>
+                        <Input
+                          id="frequencyPenalty"
+                          type="number"
+                          step="0.1"
+                          min="-2"
+                          max="2"
+                          defaultValue="0"
+                          onChange={(e) => setFormData(prev => ({ ...prev, frequencyPenalty: parseFloat(e.target.value) || 0 }))}
+                        />
+                        <p className="text-xs text-muted-foreground">Penalizes repeated tokens. Range: -2.0 to 2.0. Default: 0</p>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="presencePenalty">Presence Penalty</Label>
+                        <Input
+                          id="presencePenalty"
+                          type="number"
+                          step="0.1"
+                          min="-2"
+                          max="2"
+                          defaultValue="0"
+                          onChange={(e) => setFormData(prev => ({ ...prev, presencePenalty: parseFloat(e.target.value) || 0 }))}
+                        />
+                        <p className="text-xs text-muted-foreground">Penalizes tokens based on appearance in text. Range: -2.0 to 2.0. Default: 0</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Anthropic Specific Parameters */}
+                  {formData.modelProvider === 'anthropic' && (
+                    <div className="grid grid-cols-3 gap-4 mt-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="topK">Top K</Label>
+                        <Input
+                          id="topK"
+                          type="number"
+                          min="0"
+                          defaultValue="5"
+                          onChange={(e) => setFormData(prev => ({ ...prev, topK: parseInt(e.target.value) || 5 }))}
+                        />
+                        <p className="text-xs text-muted-foreground">Limits sampling to top K tokens. Higher values increase diversity.</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Amazon Bedrock Specific Parameters */}
+                  {formData.modelProvider === 'bedrock' && (
+                    <div className="grid grid-cols-2 gap-4 mt-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="guardrailId">Guardrail ID</Label>
+                        <Input
+                          id="guardrailId"
+                          type="text"
+                          placeholder="Optional guardrail ID"
+                          onChange={(e) => setFormData(prev => ({ ...prev, guardrailId: e.target.value }))}
+                        />
+                        <p className="text-xs text-muted-foreground">Amazon Bedrock guardrail ID for content filtering</p>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="guardrailVersion">Guardrail Version</Label>
+                        <Input
+                          id="guardrailVersion"
+                          type="text"
+                          placeholder="Optional guardrail version"
+                          onChange={(e) => setFormData(prev => ({ ...prev, guardrailVersion: e.target.value }))}
+                        />
+                        <p className="text-xs text-muted-foreground">Amazon Bedrock guardrail version</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Google Specific Parameters */}
+                  {formData.modelProvider === 'google' && (
+                    <div className="grid grid-cols-3 gap-4 mt-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="topK">Top K</Label>
+                        <Input
+                          id="topK"
+                          type="number"
+                          min="1"
+                          max="100"
+                          defaultValue="40"
+                          onChange={(e) => setFormData(prev => ({ ...prev, topK: parseInt(e.target.value) || 40 }))}
+                        />
+                        <p className="text-xs text-muted-foreground">Limits sampling to top K tokens. Range: 1-100. Default: 40</p>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="safetySettings">Safety Settings</Label>
+                        <Input
+                          id="safetySettings"
+                          type="text"
+                          placeholder="JSON array of safety settings"
+                          onChange={(e) => setFormData(prev => ({ ...prev, safetySettings: e.target.value }))}
+                        />
+                        <p className="text-xs text-muted-foreground">Configure safety thresholds for content filtering</p>
+                      </div>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
 
