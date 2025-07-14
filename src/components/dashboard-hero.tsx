@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from 'react'
+import { useSession } from 'next-auth/react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -47,6 +48,7 @@ export function DashboardHero({
   myDraftCount, 
   loading 
 }: DashboardHeroProps) {
+  const { data: session } = useSession()
   const [animationStep, setAnimationStep] = useState(0)
 
   useEffect(() => {
@@ -71,8 +73,7 @@ export function DashboardHero({
                   <span className="text-primary">Agentic Templates</span>
                 </h1>
                 <p className="text-xl text-muted-foreground leading-relaxed max-w-2xl">
-                  Centralized repository for deterministic agent prototyping with production-tested prompts and 
-                  industry-specific SaaS integrations.
+                  Centralized repository for deterministic agent prototyping with model provider, production-tested prompts and MCP servers.
                 </p>
               </div>
             </div>
@@ -220,7 +221,7 @@ export function DashboardHero({
             </div>
             <div className="flex space-x-3">
               <Button 
-                onClick={() => window.location.href = '/'} 
+                onClick={() => window.location.href = '/gallery'} 
                 variant="outline" 
                 className="group border-primary/20 hover:bg-primary/5 hover:border-primary/40"
               >
@@ -230,8 +231,14 @@ export function DashboardHero({
               </Button>
               <Button 
                 onClick={() => {
-                  // This would normally check session status but we'll use the import in navigation.tsx
-                  window.location.href = '/mine';
+                  // Check if user is authenticated
+                  if (session) {
+                    // If authenticated, go to create template page
+                    window.location.href = '/mine';
+                  } else {
+                    // If not authenticated, redirect to sign in page
+                    window.location.href = '/signin';
+                  }
                 }}
                 className="group bg-primary hover:bg-primary/90 text-primary-foreground"
               >
