@@ -1,7 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   experimental: {
-    appDir: true,
     serverComponentsExternalPackages: ['@aws-sdk/client-dynamodb', '@aws-sdk/client-s3']
   },
   images: {

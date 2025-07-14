@@ -63,12 +63,15 @@ export function Navigation() {
           >
             Gallery
           </Link>
-          <Link
-            href="/mine"
-            className="transition-colors hover:text-foreground/80 text-foreground/60"
-          >
-            Mine
-          </Link>
+          {/* Mine link is only shown when logged in */}
+          {session && (
+            <Link
+              href="/mine"
+              className="transition-colors hover:text-foreground/80 text-foreground/60"
+            >
+              Mine
+            </Link>
+          )}
           <Link
             href="/sandbox"
             className="transition-colors hover:text-foreground/80 text-foreground/60"
@@ -111,12 +114,13 @@ export function Navigation() {
           </Button>
 
           {/* Create Button */}
-          <Link href="/mine">
-            <Button size="sm">
-              <Plus className="h-4 w-4 mr-2" />
-              Create
-            </Button>
-          </Link>
+          <Button 
+            size="sm" 
+            onClick={() => !session ? signIn() : window.location.href = '/mine'}
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Create
+          </Button>
 
           {/* User Menu */}
           {session ? (

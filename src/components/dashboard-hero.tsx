@@ -219,20 +219,26 @@ export function DashboardHero({
               </p>
             </div>
             <div className="flex space-x-3">
-              <Link href="/">
-                <Button variant="outline" className="group border-primary/20 hover:bg-primary/5 hover:border-primary/40">
-                  <Database className="h-4 w-4 mr-2" />
-                  Browse Templates
-                  <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
-                </Button>
-              </Link>
-              <Link href="/templates/mine">
-                <Button className="group bg-primary hover:bg-primary/90 text-primary-foreground">
-                  <Settings className="h-4 w-4 mr-2" />
-                  Create New
-                  <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
-                </Button>
-              </Link>
+              <Button 
+                onClick={() => window.location.href = '/'} 
+                variant="outline" 
+                className="group border-primary/20 hover:bg-primary/5 hover:border-primary/40"
+              >
+                <Database className="h-4 w-4 mr-2" />
+                Browse Templates
+                <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
+              </Button>
+              <Button 
+                onClick={() => {
+                  // This would normally check session status but we'll use the import in navigation.tsx
+                  window.location.href = '/mine';
+                }}
+                className="group bg-primary hover:bg-primary/90 text-primary-foreground"
+              >
+                <Settings className="h-4 w-4 mr-2" />
+                Create New
+                <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
+              </Button>
             </div>
           </div>
         </CardContent>
