@@ -64,58 +64,16 @@ export function DashboardHero({
           <div className="grid lg:grid-cols-2 gap-8 items-center">
             {/* Left Side - Content */}
             <div className="space-y-6">
-              <div className="space-y-4">
-                <div className="flex items-center space-x-2">
-                  <Code2 className="h-6 w-6 text-primary animate-pulse" />
-                  <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20">
-                    Agent Template Platform
-                  </Badge>
-                </div>
-                <h1 className="text-4xl font-bold text-foreground leading-tight">
+              <div className="space-y-6">
+                <h1 className="text-5xl font-bold text-foreground leading-tight">
                   Marketplace for
                   <br />
                   <span className="text-primary">Agentic Templates</span>
                 </h1>
-                <p className="text-lg text-muted-foreground leading-relaxed">
-                  Centralized repository for deterministic agent prototyping. Build with production-tested prompts, 
-                  mature MCP servers, and industry-specific SaaS integrations across modern development environments.
+                <p className="text-xl text-muted-foreground leading-relaxed max-w-2xl">
+                  Centralized repository for deterministic agent prototyping with production-tested prompts and 
+                  industry-specific SaaS integrations.
                 </p>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div className="flex items-center space-x-2 text-muted-foreground">
-                  <Container className="h-4 w-4 text-primary" />
-                  <span>E2B Sandbox Ready</span>
-                </div>
-                <div className="flex items-center space-x-2 text-muted-foreground">
-                  <Layers3 className="h-4 w-4 text-primary" />
-                  <span>Template Inheritance</span>
-                </div>
-                <div className="flex items-center space-x-2 text-muted-foreground">
-                  <Network className="h-4 w-4 text-primary" />
-                  <span>MCP Server Integration</span>
-                </div>
-                <div className="flex items-center space-x-2 text-muted-foreground">
-                  <Globe className="h-4 w-4 text-primary" />
-                  <span>Industry Verticals</span>
-                </div>
-              </div>
-
-              <div className="flex flex-wrap gap-3">
-                <Link href="/templates/gallery">
-                  <Button size="lg" className="group bg-primary hover:bg-primary/90 text-primary-foreground">
-                    <Play className="h-4 w-4 mr-2" />
-                    Browse Templates
-                    <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
-                  </Button>
-                </Link>
-                <Link href="/templates/mine">
-                  <Button variant="outline" size="lg" className="group border-primary/20 hover:bg-primary/5 hover:border-primary/40">
-                    <User className="h-4 w-4 mr-2" />
-                    My Templates
-                    <ChevronRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
-                  </Button>
-                </Link>
               </div>
             </div>
 
@@ -261,7 +219,7 @@ export function DashboardHero({
               </p>
             </div>
             <div className="flex space-x-3">
-              <Link href="/templates/gallery">
+              <Link href="/">
                 <Button variant="outline" className="group border-primary/20 hover:bg-primary/5 hover:border-primary/40">
                   <Database className="h-4 w-4 mr-2" />
                   Browse Templates

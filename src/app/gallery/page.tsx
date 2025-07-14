@@ -1,18 +1,15 @@
 "use client"
 
 import { useState, useEffect } from 'react'
-import { TemplateCard } from '@/components/template-card'
-import { TemplateDetailsPanel } from '@/components/template-details-panel'
-import { TemplateVisualization } from '@/components/template-visualization'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-
 import { toast } from '@/components/ui/use-toast'
 import { PromptTemplate, IndustryVertical } from '@/types'
-import { Search, Filter, Eye, Copy, GitBranch, Star, Download, Activity } from 'lucide-react'
+import { Search, Filter, Eye, Copy, GitBranch, Star, Download } from 'lucide-react'
+import { TemplateDetailsPanel } from '@/components/template-details-panel'
 
 // Mock public templates data
 const mockPublicTemplates: PromptTemplate[] = [
@@ -397,7 +394,7 @@ export default function TemplateGalleryPage() {
   const [templates, setTemplates] = useState<PromptTemplate[]>(mockPublicTemplates)
   const [filteredTemplates, setFilteredTemplates] = useState<PromptTemplate[]>(mockPublicTemplates)
   const [selectedTemplate, setSelectedTemplate] = useState<PromptTemplate | null>(null)
-  const [isPreviewOpen, setIsPreviewOpen] = useState(false)
+  const [isTemplateDetailsOpen, setIsTemplateDetailsOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [industryFilter, setIndustryFilter] = useState<IndustryVertical | 'all'>('all')
   const [complexityFilter, setComplexityFilter] = useState<'all' | 'beginner' | 'intermediate' | 'advanced'>('all')
@@ -438,7 +435,12 @@ export default function TemplateGalleryPage() {
 
   const handlePreview = (template: PromptTemplate) => {
     setSelectedTemplate(template)
-    setIsPreviewOpen(true)
+    setIsTemplateDetailsOpen(true)
+  }
+
+  const handleTemplateCardClick = (template: PromptTemplate) => {
+    setSelectedTemplate(template)
+    setIsTemplateDetailsOpen(true)
   }
 
   const handleClone = (template: PromptTemplate) => {
@@ -485,79 +487,51 @@ export default function TemplateGalleryPage() {
         </p>
       </div>
 
-      {/* Enhanced Stats Grid with Animations - Ultra Compact */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {/* Community Templates */}
-        <Card className="relative overflow-hidden group hover:shadow-xl transition-all duration-300 border-2 hover:border-primary/50 bg-card">
-          <CardContent className="p-4">
-            <div className="space-y-1">
-              <div className="flex items-center justify-between">
-                <div className="text-2xl font-bold text-primary tabular-nums">{templates.length}</div>
-                <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                  <Search className="h-4 w-4 text-primary group-hover:animate-pulse" />
-                </div>
-              </div>
-              <div className="text-sm font-medium text-foreground">Community Templates</div>
-              <div className="text-xs text-muted-foreground">Public templates available</div>
-            </div>
-            <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-primary/50 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300" />
+      {/* Stats Cards */}
+      <div className="grid gap-4 md:grid-cols-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Templates</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{templates.length}</div>
+            <p className="text-xs text-muted-foreground">Public templates available</p>
           </CardContent>
         </Card>
-
-        {/* Total Usage */}
-        <Card className="relative overflow-hidden group hover:shadow-xl transition-all duration-300 border-2 hover:border-primary/50 bg-card">
-          <CardContent className="p-4">
-            <div className="space-y-1">
-              <div className="flex items-center justify-between">
-                <div className="text-2xl font-bold text-primary tabular-nums">
-                  {templates.reduce((sum, t) => sum + t.usageCount, 0).toLocaleString()}
-                </div>
-                <div className="w-8 h-8 bg-accent rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                  <Activity className="h-4 w-4 text-accent-foreground group-hover:animate-pulse" />
-                </div>
-              </div>
-              <div className="text-sm font-medium text-foreground">Total Executions</div>
-              <div className="text-xs text-muted-foreground">AI workflows run</div>
+        
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Usage</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {templates.reduce((sum, t) => sum + t.usageCount, 0).toLocaleString()}
             </div>
-            <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-primary/50 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300" />
+            <p className="text-xs text-muted-foreground">Times templates have been used</p>
           </CardContent>
         </Card>
-
-        {/* Average Rating */}
-        <Card className="relative overflow-hidden group hover:shadow-xl transition-all duration-300 border-2 hover:border-primary/50 bg-card">
-          <CardContent className="p-4">
-            <div className="space-y-1">
-              <div className="flex items-center justify-between">
-                <div className="text-2xl font-bold text-primary tabular-nums">
-                  {(templates.reduce((sum, t) => sum + t.rating, 0) / templates.length).toFixed(1)}
-                </div>
-                <div className="w-8 h-8 bg-muted rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                  <Star className="h-4 w-4 text-primary group-hover:fill-primary transition-colors duration-300" />
-                </div>
-              </div>
-              <div className="text-sm font-medium text-foreground">Avg Rating</div>
-              <div className="text-xs text-muted-foreground">Community rating</div>
+        
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Average Rating</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {(templates.reduce((sum, t) => sum + t.rating, 0) / templates.length).toFixed(1)}
             </div>
-            <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-primary/50 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300" />
+            <p className="text-xs text-muted-foreground">Community rating</p>
           </CardContent>
         </Card>
-
-        {/* Total Forks */}
-        <Card className="relative overflow-hidden group hover:shadow-xl transition-all duration-300 border-2 hover:border-primary/50 bg-card">
-          <CardContent className="p-4">
-            <div className="space-y-1">
-              <div className="flex items-center justify-between">
-                <div className="text-2xl font-bold text-primary tabular-nums">
-                  {templates.reduce((sum, t) => sum + t.forkCount, 0)}
-                </div>
-                <div className="w-8 h-8 bg-secondary/20 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                  <GitBranch className="h-4 w-4 text-secondary-foreground group-hover:animate-bounce" />
-                </div>
-              </div>
-              <div className="text-sm font-medium text-foreground">Total Forks</div>
-              <div className="text-xs text-muted-foreground">Templates forked by users</div>
+        
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Forks</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {templates.reduce((sum, t) => sum + t.forkCount, 0)}
             </div>
-            <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-primary/50 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300" />
+            <p className="text-xs text-muted-foreground">Templates forked by users</p>
           </CardContent>
         </Card>
       </div>
@@ -622,8 +596,8 @@ export default function TemplateGalleryPage() {
         Showing {filteredTemplates.length} of {templates.length} templates
       </div>
 
-      {/* Templates Grid - Responsive Layout */}
-      <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-3">
+      {/* Templates Grid */}
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {filteredTemplates.length === 0 ? (
           <div className="col-span-full text-center py-12">
             <p className="text-muted-foreground text-lg">No templates found</p>
@@ -633,14 +607,104 @@ export default function TemplateGalleryPage() {
           </div>
         ) : (
           filteredTemplates.map((template) => (
-            <TemplateCard
+            <Card
               key={template.id}
-              template={template}
-              onPreview={handlePreview}
-              onClone={handleClone}
-              onFork={handleFork}
-              onExport={handleExport}
-            />
+              className="group hover:shadow-lg transition-shadow cursor-pointer"
+              onClick={() => handleTemplateCardClick(template)}
+            >
+              <CardHeader className="pb-3">
+                <div className="flex items-start justify-between">
+                  <div className="space-y-1 flex-1">
+                    <CardTitle className="text-lg line-clamp-2">{template.title}</CardTitle>
+                    <div className="flex items-center space-x-2">
+                      <Badge variant="secondary">{template.industry}</Badge>
+                      <Badge variant="outline" className={
+                        template.metadata.complexity === 'beginner' ? 'bg-green-100 text-green-800' :
+                        template.metadata.complexity === 'intermediate' ? 'bg-yellow-100 text-yellow-800' :
+                        'bg-red-100 text-red-800'
+                      }>
+                        {template.metadata.complexity}
+                      </Badge>
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-1 text-sm text-muted-foreground">
+                    <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                    <span>{template.rating}</span>
+                  </div>
+                </div>
+                <CardDescription className="line-clamp-3">
+                  {template.description}
+                </CardDescription>
+              </CardHeader>
+
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex flex-wrap gap-1">
+                    {template.tags.slice(0, 3).map((tag) => (
+                      <Badge key={tag} variant="outline" className="text-xs">
+                        {tag}
+                      </Badge>
+                    ))}
+                    {template.tags.length > 3 && (
+                      <Badge variant="outline" className="text-xs">
+                        +{template.tags.length - 3}
+                      </Badge>
+                    )}
+                  </div>
+
+                  <div className="flex items-center justify-between text-sm text-muted-foreground">
+                    <span>by {template.author}</span>
+                    <div className="flex items-center space-x-3">
+                      <span>{template.usageCount.toLocaleString()} uses</span>
+                      <span>{template.forkCount} forks</span>
+                    </div>
+                  </div>
+
+                  <div className="flex space-x-1">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handlePreview(template)
+                      }}
+                    >
+                      <Eye className="h-3 w-3" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleClone(template)
+                      }}
+                    >
+                      <Copy className="h-3 w-3" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleFork(template)
+                      }}
+                    >
+                      <GitBranch className="h-3 w-3" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleExport(template)
+                      }}
+                    >
+                      <Download className="h-3 w-3" />
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           ))
         )}
       </div>
@@ -648,14 +712,8 @@ export default function TemplateGalleryPage() {
       {/* Template Details Panel */}
       <TemplateDetailsPanel
         template={selectedTemplate}
-        isOpen={isPreviewOpen}
-        onOpenChange={setIsPreviewOpen}
-        onUseTemplate={(template) => {
-          toast({
-            title: "Use Template",
-            description: `Template "${template.title}" will be used in sandbox.`
-          })
-        }}
+        isOpen={isTemplateDetailsOpen}
+        onOpenChange={setIsTemplateDetailsOpen}
         onCloneTemplate={handleClone}
         onForkTemplate={handleFork}
       />

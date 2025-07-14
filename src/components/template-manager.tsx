@@ -141,7 +141,8 @@ export function TemplateManager({
   }
 
   const handleClone = (template: PromptTemplate) => {
-    setFormData({
+    setFormData(prev => ({
+      ...prev,
       title: `${template.title} (Copy)`,
       description: template.description,
       industry: template.industry,
@@ -149,16 +150,17 @@ export function TemplateManager({
       systemPrompt: template.promptConfig.systemPrompt,
       userPromptTemplate: template.promptConfig.userPromptTemplate,
       tags: [...template.tags],
-      mcpServers: template.mcpServers.map(s => s.serverId),
-      saasIntegrations: template.saasIntegrations.map(s => s.provider)
-    })
+      mcpServers: template.mcpServers,
+      saasIntegrations: template.saasIntegrations
+    }))
     setCreationMode('clone')
     setParentTemplate(template)
     setIsCreateDialogOpen(true)
   }
 
   const handleInherit = (template: PromptTemplate) => {
-    setFormData({
+    setFormData(prev => ({
+      ...prev,
       title: '',
       description: '',
       industry: template.industry,
@@ -166,9 +168,9 @@ export function TemplateManager({
       systemPrompt: template.promptConfig.systemPrompt,
       userPromptTemplate: '',
       tags: [...template.tags],
-      mcpServers: template.mcpServers.map(s => s.serverId),
-      saasIntegrations: template.saasIntegrations.map(s => s.provider)
-    })
+      mcpServers: template.mcpServers,
+      saasIntegrations: template.saasIntegrations
+    }))
     setCreationMode('inherit')
     setParentTemplate(template)
     setIsCreateDialogOpen(true)
@@ -176,7 +178,8 @@ export function TemplateManager({
 
   const handleEdit = (template: PromptTemplate) => {
     setSelectedTemplate(template)
-    setFormData({
+    setFormData(prev => ({
+      ...prev,
       title: template.title,
       description: template.description,
       industry: template.industry,
@@ -184,9 +187,9 @@ export function TemplateManager({
       systemPrompt: template.promptConfig.systemPrompt,
       userPromptTemplate: template.promptConfig.userPromptTemplate,
       tags: [...template.tags],
-      mcpServers: template.mcpServers.map(s => s.serverId),
-      saasIntegrations: template.saasIntegrations.map(s => s.provider)
-    })
+      mcpServers: template.mcpServers,
+      saasIntegrations: template.saasIntegrations
+    }))
     setIsEditDialogOpen(true)
   }
 
