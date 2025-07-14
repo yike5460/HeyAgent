@@ -126,7 +126,7 @@ export default function MyTemplatesPage() {
     try {
       const updatedTemplate = {
         ...template,
-        status: 'published'
+        status: 'published' as const
       };
       
       const savedTemplate = await localStorageService.saveTemplate(updatedTemplate);
@@ -157,7 +157,7 @@ export default function MyTemplatesPage() {
     try {
       const updatedTemplate = {
         ...template,
-        status: 'draft'
+        status: 'draft' as const
       };
       
       const savedTemplate = await localStorageService.saveTemplate(updatedTemplate);
