@@ -554,7 +554,7 @@ export default function MyTemplatesPage() {
           <div className="flex items-center justify-between">
             <h2 className="text-2xl font-bold">Template Management</h2>
             <div className="flex space-x-2">
-              <Button variant="outline" onClick={() => {}}>
+              <Button variant="outline" onClick={handleExportAll}>
                 <Download className="h-4 w-4 mr-2" />
                 Export All
               </Button>
@@ -618,6 +618,13 @@ export default function MyTemplatesPage() {
           </div>
 
 
+          
+          {/* Create Template Dialog - Added to Management Tab */}
+          <CreateTemplateDialog
+            open={isCreateDialogOpen}
+            onOpenChange={setIsCreateDialogOpen}
+            onTemplateCreate={handleTemplateCreate}
+          />
         </TabsContent>
 
         <TabsContent value="analytic">
