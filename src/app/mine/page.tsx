@@ -122,6 +122,68 @@ export default function MyTemplatesPage() {
     }
   }
 
+  const handleTemplatePublish = async (template: PromptTemplate) => {
+    try {
+      const updatedTemplate = {
+        ...template,
+        status: 'published'
+      };
+      
+      const savedTemplate = await localStorageService.saveTemplate(updatedTemplate);
+      
+      setTemplates(prev => 
+        prev.map(t => t.id === template.id ? savedTemplate : t)
+      );
+      
+      if (selectedTemplate?.id === template.id) {
+        setSelectedTemplate(savedTemplate);
+      }
+      
+      toast({
+        title: "Template Published",
+        description: "Your template is now publicly available in the gallery."
+      });
+    } catch (error) {
+      console.error('Error publishing template:', error);
+      toast({
+        title: "Error",
+        description: "Failed to publish template.",
+        variant: "destructive"
+      });
+    }
+  };
+  
+  const handleTemplateUnpublish = async (template: PromptTemplate) => {
+    try {
+      const updatedTemplate = {
+        ...template,
+        status: 'draft'
+      };
+      
+      const savedTemplate = await localStorageService.saveTemplate(updatedTemplate);
+      
+      setTemplates(prev => 
+        prev.map(t => t.id === template.id ? savedTemplate : t)
+      );
+      
+      if (selectedTemplate?.id === template.id) {
+        setSelectedTemplate(savedTemplate);
+      }
+      
+      toast({
+        title: "Template Unpublished",
+        description: "Your template has been moved back to drafts."
+      });
+    } catch (error) {
+      console.error('Error unpublishing template:', error);
+      toast({
+        title: "Error",
+        description: "Failed to unpublish template.",
+        variant: "destructive"
+      });
+    }
+  };
+
   const handleTemplateDelete = async (id: string) => {
     try {
       const success = await localStorageService.deleteTemplate(id)
@@ -545,6 +607,11 @@ export default function MyTemplatesPage() {
                       description: `Template "${template.title}" exported successfully.`
                     })
                   }}
+                  onDelete={(template) => handleTemplateDelete(template.id)}
+                  onPublish={handleTemplatePublish}
+                  onUnpublish={handleTemplateUnpublish}
+                  showPublishStatus={true}
+                  currentUserId="current-user"
                 />
               ))
             )}

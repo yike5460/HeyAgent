@@ -17,10 +17,16 @@ import {
   Database,
   GitBranch,
   Eye,
-  Download
+  Download,
+  Trash2,
+  Globe,
+  Lock,
+  AlertCircle,
+  CheckCircle2
 } from "lucide-react"
 import { formatDate, formatNumber } from "@/lib/utils"
 import { PromptTemplate } from "@/types"
+import { useSession } from "next-auth/react"
 
 interface TemplateCardProps {
   template: PromptTemplate
@@ -28,7 +34,12 @@ interface TemplateCardProps {
   onClone?: (template: PromptTemplate) => void
   onFork?: (template: PromptTemplate) => void
   onExport?: (template: PromptTemplate) => void
+  onDelete?: (template: PromptTemplate) => void
+  onPublish?: (template: PromptTemplate) => void
+  onUnpublish?: (template: PromptTemplate) => void
   variant?: 'default' | 'compact'
+  showPublishStatus?: boolean
+  currentUserId?: string
 }
 
 export function TemplateCard({ 
@@ -37,8 +48,17 @@ export function TemplateCard({
   onClone, 
   onFork, 
   onExport,
-  variant = 'default' 
+  onDelete,
+  onPublish,
+  onUnpublish,
+  variant = 'default',
+  showPublishStatus = false,
+  currentUserId
 }: TemplateCardProps) {
+  const { data: session } = useSession()
+  const isCurrentUserTemplate = currentUserId ? template.userId === currentUserId : session?.user?.email === template.author
+  const isPublished = template.status === 'published'
+  const isDraft = template.status === 'draft'
   const getIndustryColor = (industry: string) => {
     const colors: Record<string, string> = {
       'Media & Entertainment': 'bg-primary/10 text-primary border-primary/20 hover:bg-primary/15',
@@ -208,50 +228,114 @@ export function TemplateCard({
                 <GitBranch className="h-3 w-3 text-secondary" />
                 <span className="font-medium">{template.forkCount}</span>
               </div>
+              {showPublishStatus && (
+                <div className="flex items-center space-x-1">
+                  {isPublished ? (
+                    <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800 flex items-center space-x-1 h-5 text-[10px]">
+                      <Globe className="h-2.5 w-2.5" />
+                      <span>Public</span>
+                    </Badge>
+                  ) : (
+                    <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-800 flex items-center space-x-1 h-5 text-[10px]">
+                      <Lock className="h-2.5 w-2.5" />
+                      <span>Draft</span>
+                    </Badge>
+                  )}
+                </div>
+              )}
             </div>
             <span className="text-xs truncate max-w-[100px]">by {template.author}</span>
           </div>
 
           {/* Action Buttons - Fixed Position */}
           <div className="flex gap-1 w-full">
+            {/* View button - Available to everyone */}
             {onPreview && (
               <Button 
                 size="sm" 
                 variant="outline" 
                 onClick={() => onPreview(template)}
                 className="group/btn hover:border-primary/30 hover:bg-primary/5 h-7 flex-1 flex items-center justify-center min-w-0"
+                title="View Details"
               >
                 <Eye className="h-3 w-3 group-hover/btn:scale-110 transition-transform text-primary" />
               </Button>
             )}
+            
+            {/* Clone/Copy button - Available to everyone */}
             {onClone && (
               <Button 
                 size="sm" 
                 variant="outline" 
                 onClick={() => onClone(template)}
                 className="group/btn hover:border-secondary/30 hover:bg-secondary/5 h-7 flex-1 flex items-center justify-center min-w-0"
+                title="Clone Template"
               >
                 <Copy className="h-3 w-3 group-hover/btn:scale-110 transition-transform text-secondary" />
               </Button>
             )}
+            
+            {/* Fork button - Available to everyone */}
             {onFork && (
               <Button 
                 size="sm" 
                 variant="outline" 
                 onClick={() => onFork(template)}
                 className="group/btn hover:border-accent/30 hover:bg-accent/5 h-7 flex-1 flex items-center justify-center min-w-0"
+                title="Fork Template"
               >
                 <GitBranch className="h-3 w-3 group-hover/btn:scale-110 transition-transform text-accent-foreground" />
               </Button>
             )}
+            
+            {/* Export button - Available to everyone */}
             {onExport && (
               <Button 
                 size="sm" 
                 variant="outline" 
                 onClick={() => onExport(template)}
                 className="group/btn hover:border-muted-foreground/30 hover:bg-muted/50 h-7 flex-1 flex items-center justify-center min-w-0"
+                title="Export Template"
               >
                 <Download className="h-3 w-3 group-hover/btn:scale-110 transition-transform text-muted-foreground" />
+              </Button>
+            )}
+            
+            {/* Publish/Unpublish button - Only for user's own templates */}
+            {isCurrentUserTemplate && isDraft && onPublish && (
+              <Button 
+                size="sm" 
+                variant="outline" 
+                onClick={() => onPublish(template)}
+                className="group/btn hover:border-green-600/30 hover:bg-green-500/5 h-7 flex-1 flex items-center justify-center min-w-0"
+                title="Publish Template"
+              >
+                <Globe className="h-3 w-3 group-hover/btn:scale-110 transition-transform text-green-600" />
+              </Button>
+            )}
+            
+            {isCurrentUserTemplate && isPublished && onUnpublish && (
+              <Button 
+                size="sm" 
+                variant="outline" 
+                onClick={() => onUnpublish(template)}
+                className="group/btn hover:border-amber-600/30 hover:bg-amber-500/5 h-7 flex-1 flex items-center justify-center min-w-0"
+                title="Unpublish Template"
+              >
+                <Lock className="h-3 w-3 group-hover/btn:scale-110 transition-transform text-amber-600" />
+              </Button>
+            )}
+            
+            {/* Delete button - Only for user's own templates */}
+            {isCurrentUserTemplate && onDelete && (
+              <Button 
+                size="sm" 
+                variant="outline" 
+                onClick={() => onDelete(template)}
+                className="group/btn hover:border-red-600/30 hover:bg-red-500/5 h-7 flex-1 flex items-center justify-center min-w-0"
+                title="Delete Template"
+              >
+                <Trash2 className="h-3 w-3 group-hover/btn:scale-110 transition-transform text-red-600" />
               </Button>
             )}
           </div>

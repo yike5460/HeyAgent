@@ -12,6 +12,7 @@ import { PromptTemplate, IndustryVertical } from '@/types'
 import { localStorageService } from '@/services/local-storage'
 import { useSession } from "next-auth/react"
 import { toast } from '@/components/ui/use-toast'
+import { TemplateCard } from '@/components/template-card'
 import {
   Brain,
   Database,
@@ -617,104 +618,18 @@ export default function HomePage() {
           </div>
         ) : (
           filteredTemplates.map((template) => (
-            <Card
+            <TemplateCard
               key={template.id}
-              className="group hover:shadow-lg transition-shadow cursor-pointer"
-              onClick={() => handleTemplateCardClick(template)}
-            >
-              <CardHeader className="pb-3">
-                <div className="flex items-start justify-between">
-                  <div className="space-y-1 flex-1">
-                    <CardTitle className="text-lg line-clamp-2">{template.title}</CardTitle>
-                    <div className="flex items-center space-x-2">
-                      <Badge variant="secondary">{template.industry}</Badge>
-                      <Badge variant="outline" className={
-                        template.metadata.complexity === 'beginner' ? 'bg-green-100 text-green-800' :
-                        template.metadata.complexity === 'intermediate' ? 'bg-yellow-100 text-yellow-800' :
-                        'bg-red-100 text-red-800'
-                      }>
-                        {template.metadata.complexity}
-                      </Badge>
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-1 text-sm text-muted-foreground">
-                    <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                    <span>{template.rating}</span>
-                  </div>
-                </div>
-                <CardDescription className="line-clamp-3">
-                  {template.description}
-                </CardDescription>
-              </CardHeader>
-
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex flex-wrap gap-1">
-                    {template.tags.slice(0, 3).map((tag) => (
-                      <Badge key={tag} variant="outline" className="text-xs">
-                        {tag}
-                      </Badge>
-                    ))}
-                    {template.tags.length > 3 && (
-                      <Badge variant="outline" className="text-xs">
-                        +{template.tags.length - 3}
-                      </Badge>
-                    )}
-                  </div>
-
-                  <div className="flex items-center justify-between text-sm text-muted-foreground">
-                    <span>by {template.author}</span>
-                    <div className="flex items-center space-x-3">
-                      <span>{template.usageCount.toLocaleString()} uses</span>
-                      <span>{template.forkCount} forks</span>
-                    </div>
-                  </div>
-
-                  <div className="flex space-x-1">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        handlePreview(template)
-                      }}
-                    >
-                      <Eye className="h-3 w-3" />
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        handleClone(template)
-                      }}
-                    >
-                      <Copy className="h-3 w-3" />
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        handleFork(template)
-                      }}
-                    >
-                      <GitBranch className="h-3 w-3" />
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        handleExport(template)
-                      }}
-                    >
-                      <Download className="h-3 w-3" />
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+              template={template}
+              onPreview={(template) => {
+                setSelectedTemplate(template)
+                setIsTemplateDetailsOpen(true)
+              }}
+              onClone={handleClone}
+              onFork={handleFork}
+              onExport={handleExport}
+              currentUserId={session?.user?.email || ''}
+            />
           ))
         )}
       </div>
