@@ -44,7 +44,7 @@ const mockPublicTemplates: PromptTemplate[] = [
       }
     },
     mcpServers: [],
-    saasIntegrations: [],
+    executionEnvironment: [],
     agentConfig: {
       workflow: [],
       errorHandling: {
@@ -200,41 +200,10 @@ const mockPublicTemplates: PromptTemplate[] = [
         resources: [],
       },
     ],
-    saasIntegrations: [
+    executionEnvironment: [
       {
-        provider: 'openai',
-        service: 'gpt-4',
-        configuration: {
-          apiKey: 'sk-key',
-          endpoint: 'https://api.openai.com/v1',
-          version: 'v1',
-          rateLimit: {
-            requestsPerMinute: 60,
-            requestsPerHour: 1000,
-            burstLimit: 10,
-          },
-          costTracking: {
-            enabled: true,
-            budgetLimit: 100,
-            alertThreshold: 80,
-            trackingGranularity: 'per-call',
-          },
-        },
-        capabilities: [
-          {
-            type: 'text-generation',
-            parameters: [
-              {
-                name: 'max_tokens',
-                type: 'number',
-                description: 'Maximum tokens to generate',
-                required: false,
-                defaultValue: 1500
-              }
-            ],
-            constraints: []
-          }
-        ]
+        infrastructure: 'claude-code',
+        requirements: 'Claude Code CLI, Node.js 18+, Python 3.9+'
       }
     ],
     agentConfig: {
@@ -322,7 +291,7 @@ const mockPublicTemplates: PromptTemplate[] = [
       }
     },
     mcpServers: [],
-    saasIntegrations: [],
+    executionEnvironment: [],
     agentConfig: {
       workflow: [],
       errorHandling: {

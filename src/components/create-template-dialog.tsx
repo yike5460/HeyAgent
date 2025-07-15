@@ -25,7 +25,7 @@ import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { X, Plus, Brain, MessageSquare, Database, Cloud, Settings } from "lucide-react"
-import { PromptTemplate, IndustryVertical, MCPServerConfig, SaaSIntegration, TemplateParameter } from "@/types"
+import { PromptTemplate, IndustryVertical, MCPServerConfig, ExecutionEnvironment, TemplateParameter } from "@/types"
 
 interface CreateTemplateDialogProps {
   open: boolean
@@ -40,7 +40,8 @@ const industries: IndustryVertical[] = [
   "Manufacturing",
   "Automotive",
   "Financial Services",
-  "Gaming"
+  "Gaming",
+  "Cross Industry"
 ]
 
 const complexityOptions = [
@@ -61,13 +62,13 @@ const commonMCPServerTypes = [
   { id: 'custom', type: 'custom', name: 'Custom Server', description: 'Custom MCP server implementation' }
 ]
 
-const commonSaaSProviders = [
-  { provider: 'openai', service: 'gpt-4', name: 'OpenAI GPT-4', capabilities: ['text-generation'] },
-  { provider: 'anthropic', service: 'claude-3', name: 'Anthropic Claude', capabilities: ['text-generation'] },
-  { provider: 'bedrock', service: 'claude-3-sonnet', name: 'Amazon Bedrock', capabilities: ['text-generation'] },
-  { provider: 'elevenlabs', service: 'speech-synthesis', name: 'ElevenLabs TTS', capabilities: ['audio-synthesis'] },
-  { provider: 'kling', service: 'video-generation', name: 'Kling Video', capabilities: ['video-generation'] },
-  { provider: 'custom', service: 'custom-service', name: 'Custom Service', capabilities: ['custom'] }
+const commonExecutionEnvironments = [
+  { infrastructure: 'vscode', name: 'VS Code', description: 'Visual Studio Code with extensions' },
+  { infrastructure: 'cursor', name: 'Cursor', description: 'AI-powered code editor' },
+  { infrastructure: 'claude-code', name: 'Claude Code', description: 'Claude Code CLI environment' },
+  { infrastructure: 'jupyter', name: 'Jupyter Notebook', description: 'Interactive computing environment' },
+  { infrastructure: 'github-codespaces', name: 'GitHub Codespaces', description: 'Cloud development environment' },
+  { infrastructure: 'replit', name: 'Replit', description: 'Online IDE and hosting platform' }
 ]
 
 // Model series mapping based on provider information
@@ -242,11 +243,10 @@ export function CreateTemplateDialog({ open, onOpenChange, onTemplateCreate }: C
        configuration: string; // JSON string
      }[],
      
-     // SaaS Integrations
-     saasIntegrations: [] as {
-       name: string;
-       description: string;
-       apiUrl: string;
+     // Execution Environment
+     executionEnvironment: [] as {
+       infrastructure: string;
+       requirements: string;
      }[],
     
     // Dependencies
@@ -267,10 +267,9 @@ export function CreateTemplateDialog({ open, onOpenChange, onTemplateCreate }: C
     description: "",
     configuration: ""
   })
-  const [newSaaSIntegration, setNewSaaSIntegration] = useState({
-    name: "",
-    description: "",
-    apiUrl: ""
+  const [newExecutionEnvironment, setNewExecutionEnvironment] = useState({
+    infrastructure: "",
+    requirements: ""
   })
 
   const handleAddTag = () => {
@@ -334,24 +333,23 @@ export function CreateTemplateDialog({ open, onOpenChange, onTemplateCreate }: C
     }))
   }
 
-  const handleAddSaaSIntegration = () => {
-    if (newSaaSIntegration.name.trim()) {
+  const handleAddExecutionEnvironment = () => {
+    if (newExecutionEnvironment.infrastructure.trim()) {
       setFormData(prev => ({
         ...prev,
-        saasIntegrations: [...prev.saasIntegrations, { ...newSaaSIntegration }]
+        executionEnvironment: [...prev.executionEnvironment, { ...newExecutionEnvironment }]
       }))
-      setNewSaaSIntegration({
-        name: "",
-        description: "",
-        apiUrl: ""
+      setNewExecutionEnvironment({
+        infrastructure: "",
+        requirements: ""
       })
     }
   }
 
-  const handleRemoveSaaSIntegration = (index: number) => {
+  const handleRemoveExecutionEnvironment = (index: number) => {
     setFormData(prev => ({
       ...prev,
-      saasIntegrations: prev.saasIntegrations.filter((_, i) => i !== index)
+      executionEnvironment: prev.executionEnvironment.filter((_, i) => i !== index)
     }))
   }
 
@@ -376,11 +374,11 @@ export function CreateTemplateDialog({ open, onOpenChange, onTemplateCreate }: C
     const errors: string[] = []
     
     if (!formData.title.trim()) errors.push("Title is required")
-    if (!formData.description.trim()) errors.push("Description is required")
+    // Description is now optional
     if (!formData.industry) errors.push("Industry is required")
     if (!formData.useCase.trim()) errors.push("Use case is required")
     if (formData.title.length < 3) errors.push("Title must be at least 3 characters")
-    if (formData.description.length < 10) errors.push("Description must be at least 10 characters")
+    if (formData.description.length > 0 && formData.description.length < 10) errors.push("Description must be at least 10 characters if provided")
     
     return errors
   }
@@ -464,31 +462,7 @@ export function CreateTemplateDialog({ open, onOpenChange, onTemplateCreate }: C
         }],
         resources: []
       })),
-      saasIntegrations: formData.saasIntegrations.map((integration, index) => ({
-        provider: 'custom' as any,
-        service: integration.name,
-        configuration: {
-          apiKey: 'your-api-key',
-          endpoint: integration.apiUrl || 'https://api.custom.com/v1',
-          version: 'v1',
-          rateLimit: {
-            requestsPerMinute: 60,
-            requestsPerHour: 1000,
-            burstLimit: 10
-          },
-          costTracking: {
-            enabled: true,
-            budgetLimit: 100,
-            alertThreshold: 80,
-            trackingGranularity: 'per-call' as const
-          }
-        },
-        capabilities: [{
-          type: 'custom' as any,
-          parameters: [],
-          constraints: []
-        }]
-      })),
+      executionEnvironment: formData.executionEnvironment,
       agentConfig: {
         workflow: [],
         errorHandling: {
@@ -579,7 +553,7 @@ export function CreateTemplateDialog({ open, onOpenChange, onTemplateCreate }: C
       userPromptTemplate: "",
       parameters: [],
       mcpServers: [],
-      saasIntegrations: [],
+      executionEnvironment: [],
       dependencies: []
     })
     
@@ -649,7 +623,7 @@ export function CreateTemplateDialog({ open, onOpenChange, onTemplateCreate }: C
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="description">Description *</Label>
+                    <Label htmlFor="description">Description</Label>
                     <Textarea
                       id="description"
                       value={formData.description}
@@ -660,7 +634,7 @@ export function CreateTemplateDialog({ open, onOpenChange, onTemplateCreate }: C
                     />
                   </div>
 
-                  <div className="grid grid-cols-3 gap-4">
+                  <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="industry">Industry *</Label>
                       <Select value={formData.industry} onValueChange={(value: IndustryVertical) => setFormData(prev => ({ ...prev, industry: value }))}>
@@ -671,22 +645,6 @@ export function CreateTemplateDialog({ open, onOpenChange, onTemplateCreate }: C
                           {industries.map((industry) => (
                             <SelectItem key={industry} value={industry}>
                               {industry}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="category">Category</Label>
-                      <Select value={formData.category} onValueChange={(value) => setFormData(prev => ({ ...prev, category: value }))}>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {categoryOptions.map((category) => (
-                            <SelectItem key={category} value={category}>
-                              {category}
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -1156,54 +1114,62 @@ export function CreateTemplateDialog({ open, onOpenChange, onTemplateCreate }: C
                 </CardContent>
               </Card>
 
-              {/* SaaS Integrations */}
+              {/* Execution Environment */}
               <Card>
                 <CardHeader>
                   <CardTitle className="text-lg flex items-center space-x-2">
-                    <Cloud className="h-5 w-5 text-emerald-600" />
-                    <span>SaaS Integrations</span>
+                    <Settings className="h-5 w-5 text-purple-600" />
+                    <span>Execution Environment</span>
                   </CardTitle>
-                  <CardDescription>Connect external SaaS services and APIs</CardDescription>
+                  <CardDescription>Record the actual infrastructure the agent template executes on</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
-                    <Input
-                      placeholder="Integration name (required)"
-                      value={newSaaSIntegration.name}
-                      onChange={(e) => setNewSaaSIntegration(prev => ({ ...prev, name: e.target.value }))}
-                    />
-                    <Input
-                      placeholder="Description (optional)"
-                      value={newSaaSIntegration.description}
-                      onChange={(e) => setNewSaaSIntegration(prev => ({ ...prev, description: e.target.value }))}
-                    />
-                    <Input
-                      placeholder="API URL (optional)"
-                      value={newSaaSIntegration.apiUrl}
-                      onChange={(e) => setNewSaaSIntegration(prev => ({ ...prev, apiUrl: e.target.value }))}
+                    <Select
+                      value={newExecutionEnvironment.infrastructure}
+                      onValueChange={(value) => setNewExecutionEnvironment(prev => ({ ...prev, infrastructure: value }))}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select infrastructure" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="vscode">VS Code</SelectItem>
+                        <SelectItem value="cursor">Cursor</SelectItem>
+                        <SelectItem value="claude-code">Claude Code</SelectItem>
+                        <SelectItem value="jupyter">Jupyter Notebook</SelectItem>
+                        <SelectItem value="github-codespaces">GitHub Codespaces</SelectItem>
+                        <SelectItem value="replit">Replit</SelectItem>
+                        <SelectItem value="colab">Google Colab</SelectItem>
+                        <SelectItem value="other">Other</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Textarea
+                      placeholder="Specific requirements (e.g., install ROO CODE plugin in VS Code, Python 3.9+, Node.js 16+)"
+                      value={newExecutionEnvironment.requirements}
+                      onChange={(e) => setNewExecutionEnvironment(prev => ({ ...prev, requirements: e.target.value }))}
+                      rows={3}
                     />
                     <Button
                       type="button"
-                      onClick={handleAddSaaSIntegration}
-                      disabled={!newSaaSIntegration.name.trim()}
+                      onClick={handleAddExecutionEnvironment}
+                      disabled={!newExecutionEnvironment.infrastructure.trim()}
                       size="sm"
                     >
-                      Add SaaS Integration
+                      Add Execution Environment
                     </Button>
                   </div>
                   <div className="space-y-2">
-                    {formData.saasIntegrations.map((integration, index) => (
+                    {formData.executionEnvironment.map((env, index) => (
                       <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
                         <div>
-                          <div className="font-medium">{integration.name}</div>
-                          {integration.description && <div className="text-sm text-muted-foreground">{integration.description}</div>}
-                          {integration.apiUrl && <div className="text-xs text-blue-600">{integration.apiUrl}</div>}
+                          <div className="font-medium capitalize">{env?.infrastructure?.replace('-', ' ') || 'Unknown'}</div>
+                          {env?.requirements && <div className="text-sm text-muted-foreground">{env.requirements}</div>}
                         </div>
                         <Button
                           type="button"
                           variant="ghost"
                           size="sm"
-                          onClick={() => handleRemoveSaaSIntegration(index)}
+                          onClick={() => handleRemoveExecutionEnvironment(index)}
                         >
                           <X className="h-4 w-4" />
                         </Button>

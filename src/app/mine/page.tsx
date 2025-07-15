@@ -10,6 +10,16 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { toast } from '@/components/ui/use-toast'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { PromptTemplate } from '@/types'
 import { localStorageService } from '@/services/local-storage'
 import { Brain, Database, Settings, Workflow, Plus, Upload, Download, TrendingUp, BarChart3, Activity } from 'lucide-react'
@@ -20,6 +30,8 @@ export default function MyTemplatesPage() {
   const [loading, setLoading] = useState(true)
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const [isPreviewOpen, setIsPreviewOpen] = useState(false)
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+  const [templateToDelete, setTemplateToDelete] = useState<PromptTemplate | null>(null)
 
   // Load templates from local storage on component mount
   useEffect(() => {
@@ -184,13 +196,20 @@ export default function MyTemplatesPage() {
     }
   };
 
-  const handleTemplateDelete = async (id: string) => {
+  const handleTemplateDeleteRequest = (template: PromptTemplate) => {
+    setTemplateToDelete(template)
+    setIsDeleteDialogOpen(true)
+  }
+
+  const handleTemplateDelete = async () => {
+    if (!templateToDelete) return
+    
     try {
-      const success = await localStorageService.deleteTemplate(id)
+      const success = await localStorageService.deleteTemplate(templateToDelete.id)
       if (success) {
-        setTemplates(prev => prev.filter(t => t.id !== id))
-        if (selectedTemplate?.id === id) {
-          const remainingTemplates = templates.filter(t => t.id !== id)
+        setTemplates(prev => prev.filter(t => t.id !== templateToDelete.id))
+        if (selectedTemplate?.id === templateToDelete.id) {
+          const remainingTemplates = templates.filter(t => t.id !== templateToDelete.id)
           setSelectedTemplate(remainingTemplates.length > 0 ? remainingTemplates[0] : null)
         }
         toast({
@@ -207,7 +226,15 @@ export default function MyTemplatesPage() {
         description: "Failed to delete template.",
         variant: "destructive"
       })
+    } finally {
+      setIsDeleteDialogOpen(false)
+      setTemplateToDelete(null)
     }
+  }
+
+  const handleDeleteDialogClose = () => {
+    setIsDeleteDialogOpen(false)
+    setTemplateToDelete(null)
   }
 
   const handleTemplateClone = async (id: string) => {
@@ -607,7 +634,7 @@ export default function MyTemplatesPage() {
                       description: `Template "${template.title}" exported successfully.`
                     })
                   }}
-                  onDelete={(template) => handleTemplateDelete(template.id)}
+                  onDelete={handleTemplateDeleteRequest}
                   onPublish={handleTemplatePublish}
                   onUnpublish={handleTemplateUnpublish}
                   showPublishStatus={true}
@@ -739,6 +766,27 @@ export default function MyTemplatesPage() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Template</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete "{templateToDelete?.title}"? This action cannot be undone and will permanently remove the template and all its configurations.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={handleDeleteDialogClose}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleTemplateDelete}
+              className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
+            >
+              Delete Template
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

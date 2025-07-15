@@ -83,47 +83,10 @@ const mockTemplates: PromptTemplate[] = [
         resources: [],
       },
     ],
-    saasIntegrations: [
+    executionEnvironment: [
       {
-        provider: 'openai',
-        service: 'gpt-4',
-        configuration: {
-          apiKey: 'sk-key',
-          endpoint: 'https://api.openai.com/v1',
-          version: 'v1',
-          rateLimit: {
-            requestsPerMinute: 60,
-            requestsPerHour: 1000,
-            burstLimit: 10,
-          },
-          costTracking: {
-            enabled: true,
-            budgetLimit: 100,
-            alertThreshold: 80,
-            trackingGranularity: 'per-call',
-          },
-        },
-        capabilities: [
-          {
-            type: 'text-generation',
-            parameters: [
-              {
-                name: 'model',
-                type: 'string',
-                description: 'Model to use',
-                required: true,
-                defaultValue: 'gpt-4',
-              },
-            ],
-            constraints: [
-              {
-                name: 'max_tokens',
-                value: 4000,
-                description: 'Maximum tokens per request',
-              },
-            ],
-          },
-        ],
+        infrastructure: 'vscode',
+        requirements: 'Install CodeGPT extension, Node.js 18+, Python 3.9+'
       },
     ],
     agentConfig: {
@@ -314,7 +277,7 @@ export async function POST(request: NextRequest) {
       useCase: templateData.useCase,
       promptConfig: templateData.promptConfig,
       mcpServers: templateData.mcpServers || [],
-      saasIntegrations: templateData.saasIntegrations || [],
+      executionEnvironment: templateData.executionEnvironment || [],
       agentConfig: templateData.agentConfig,
       metadata: templateData.metadata,
       version: 1,

@@ -124,7 +124,7 @@ function TemplateFlowContent({ template }: { template: PromptTemplate }) {
       position: { x: 400, y: 200 },
       data: { 
         label: 'Language Model',
-        model: template.saasIntegrations.find(s => s.provider === 'openai' || s.provider === 'anthropic')?.service || 'GPT-4'
+        model: template.executionEnvironment.find(s => s.infrastructure)?.infrastructure || 'GPT-4'
       },
       sourcePosition: Position.Right,
       targetPosition: Position.Left,
@@ -226,27 +226,27 @@ function TemplateFlowContent({ template }: { template: PromptTemplate }) {
       })
     })
 
-    // SaaS Integration Nodes
-    template.saasIntegrations.forEach((saasIntegration, index) => {
-      if (saasIntegration.provider !== 'openai' && saasIntegration.provider !== 'anthropic') {
-        const saasNode: Node = {
-          id: `saas-${nodeId++}`,
+    // Execution Environment Nodes
+    template.executionEnvironment.forEach((env, index) => {
+      if (env.infrastructure) {
+        const envNode: Node = {
+          id: `env-${nodeId++}`,
           type: 'saas',
           position: { x: 750, y: 350 + index * 100 },
           data: {
-            label: saasIntegration.service,
-            provider: saasIntegration.provider
+            label: env.infrastructure.replace('-', ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' '),
+            infrastructure: env.infrastructure,
           },
           sourcePosition: Position.Left,
           targetPosition: Position.Right,
         }
-        nodes.push(saasNode)
+        nodes.push(envNode)
 
-        // Connect LLM to SaaS Integration
+        // Connect LLM to Execution Environment
         edges.push({
-          id: `edge-${llmNode.id}-${saasNode.id}`,
+          id: `edge-${llmNode.id}-${envNode.id}`,
           source: llmNode.id,
-          target: saasNode.id,
+          target: envNode.id,
           markerEnd: { type: MarkerType.ArrowClosed },
           style: { stroke: '#6366f1' }
         })
@@ -326,12 +326,12 @@ function D3NetworkDiagram({ template }: { template: PromptTemplate }) {
       })
     })
 
-    // Add SaaS integrations
-    template.saasIntegrations.forEach((saas, index) => {
-      if (saas.provider !== 'openai' && saas.provider !== 'anthropic') {
-        const saasId = `saas-${index}`
-        nodes.push({ id: saasId, type: 'saas', label: saas.service, group: 5 })
-        links.push({ source: 'llm', target: saasId })
+    // Add execution environments
+    template.executionEnvironment.forEach((env, index) => {
+      if (env.infrastructure) {
+        const envId = `env-${index}`
+        nodes.push({ id: envId, type: 'env', label: env.infrastructure.replace('-', ' '), group: 5 })
+        links.push({ source: 'llm', target: envId })
       }
     })
 

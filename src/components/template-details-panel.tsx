@@ -251,20 +251,20 @@ export function TemplateDetailsPanel({
                   </Card>
                 )}
 
-                {template.saasIntegrations.length > 0 && (
+                {template.executionEnvironment.length > 0 && (
                   <Card>
                     <CardHeader>
                       <CardTitle>SaaS Integrations</CardTitle>
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-3">
-                        {template.saasIntegrations.map((integration, index) => (
+                        {template.executionEnvironment.map((integration, index) => (
                           <div key={index} className="flex items-center justify-between p-3 bg-muted rounded-lg">
                             <div>
-                              <h4 className="font-medium">{integration.service}</h4>
-                              <p className="text-sm text-muted-foreground">{integration.provider}</p>
+                              <h4 className="font-medium capitalize">{integration?.infrastructure?.replace('-', ' ') || 'Unknown'}</h4>
+                              <p className="text-sm text-muted-foreground">{integration?.requirements || 'No specific requirements'}</p>
                             </div>
-                            <Badge variant="outline">{integration.configuration.version}</Badge>
+                            <Badge variant="outline">Infrastructure</Badge>
                           </div>
                         ))}
                       </div>
@@ -338,7 +338,7 @@ export function TemplateDetailsPanel({
                                 </div>
                                 <div className="flex items-center justify-between p-2 border rounded">
                                   <span className="text-sm">SaaS Integrations</span>
-                                  <Badge variant="outline">{template.saasIntegrations.length}</Badge>
+                                  <Badge variant="outline">{template.executionEnvironment.length}</Badge>
                                 </div>
                                 <div className="flex items-center justify-between p-2 border rounded">
                                   <span className="text-sm">Parameters</span>
@@ -426,7 +426,7 @@ export function TemplateDetailsPanel({
                         <h4 className="font-medium text-xs text-muted-foreground mb-1">Provider</h4>
                         <div className="bg-muted px-3 py-2 rounded-md">
                           <p className="text-sm font-medium text-left truncate">
-                            {template.saasIntegrations.find(s => s.capabilities.some(c => c.type === 'text-generation'))?.provider || 'OpenAI'}
+                            {template.executionEnvironment.find(s => s.infrastructure)?.infrastructure || 'OpenAI'}
                           </p>
                         </div>
                       </div>
@@ -435,7 +435,7 @@ export function TemplateDetailsPanel({
                         <h4 className="font-medium text-xs text-muted-foreground mb-1">Model</h4>
                         <div className="bg-muted px-3 py-2 rounded-md">
                           <p className="text-sm font-medium text-left truncate">
-                            {template.saasIntegrations.find(s => s.capabilities.some(c => c.type === 'text-generation'))?.service || 'gpt-4'}
+                            {template.executionEnvironment.find(s => s.infrastructure)?.requirements || 'Standard requirements'}
                           </p>
                         </div>
                       </div>
@@ -611,37 +611,27 @@ export function TemplateDetailsPanel({
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    {template.saasIntegrations.length > 0 ? (
+                    {template.executionEnvironment.length > 0 ? (
                       <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2">
-                        {template.saasIntegrations.map((integration, index) => (
+                        {template.executionEnvironment.map((integration, index) => (
                           <div key={index} className="border rounded-lg p-3 space-y-2">
                             <div className="flex items-center justify-between">
                               <div className="space-y-1">
-                                <h4 className="font-medium">{integration.provider}</h4>
-                                <p className="text-sm text-muted-foreground">{integration.service}</p>
+                                <h4 className="font-medium capitalize">{integration?.infrastructure?.replace('-', ' ') || 'Unknown'}</h4>
+                                <p className="text-sm text-muted-foreground">{integration?.requirements || 'No specific requirements'}</p>
                               </div>
-                              <Badge variant="outline">{integration.configuration.version}</Badge>
+                              <Badge variant="outline">Infrastructure</Badge>
                             </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                                <h5 className="font-medium text-sm text-muted-foreground mb-1">Provider Name</h5>
-                                <p className="text-sm bg-muted p-2 rounded">{integration.provider}</p>
+                                <h5 className="font-medium text-sm text-muted-foreground mb-1">Infrastructure</h5>
+                                <p className="text-sm bg-muted p-2 rounded capitalize">{integration?.infrastructure?.replace('-', ' ') || 'Unknown'}</p>
                               </div>
                               <div>
-                                <h5 className="font-medium text-sm text-muted-foreground mb-1">API Endpoint URL</h5>
+                                <h5 className="font-medium text-sm text-muted-foreground mb-1">Requirements</h5>
                                 <p className="text-sm bg-muted p-2 rounded font-mono text-xs break-all">
-                                  {integration.configuration.endpoint}
+                                  {integration?.requirements || 'No specific requirements'}
                                 </p>
-                              </div>
-                            </div>
-                            <div className="space-y-2">
-                              <h5 className="font-medium text-sm text-muted-foreground">Capabilities</h5>
-                              <div className="flex flex-wrap gap-2">
-                                {integration.capabilities.map((capability, capIndex) => (
-                                  <Badge key={capIndex} variant="secondary" className="text-xs">
-                                    {capability.type.replace('-', ' ')}
-                                  </Badge>
-                                ))}
                               </div>
                             </div>
                           </div>

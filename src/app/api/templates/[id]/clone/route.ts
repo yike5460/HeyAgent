@@ -19,7 +19,7 @@ const mockTemplates: PromptTemplate[] = [
       constraints: {}
     },
     mcpServers: [],
-    saasIntegrations: [],
+    executionEnvironment: [],
     agentConfig: {
       workflow: [],
       errorHandling: {
