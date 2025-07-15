@@ -13,7 +13,7 @@ import {
   Play, 
   Copy, 
   MoreHorizontal,
-  Zap,
+  Settings,
   Database,
   GitBranch,
   Eye,
@@ -86,7 +86,7 @@ export function TemplateCard({
   }
 
   const mcpServers = template.mcpServers || []
-  const saasIntegrations = template.saasIntegrations || []
+  const executionEnvironment = template.executionEnvironment || []
 
   return (
     <Card className="group hover:shadow-xl transition-all duration-300 border-2 hover:border-primary/50 bg-card relative overflow-hidden">
@@ -154,7 +154,7 @@ export function TemplateCard({
 
           {/* Configuration Section - Fixed Height */}
           <div className="mb-3 min-h-[60px] flex items-start">
-            {(mcpServers.length > 0 || saasIntegrations.length > 0) ? (
+            {(mcpServers.length > 0 || executionEnvironment.length > 0) ? (
               <div className="space-y-1.5 w-full">
                 {mcpServers.length > 0 && (
                   <div className="flex items-center space-x-1.5 text-xs">
@@ -180,24 +180,24 @@ export function TemplateCard({
                   </div>
                 )}
                 
-                {saasIntegrations.length > 0 && (
+                {executionEnvironment.length > 0 && (
                   <div className="flex items-center space-x-1.5 text-xs">
-                    <Zap className="h-3 w-3 flex-shrink-0 text-emerald-600" />
-                    <span className="font-medium text-foreground">SaaS:</span>
+                    <Settings className="h-3 w-3 flex-shrink-0 text-purple-600" />
+                    <span className="font-medium text-foreground">Env:</span>
                     <div className="flex space-x-1 flex-wrap min-w-0">
-                      {saasIntegrations.slice(0, 2).map((integration) => (
+                      {executionEnvironment.slice(0, 2).map((env, index) => (
                         <span 
-                          key={integration.provider} 
-                          className="text-xs bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-colors px-2 py-1 rounded font-medium dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-800 dark:hover:bg-emerald-900"
+                          key={index} 
+                          className="text-xs bg-purple-50 text-purple-700 border border-purple-200 hover:bg-purple-100 transition-colors px-2 py-1 rounded font-medium dark:bg-purple-950 dark:text-purple-300 dark:border-purple-800 dark:hover:bg-purple-900"
                         >
-                          {integration.provider}
+                          {env?.infrastructure?.replace('-', ' ') || 'Unknown'}
                         </span>
                       ))}
-                      {saasIntegrations.length > 2 && (
+                      {executionEnvironment.length > 2 && (
                         <span 
-                          className="text-xs bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-colors px-2 py-1 rounded font-medium dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-800 dark:hover:bg-emerald-900"
+                          className="text-xs bg-purple-50 text-purple-700 border border-purple-200 hover:bg-purple-100 transition-colors px-2 py-1 rounded font-medium dark:bg-purple-950 dark:text-purple-300 dark:border-purple-800 dark:hover:bg-purple-900"
                         >
-                          +{saasIntegrations.length - 2}
+                          +{executionEnvironment.length - 2}
                         </span>
                       )}
                     </div>

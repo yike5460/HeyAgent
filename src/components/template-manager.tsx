@@ -24,7 +24,7 @@ import {
   Save,
   X
 } from "lucide-react"
-import { PromptTemplate, IndustryVertical, MCPServerConfig, SaaSIntegration, TemplateParameter } from "@/types"
+import { PromptTemplate, IndustryVertical, MCPServerConfig, ExecutionEnvironment, TemplateParameter } from "@/types"
 
 interface TemplateManagerProps {
   templates: PromptTemplate[]
@@ -52,7 +52,7 @@ interface TemplateFormData {
   }
   tags: string[]
   mcpServers: MCPServerConfig[]
-  saasIntegrations: SaaSIntegration[]
+  executionEnvironment: ExecutionEnvironment[]
   estimatedRuntime: number
   dependencies: string[]
 }
@@ -103,7 +103,7 @@ export function TemplateManager({
     },
     tags: [],
     mcpServers: [],
-    saasIntegrations: [],
+    executionEnvironment: [],
     estimatedRuntime: 60,
     dependencies: []
   })
@@ -126,7 +126,7 @@ export function TemplateManager({
       },
       tags: [],
       mcpServers: [],
-      saasIntegrations: [],
+      executionEnvironment: [],
       estimatedRuntime: 60,
       dependencies: []
     })
@@ -151,7 +151,7 @@ export function TemplateManager({
       userPromptTemplate: template.promptConfig.userPromptTemplate,
       tags: [...template.tags],
       mcpServers: template.mcpServers,
-      saasIntegrations: template.saasIntegrations
+      executionEnvironment: template.executionEnvironment
     }))
     setCreationMode('clone')
     setParentTemplate(template)
@@ -169,7 +169,7 @@ export function TemplateManager({
       userPromptTemplate: '',
       tags: [...template.tags],
       mcpServers: template.mcpServers,
-      saasIntegrations: template.saasIntegrations
+      executionEnvironment: template.executionEnvironment
     }))
     setCreationMode('inherit')
     setParentTemplate(template)
@@ -188,7 +188,7 @@ export function TemplateManager({
       userPromptTemplate: template.promptConfig.userPromptTemplate,
       tags: [...template.tags],
       mcpServers: template.mcpServers,
-      saasIntegrations: template.saasIntegrations
+      executionEnvironment: template.executionEnvironment
     }))
     setIsEditDialogOpen(true)
   }
@@ -238,7 +238,7 @@ export function TemplateManager({
       },
       tags: formData.tags,
       mcpServers: [], // TODO: Map from server IDs to full configs
-      saasIntegrations: [], // TODO: Map from provider names to full configs
+      executionEnvironment: [], // TODO: Map from provider names to full configs
       agentConfig: {
         workflow: [],
         errorHandling: {
@@ -729,11 +729,11 @@ export function TemplateManager({
                 </div>
 
                 <div>
-                  <h4 className="font-medium">SaaS Integrations</h4>
+                  <h4 className="font-medium">Execution Environment</h4>
                   <div className="flex flex-wrap gap-1">
-                    {selectedTemplate.saasIntegrations.map((integration) => (
-                      <Badge key={integration.provider} variant="outline">
-                        {integration.provider}
+                    {selectedTemplate.executionEnvironment.map((env, index) => (
+                      <Badge key={index} variant="outline">
+                        {env?.infrastructure?.replace('-', ' ') || 'Unknown'} {env?.requirements && `(${env.requirements.substring(0, 20)}...)`}
                       </Badge>
                     ))}
                   </div>

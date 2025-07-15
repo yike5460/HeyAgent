@@ -229,4 +229,13 @@ dump.rdb
 # SvelteKit build / generate output
 .svelte-kit
 
+# Audio files
+*.mp3
+*.wav
+*.m4a
+*.aac
+
+# Claude Code settings
+.claude/
+
 # End of https://www.toptal.com/developers/gitignore/api/node

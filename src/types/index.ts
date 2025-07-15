@@ -7,7 +7,7 @@ export interface PromptTemplate {
   useCase: string
   promptConfig: PromptConfig
   mcpServers: MCPServerConfig[]
-  saasIntegrations: SaaSIntegration[]
+  executionEnvironment: ExecutionEnvironment[]
   agentConfig: AgentOrchestrationConfig
   metadata: TemplateMetadata
   version: number
@@ -37,7 +37,7 @@ export interface PromptTemplate {
 
 // Template Management Types
 export interface TemplateInheritanceConfig {
-  inheritedComponents: ('prompt' | 'mcpServers' | 'saasIntegrations' | 'agentConfig')[]
+  inheritedComponents: ('prompt' | 'mcpServers' | 'executionEnvironment' | 'agentConfig')[]
   customizations: TemplateCustomization[]
   mergeStrategy: 'override' | 'merge' | 'append'
 }
@@ -157,45 +157,10 @@ export interface CostConfig {
   billingModel: 'per-call' | 'per-token' | 'per-minute'
 }
 
-// SaaS Integration Types
-export interface SaaSIntegration {
-  provider: 'kling' | 'veo3' | 'openai' | 'anthropic' | 'elevenlabs' | 'murf' | 'custom'
-  service: string
-  configuration: {
-    apiKey: string
-    endpoint: string
-    version: string
-    rateLimit: RateLimitConfig
-    costTracking: CostTrackingConfig
-  }
-  capabilities: ServiceCapability[]
-}
-
-export interface ServiceCapability {
-  type: 'video-generation' | 'text-generation' | 'image-processing' | 'audio-synthesis'
-  parameters: CapabilityParameter[]
-  constraints: CapabilityConstraint[]
-}
-
-export interface CapabilityParameter {
-  name: string
-  type: string
-  description: string
-  required: boolean
-  defaultValue?: any
-}
-
-export interface CapabilityConstraint {
-  name: string
-  value: any
-  description: string
-}
-
-export interface CostTrackingConfig {
-  enabled: boolean
-  budgetLimit?: number
-  alertThreshold?: number
-  trackingGranularity: 'per-call' | 'per-user' | 'per-template'
+// Execution Environment Types
+export interface ExecutionEnvironment {
+  infrastructure: string
+  requirements: string
 }
 
 // Agent Orchestration Types
@@ -209,7 +174,7 @@ export interface AgentOrchestrationConfig {
 export interface WorkflowStep {
   id: string
   name: string
-  type: 'prompt' | 'mcp-call' | 'saas-call' | 'condition' | 'loop'
+  type: 'prompt' | 'mcp-call' | 'environment-setup' | 'condition' | 'loop'
   configuration: Record<string, any>
   dependencies: string[]
   timeout: number
@@ -422,6 +387,7 @@ export type IndustryVertical =
   | 'Automotive'
   | 'Financial Services'
   | 'Gaming'
+  | 'Cross Industry'
 
 export interface JSONSchema {
   type: string
