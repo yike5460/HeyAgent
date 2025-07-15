@@ -5,12 +5,6 @@ compatibility_date = "2024-01-01"
 command = "npm run build"
 entry-point = "."
 
-# Add special configuration for NextAuth API routes
-[[routes]]
-pattern = "/api/auth/.*"
-node_compat = true
-nodejs_compat = true
-
 [vars]
 # Environment variables
 NEXTAUTH_URL = "http://localhost:3000"
@@ -18,13 +12,13 @@ NEXTAUTH_SECRET = "your-nextauth-secret"
 
 [[d1_databases]]
 binding = "DB"
-database_name = "heyprompt-auth"
-database_id = "your-database-id"
+database_name = "heyprompt-platform"
+database_id = "d4b930e4-0fe0-4264-83de-3eeb7ac706a3"
 
 [[d1_databases]]
 binding = "PROD_DB"
-database_name = "heyprompt-auth-prod"
-database_id = "your-prod-database-id"
+database_name = "heyprompt-platform"
+database_id = "d4b930e4-0fe0-4264-83de-3eeb7ac706a3"
 
 [env.preview]
 vars = { ENV = "preview" }

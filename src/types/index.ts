@@ -411,14 +411,18 @@ export interface APIResponse<T = any> {
     total: number
     totalPages: number
   }
+  metadata?: any
+  message?: string
 }
 
 export interface SearchFilters {
-  industry?: IndustryVertical
+  industry?: string[]
   tags?: string[]
   rating?: number
   complexity?: string
   author?: string
+  license?: string[]
+  search?: string
   dateRange?: {
     start: string
     end: string

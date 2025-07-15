@@ -238,4 +238,7 @@ dump.rdb
 # Claude Code settings
 .claude/
 
+# Cloudflare
+.wrangler/
+
 # End of https://www.toptal.com/developers/gitignore/api/node

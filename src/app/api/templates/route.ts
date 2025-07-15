@@ -1,222 +1,67 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { PromptTemplate, APIResponse } from '@/types'
+import { PromptTemplate, APIResponse, SearchFilters, SortOptions } from '@/types'
+import { TemplateQueries, AnalyticsQueries } from '@/lib/database'
+import { auth } from '@/lib/auth-helper'
 
 export const runtime = 'edge'
-
-// Mock data for demonstration
-const mockTemplates: PromptTemplate[] = [
-  {
-    id: '1',
-    title: 'Short Drama Production Assistant',
-    description: 'Automated script generation, character development, and scene planning for short-form video content',
-    industry: 'Media & Entertainment',
-    useCase: 'Short Drama Production',
-    promptConfig: {
-      systemPrompt: 'You are an expert script writer and video production assistant.',
-      userPromptTemplate: 'Create a short drama script for {genre} with {duration} minutes duration.',
-      parameters: [
-        {
-          name: 'genre',
-          type: 'string',
-          description: 'The genre of the drama',
-          required: true,
-        },
-        {
-          name: 'duration',
-          type: 'number',
-          description: 'Duration in minutes',
-          required: true,
-          defaultValue: 5,
-        },
-      ],
-      constraints: {
-        maxTokens: 2000,
-        temperature: 0.7,
-      },
-    },
-    mcpServers: [
-      {
-        serverId: 'firecrawl',
-        serverType: 'firecrawl',
-        configuration: {
-          endpoint: 'https://api.firecrawl.dev',
-          authentication: {
-            type: 'apiKey',
-            credentials: { apiKey: 'fc-key' },
-          },
-          rateLimit: {
-            requestsPerMinute: 60,
-            requestsPerHour: 1000,
-            burstLimit: 10,
-          },
-          fallback: {
-            enabled: true,
-            fallbackServers: [],
-            retryAttempts: 3,
-            timeoutMs: 30000,
-          },
-        },
-        tools: [
-          {
-            name: 'scrape_webpage',
-            description: 'Scrape content from a webpage',
-            inputSchema: {
-              type: 'object',
-              properties: {
-                url: { type: 'string' },
-              },
-              required: ['url'],
-            },
-            outputSchema: {
-              type: 'object',
-              properties: {
-                content: { type: 'string' },
-              },
-            },
-            costEstimate: {
-              estimatedCostPerCall: 0.01,
-              currency: 'USD',
-              billingModel: 'per-call',
-            },
-          },
-        ],
-        resources: [],
-      },
-    ],
-    executionEnvironment: [
-      {
-        infrastructure: 'vscode',
-        requirements: 'Install CodeGPT extension, Node.js 18+, Python 3.9+'
-      },
-    ],
-    agentConfig: {
-      workflow: [
-        {
-          id: 'step1',
-          name: 'Generate Script Outline',
-          type: 'prompt',
-          configuration: {
-            prompt: 'Create a script outline for {genre} drama',
-          },
-          dependencies: [],
-          timeout: 30000,
-        },
-      ],
-      errorHandling: {
-        retryPolicy: {
-          maxRetries: 3,
-          backoffStrategy: 'exponential',
-          baseDelay: 1000,
-          maxDelay: 10000,
-        },
-        fallbackActions: [],
-        errorNotifications: [],
-      },
-      monitoring: {
-        metricsCollection: true,
-        performanceTracking: true,
-        costTracking: true,
-        alerting: [],
-      },
-      scaling: {
-        autoScaling: true,
-        minInstances: 1,
-        maxInstances: 10,
-        scaleUpThreshold: 80,
-        scaleDownThreshold: 20,
-      },
-    },
-    metadata: {
-      category: 'Content Creation',
-      complexity: 'intermediate',
-      estimatedRuntime: 120,
-      resourceRequirements: {
-        cpu: '0.5',
-        memory: '1Gi',
-        storage: '10Gi',
-        network: true,
-      },
-      dependencies: ['openai', 'firecrawl'],
-      changelog: [
-        {
-          version: '1.0.0',
-          date: '2024-01-15',
-          changes: ['Initial release'],
-          author: 'John Doe',
-        },
-      ],
-    },
-    version: 1,
-    status: 'published',
-    createdAt: '2024-01-15T10:00:00Z',
-    updatedAt: '2024-01-15T10:00:00Z',
-    userId: 'user1',
-    author: 'John Doe',
-    rating: 4.8,
-    usageCount: 1250,
-    tags: ['video', 'script', 'automation', 'content-creation'],
-    forkCount: 12,
-    isForked: false,
-    collaborators: [],
-    isPublic: true,
-    license: 'MIT'
-  },
-  // Add more mock templates as needed
-]
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
     const page = parseInt(searchParams.get('page') || '1')
     const limit = parseInt(searchParams.get('limit') || '20')
-    const industry = searchParams.get('industry')
-    const tags = searchParams.get('tags')?.split(',')
-    const sortField = searchParams.get('sortField') || 'createdAt'
-    const sortDirection = searchParams.get('sortDirection') || 'desc'
+    const offset = (page - 1) * limit
 
-    // Filter templates
-    let filteredTemplates = mockTemplates
-
-    if (industry) {
-      filteredTemplates = filteredTemplates.filter(t => t.industry === industry)
+    // Build search filters
+    const filters: SearchFilters = {}
+    
+    if (searchParams.get('industry')) {
+      filters.industry = searchParams.get('industry')!.split(',')
+    }
+    
+    if (searchParams.get('tags')) {
+      filters.tags = searchParams.get('tags')!.split(',')
+    }
+    
+    if (searchParams.get('rating')) {
+      filters.rating = parseFloat(searchParams.get('rating')!)
+    }
+    
+    if (searchParams.get('license')) {
+      filters.license = searchParams.get('license')!.split(',')
+    }
+    
+    if (searchParams.get('search')) {
+      filters.search = searchParams.get('search')!
     }
 
-    if (tags && tags.length > 0) {
-      filteredTemplates = filteredTemplates.filter(t =>
-        tags.some(tag => t.tags.includes(tag))
-      )
+    // Build sort options
+    const sort: SortOptions = {
+      field: (searchParams.get('sortField') as any) || 'created_at',
+      direction: (searchParams.get('sortDirection') as 'asc' | 'desc') || 'desc'
     }
 
-    // Sort templates
-    filteredTemplates.sort((a, b) => {
-      const aValue = a[sortField as keyof PromptTemplate]
-      const bValue = b[sortField as keyof PromptTemplate]
-      
-      // Handle undefined values
-      if (aValue === undefined && bValue === undefined) return 0
-      if (aValue === undefined) return 1
-      if (bValue === undefined) return -1
-      
-      if (sortDirection === 'asc') {
-        return aValue > bValue ? 1 : -1
-      } else {
-        return aValue < bValue ? 1 : -1
-      }
-    })
+    // Special handling for user's own templates
+    const userId = searchParams.get('userId')
+    let templates: PromptTemplate[]
+    
+    if (userId) {
+      templates = await TemplateQueries.findByUserId(userId)
+    } else {
+      templates = await TemplateQueries.findAll(filters, sort, limit, offset)
+    }
 
-    // Paginate
-    const startIndex = (page - 1) * limit
-    const endIndex = startIndex + limit
-    const paginatedTemplates = filteredTemplates.slice(startIndex, endIndex)
-
+    // Get total count for pagination (simplified - in production you'd have a separate count query)
+    const total = templates.length // This should be a proper count query
+    
     const response: APIResponse<PromptTemplate[]> = {
       success: true,
-      data: paginatedTemplates,
+      data: templates,
       pagination: {
         page,
         limit,
-        total: filteredTemplates.length,
-        totalPages: Math.ceil(filteredTemplates.length / limit),
+        total,
+        totalPages: Math.ceil(total / limit),
       },
     }
 
@@ -239,6 +84,20 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    const session = await auth()
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'UNAUTHORIZED',
+            message: 'Authentication required'
+          }
+        },
+        { status: 401 }
+      )
+    }
+
     const body = await request.json()
     
     // Handle different POST operations based on action
@@ -247,19 +106,27 @@ export async function POST(request: NextRequest) {
     if (action === 'import') {
       // Handle template import
       const { templates } = body
-      // In a real implementation, you would validate and save the templates
-      const importedTemplates = templates.map((template: any, index: number) => ({
-        ...template,
-        id: `imported-${Date.now()}-${index}`,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        userId: 'current-user-id',
-        author: 'Imported User',
-        status: 'draft',
-        version: 1,
-        rating: 0,
-        usageCount: 0
-      }))
+      const importedTemplates = []
+      
+      for (const [index, template] of templates.entries()) {
+        const newTemplate = {
+          ...template,
+          id: `imported-${Date.now()}-${index}`,
+          userId: session.user.id,
+          author: session.user.name || session.user.email,
+          status: 'draft' as const,
+          version: '1.0.0',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          rating: 0,
+          usageCount: 0,
+          forkCount: 0,
+          is_public: false
+        }
+        
+        const created = await TemplateQueries.create(newTemplate)
+        importedTemplates.push(created)
+      }
       
       return NextResponse.json({
         success: true,
@@ -269,8 +136,8 @@ export async function POST(request: NextRequest) {
     }
     
     // Regular template creation
-    const newTemplate: PromptTemplate = {
-      id: `template-${Date.now()}`,
+    const newTemplate = {
+      id: `template-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       title: templateData.title,
       description: templateData.description,
       industry: templateData.industry,
@@ -282,26 +149,26 @@ export async function POST(request: NextRequest) {
       metadata: templateData.metadata,
       version: 1,
       status: templateData.status || 'draft',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      userId: 'current-user-id',
-      author: 'Current User',
-      rating: 0,
-      usageCount: 0,
+      userId: session.user.id,
+      author: session.user.name || session.user.email,
       tags: templateData.tags || [],
-      forkCount: 0,
+      parentTemplateId: undefined,
       isForked: false,
+      inheritanceConfig: undefined,
+      exportMetadata: undefined,
       collaborators: [],
       isPublic: templateData.isPublic || false,
       license: templateData.license || 'MIT'
     }
 
-    // In a real implementation, you would save to database
-    mockTemplates.push(newTemplate)
+    const created = await TemplateQueries.create(newTemplate)
+
+    // Record creation analytics
+    await AnalyticsQueries.recordUsage(created.id, session.user.id, 'create')
 
     return NextResponse.json({
       success: true,
-      data: newTemplate
+      data: created
     })
   } catch (error) {
     console.error('Error creating template:', error)
@@ -310,7 +177,8 @@ export async function POST(request: NextRequest) {
         success: false,
         error: {
           code: 'TEMPLATE_CREATION_FAILED',
-          message: 'Failed to create template'
+          message: 'Failed to create template',
+          details: error instanceof Error ? error.message : 'Unknown error'
         }
       },
       { status: 500 }

@@ -45,7 +45,7 @@ class APIService {
     })
 
     if (filters) {
-      if (filters.industry) params.append('industry', filters.industry)
+      if (filters.industry) params.append('industry', filters.industry.join(','))
       if (filters.tags) params.append('tags', filters.tags.join(','))
       if (filters.rating) params.append('rating', filters.rating.toString())
       if (filters.complexity) params.append('complexity', filters.complexity)
@@ -159,11 +159,11 @@ class APIService {
 
   // User Management
   async getUserProfile(): Promise<APIResponse<any>> {
-    return this.request<any>('/user/profile')
+    return this.request<any>('/users')
   }
 
   async updateUserProfile(profile: any): Promise<APIResponse<any>> {
-    return this.request<any>('/user/profile', {
+    return this.request<any>('/users', {
       method: 'PUT',
       body: JSON.stringify(profile),
     })
@@ -197,7 +197,7 @@ class APIService {
   // Search
   async searchTemplates(query: string): Promise<APIResponse<PromptTemplate[]>> {
     const params = new URLSearchParams({ q: query })
-    return this.request<PromptTemplate[]>(`/search/templates?${params}`)
+    return this.request<PromptTemplate[]>(`/search?${params}`)
   }
 
   async getSearchSuggestions(query: string): Promise<APIResponse<string[]>> {
