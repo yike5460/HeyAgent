@@ -11,15 +11,35 @@ class TemplateService {
   async getAllTemplates(): Promise<PromptTemplate[]> {
     if (this.useDatabase()) {
       try {
+        // Try to get from local cache first for faster loading
+        const cachedTemplates = await localStorageService.getAllTemplates()
+        
+        // Fetch from API in background
         const response = await fetch('/api/templates')
         if (!response.ok) {
           console.error('Failed to fetch templates from API:', response.status)
-          return []
+          // Return cached templates if API fails
+          return cachedTemplates
         }
-        return await response.json()
+        
+        const result = await response.json()
+        const apiTemplates = result.data || result
+        
+        // Update local cache with fresh data
+        if (Array.isArray(apiTemplates)) {
+          // Store each template in local cache for faster access next time
+          for (const template of apiTemplates) {
+            await localStorageService.saveTemplate(template).catch(() => {
+              // Ignore cache errors, don't break the main flow
+            })
+          }
+        }
+        
+        return apiTemplates
       } catch (error) {
         console.error('Error fetching templates from API:', error)
-        return []
+        // Fallback to cached templates
+        return await localStorageService.getAllTemplates()
       }
     } else {
       return await localStorageService.getAllTemplates()
@@ -29,16 +49,32 @@ class TemplateService {
   async getTemplate(id: string): Promise<PromptTemplate | null> {
     if (this.useDatabase()) {
       try {
+        // Try local cache first
+        const cachedTemplate = await localStorageService.getTemplate(id)
+        
+        // Fetch from API
         const response = await fetch(`/api/templates/${id}`)
         if (!response.ok) {
-          if (response.status === 404) return null
+          if (response.status === 404) return cachedTemplate // Return cached if exists
           console.error('Failed to fetch template from API:', response.status)
-          return null
+          return cachedTemplate // Return cached if API fails
         }
-        return await response.json()
+        
+        const result = await response.json()
+        const apiTemplate = result.data || result
+        
+        // Update local cache
+        if (apiTemplate) {
+          await localStorageService.saveTemplate(apiTemplate).catch(() => {
+            // Ignore cache errors
+          })
+        }
+        
+        return apiTemplate
       } catch (error) {
         console.error('Error fetching template from API:', error)
-        return null
+        // Fallback to cached template
+        return await localStorageService.getTemplate(id)
       }
     } else {
       return await localStorageService.getTemplate(id)
@@ -75,7 +111,14 @@ class TemplateService {
         }
 
         const result = await response.json()
-        return result.data || result // Handle both { data: template } and direct template responses
+        const savedTemplate = result.data || result // Handle both { data: template } and direct template responses
+        
+        // Update local cache with the saved template
+        await localStorageService.saveTemplate(savedTemplate).catch(() => {
+          // Ignore cache errors, don't break the main flow
+        })
+        
+        return savedTemplate
       } catch (error) {
         console.error('Error saving template to API:', error)
         throw error
@@ -91,6 +134,14 @@ class TemplateService {
         const response = await fetch(`/api/templates/${id}`, {
           method: 'DELETE'
         })
+        
+        if (response.ok) {
+          // Remove from local cache too
+          await localStorageService.deleteTemplate(id).catch(() => {
+            // Ignore cache errors
+          })
+        }
+        
         return response.ok
       } catch (error) {
         console.error('Error deleting template from API:', error)

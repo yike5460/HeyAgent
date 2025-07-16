@@ -52,7 +52,7 @@ export default function MyTemplatesPage() {
       console.error('Error loading templates:', error)
       toast({
         title: "Error",
-        description: "Failed to load templates from local storage.",
+        description: "Failed to load templates from database.",
         variant: "destructive"
       })
     } finally {
@@ -85,7 +85,7 @@ export default function MyTemplatesPage() {
       
       toast({
         title: "Template Created",
-        description: "Your template has been created and saved to local storage."
+        description: "Your template has been created and saved to the database."
       })
     } catch (error) {
       console.error('Error creating template:', error)
@@ -363,7 +363,7 @@ export default function MyTemplatesPage() {
         <div className="space-y-4">
           <h1 className="text-4xl font-bold">My Templates</h1>
           <p className="text-lg text-muted-foreground">
-            Create, manage, and organize your AI prompt templates with local storage persistence.
+            Create, manage, and organize your AI prompt templates with cloud database persistence.
           </p>
         </div>
         <div className="flex space-x-2">
