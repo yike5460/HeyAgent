@@ -69,8 +69,10 @@ export async function GET(request: NextRequest) {
         
         // Apply sorting to combined results
         templates.sort((a, b) => {
-          const aTime = new Date(a.createdAt).getTime()
-          const bTime = new Date(b.createdAt).getTime()
+          const aDate = new Date(a.createdAt || 0)
+          const bDate = new Date(b.createdAt || 0)
+          const aTime = isNaN(aDate.getTime()) ? 0 : aDate.getTime()
+          const bTime = isNaN(bDate.getTime()) ? 0 : bDate.getTime()
           return sort.direction === 'desc' ? bTime - aTime : aTime - bTime
         })
       } else {
