@@ -1,17 +1,68 @@
 import type { PromptTemplate, User, SearchFilters, SortOptions } from '@/types';
 
 // Database connection utility for Cloudflare D1
-export function getDatabase() {
-  // In production, this will be injected by Cloudflare Workers
+export function getDatabase(env?: any) {
+  // In production, this will be injected by Cloudflare Workers/Pages
   // For development, you might use a local D1 database
   if (typeof process !== 'undefined' && process.env.NODE_ENV === 'development') {
-    // Development database connection
+    // Development database connection - return mock or local D1
     console.warn('Using development database - make sure to set up local D1');
+    return null; // Skip database operations in development
   }
   
-  // This will be properly configured in the Cloudflare Workers environment
-  const db = (globalThis as any).DB || (globalThis as any).PROD_DB;
+  // Try multiple ways to access the D1 binding in Cloudflare environment
+  let db = null;
+  
+  // Method 1: From env parameter (Cloudflare Pages Functions)
+  if (env?.PROD_DB) {
+    db = env.PROD_DB;
+  } else if (env?.DB) {
+    db = env.DB;
+  }
+  // Method 2: From global context (Cloudflare Workers)
+  else if ((globalThis as any).PROD_DB) {
+    db = (globalThis as any).PROD_DB;
+  } else if ((globalThis as any).DB) {
+    db = (globalThis as any).DB;
+  }
+  // Method 3: From process.env for Pages Functions  
+  else if ((process as any)?.env?.PROD_DB) {
+    db = (process as any).env.PROD_DB;
+  }
+  // Method 4: Check if we're in Cloudflare Edge Runtime
+  else if (typeof (globalThis as any).EdgeRuntime !== 'undefined' && (globalThis as any).PROD_DB) {
+    db = (globalThis as any).PROD_DB;
+  }
+  // Method 5: Try to access bindings from Cloudflare's injected globals in Pages
+  else {
+    // In Cloudflare Pages, bindings are injected as globals during runtime
+    try {
+      // This will be set by Cloudflare Pages runtime
+      const cfEnv = (globalThis as any)?.__CF_ENV__ || (globalThis as any)?.__env__;
+      if (cfEnv?.PROD_DB) {
+        db = cfEnv.PROD_DB;
+      }
+    } catch (e) {
+      // Ignore errors accessing __CF_ENV__
+    }
+  }
+  
+  // Last resort: try direct global access (Cloudflare injects bindings globally)
+  if (!db && typeof globalThis !== 'undefined') {
+    // Cloudflare Pages may inject D1 bindings directly into global scope
+    const possibleNames = ['PROD_DB', 'DB', 'D1_DATABASE'];
+    for (const name of possibleNames) {
+      if ((globalThis as any)[name]) {
+        db = (globalThis as any)[name];
+        break;
+      }
+    }
+  }
+  
   if (!db) {
+    console.error('Database binding not found. Available env keys:', env ? Object.keys(env) : 'no env provided');
+    console.error('Global keys containing DB:', typeof globalThis !== 'undefined' ? 
+      Object.keys(globalThis).filter(k => k.toLowerCase().includes('db') || k.includes('PROD')) : 'no globalThis');
     throw new Error('Database not available. Make sure D1 binding is configured.');
   }
   
@@ -19,8 +70,12 @@ export function getDatabase() {
 }
 
 // Raw SQL query helper for complex operations
-export async function executeQuery<T = any>(query: string, params: any[] = []): Promise<T[]> {
-  const db = getDatabase();
+export async function executeQuery<T = any>(query: string, params: any[] = [], env?: any): Promise<T[]> {
+  const db = getDatabase(env);
+  if (!db) {
+    // Return empty results in development
+    return [];
+  }
   const stmt = db.prepare(query);
   const result = await stmt.bind(...params).all();
   return result.results as T[];
