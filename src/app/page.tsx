@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge'
 import { TemplateDetailsPanel } from '@/components/template-details-panel'
 import { DashboardHero } from '@/components/dashboard-hero'
 import { PromptTemplate, IndustryVertical } from '@/types'
-import { localStorageService } from '@/services/local-storage'
+import { templateService } from '@/services/template-service'
 import { useSession } from "next-auth/react"
 import { toast } from '@/components/ui/use-toast'
 import { TemplateCard } from '@/components/template-card'
@@ -433,7 +433,7 @@ export default function HomePage() {
 
   const loadMyTemplatesStats = async () => {
     try {
-      const allTemplates = await localStorageService.getAllTemplates()
+      const allTemplates = await templateService.getAllTemplates()
       const myTemplates = allTemplates.filter(t => t.userId === 'current-user' || t.author === 'Current User')
       const draftTemplates = myTemplates.filter(t => t.status === 'draft')
       

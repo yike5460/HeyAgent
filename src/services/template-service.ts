@@ -1,0 +1,264 @@
+import { PromptTemplate, TemplateImportResult, ConflictResolution } from '@/types'
+import { localStorageService } from './local-storage'
+
+class TemplateService {
+  private useDatabase(): boolean {
+    // Use database in production, localStorage in development
+    return process.env.NODE_ENV === 'production' || process.env.NEXT_PUBLIC_USE_DATABASE === 'true'
+  }
+
+  // Template CRUD Operations
+  async getAllTemplates(): Promise<PromptTemplate[]> {
+    if (this.useDatabase()) {
+      try {
+        const response = await fetch('/api/templates')
+        if (!response.ok) {
+          console.error('Failed to fetch templates from API:', response.status)
+          return []
+        }
+        return await response.json()
+      } catch (error) {
+        console.error('Error fetching templates from API:', error)
+        return []
+      }
+    } else {
+      return await localStorageService.getAllTemplates()
+    }
+  }
+
+  async getTemplate(id: string): Promise<PromptTemplate | null> {
+    if (this.useDatabase()) {
+      try {
+        const response = await fetch(`/api/templates/${id}`)
+        if (!response.ok) {
+          if (response.status === 404) return null
+          console.error('Failed to fetch template from API:', response.status)
+          return null
+        }
+        return await response.json()
+      } catch (error) {
+        console.error('Error fetching template from API:', error)
+        return null
+      }
+    } else {
+      return await localStorageService.getTemplate(id)
+    }
+  }
+
+  async saveTemplate(template: PromptTemplate): Promise<PromptTemplate> {
+    if (this.useDatabase()) {
+      try {
+        const method = template.id ? 'PUT' : 'POST'
+        const url = template.id ? `/api/templates/${template.id}` : '/api/templates'
+        
+        const response = await fetch(url, {
+          method,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(template)
+        })
+
+        if (!response.ok) {
+          throw new Error(`Failed to save template: ${response.status}`)
+        }
+
+        return await response.json()
+      } catch (error) {
+        console.error('Error saving template to API:', error)
+        throw error
+      }
+    } else {
+      return await localStorageService.saveTemplate(template)
+    }
+  }
+
+  async deleteTemplate(id: string): Promise<boolean> {
+    if (this.useDatabase()) {
+      try {
+        const response = await fetch(`/api/templates/${id}`, {
+          method: 'DELETE'
+        })
+        return response.ok
+      } catch (error) {
+        console.error('Error deleting template from API:', error)
+        return false
+      }
+    } else {
+      return await localStorageService.deleteTemplate(id)
+    }
+  }
+
+  // Template Cloning
+  async cloneTemplate(
+    sourceId: string, 
+    newTitle: string,
+    inheritanceConfig?: {
+      inheritedComponents: string[]
+      mergeStrategy: 'override' | 'merge' | 'append'
+    }
+  ): Promise<PromptTemplate | null> {
+    if (this.useDatabase()) {
+      try {
+        const response = await fetch(`/api/templates/${sourceId}/clone`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            newTitle,
+            inheritanceConfig
+          })
+        })
+
+        if (!response.ok) {
+          console.error('Failed to clone template:', response.status)
+          return null
+        }
+
+        return await response.json()
+      } catch (error) {
+        console.error('Error cloning template:', error)
+        return null
+      }
+    } else {
+      return await localStorageService.cloneTemplate(sourceId, newTitle, inheritanceConfig)
+    }
+  }
+
+  // Import/Export Operations
+  async exportTemplate(id: string): Promise<string | null> {
+    if (this.useDatabase()) {
+      try {
+        const response = await fetch(`/api/templates/${id}/export`)
+        if (!response.ok) return null
+        
+        const blob = await response.blob()
+        return await blob.text()
+      } catch (error) {
+        console.error('Error exporting template:', error)
+        return null
+      }
+    } else {
+      return await localStorageService.exportTemplate(id)
+    }
+  }
+
+  async importTemplate(jsonData: string): Promise<TemplateImportResult> {
+    if (this.useDatabase()) {
+      try {
+        const response = await fetch('/api/templates/import', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ jsonData })
+        })
+
+        if (!response.ok) {
+          return {
+            success: false,
+            errors: [`Import failed: ${response.status}`],
+            warnings: []
+          }
+        }
+
+        return await response.json()
+      } catch (error) {
+        return {
+          success: false,
+          errors: [`Import error: ${error instanceof Error ? error.message : 'Unknown error'}`],
+          warnings: []
+        }
+      }
+    } else {
+      return await localStorageService.importTemplate(jsonData)
+    }
+  }
+
+  // Preview Generation
+  async generatePreview(template: PromptTemplate): Promise<{
+    sampleInputs: Record<string, any>
+    expectedOutputs: Record<string, any>
+    executionFlow: Array<{
+      stepId: string
+      name: string
+      type: string
+      duration: number
+      status: string
+    }>
+    estimatedCost: number
+    estimatedTime: number
+  }> {
+    // This functionality is the same for both environments
+    return await localStorageService.generatePreview(template)
+  }
+
+  // Batch Operations
+  async batchDelete(ids: string[]): Promise<{ deleted: string[], failed: string[] }> {
+    if (this.useDatabase()) {
+      try {
+        const response = await fetch('/api/templates/batch-delete', {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ ids })
+        })
+
+        if (!response.ok) {
+          return { deleted: [], failed: ids }
+        }
+
+        return await response.json()
+      } catch (error) {
+        console.error('Error in batch delete:', error)
+        return { deleted: [], failed: ids }
+      }
+    } else {
+      return await localStorageService.batchDelete(ids)
+    }
+  }
+
+  async searchTemplates(query: string, filters?: {
+    industry?: string
+    tags?: string[]
+    status?: string
+  }): Promise<PromptTemplate[]> {
+    if (this.useDatabase()) {
+      try {
+        const params = new URLSearchParams()
+        if (query) params.append('q', query)
+        if (filters?.industry) params.append('industry', filters.industry)
+        if (filters?.tags) params.append('tags', filters.tags.join(','))
+        if (filters?.status) params.append('status', filters.status)
+
+        const response = await fetch(`/api/templates/search?${params}`)
+        if (!response.ok) {
+          console.error('Search failed:', response.status)
+          return []
+        }
+
+        return await response.json()
+      } catch (error) {
+        console.error('Error searching templates:', error)
+        return []
+      }
+    } else {
+      return await localStorageService.searchTemplates(query, filters)
+    }
+  }
+
+  // Clear all data (for development/testing)
+  async clearAllData(): Promise<void> {
+    if (this.useDatabase()) {
+      // Don't implement this for production database
+      console.warn('clearAllData not available in database mode')
+      return
+    } else {
+      return await localStorageService.clearAllData()
+    }
+  }
+}
+
+export const templateService = new TemplateService()

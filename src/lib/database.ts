@@ -111,6 +111,63 @@ export class UserQueries {
     );
   }
 
+  static async createOrUpdate(userData: {
+    id: string;
+    email: string;
+    name: string;
+    image?: string;
+    provider: string;
+    lastLoginAt: string;
+    createdAt: string;
+    updatedAt: string;
+  }): Promise<User> {
+    try {
+      // Try to find existing user
+      const existing = await this.findByEmail(userData.email);
+      
+      if (existing) {
+        // Update existing user
+        await executeQuery(
+          `UPDATE users SET 
+            name = ?, 
+            avatar_url = ?, 
+            oauth_provider = ?, 
+            updated_at = ?
+          WHERE email = ?`,
+          [userData.name, userData.image || '', userData.provider, userData.updatedAt, userData.email]
+        );
+        return existing;
+      } else {
+        // Create new user
+        await executeQuery(
+          `INSERT INTO users (
+            id, email, name, avatar_url, oauth_provider, oauth_provider_id, created_at, updated_at
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+          [
+            userData.id,
+            userData.email,
+            userData.name,
+            userData.image || '',
+            userData.provider,
+            userData.id, // Use id as provider id for now
+            userData.createdAt,
+            userData.updatedAt
+          ]
+        );
+        
+        // Return the created user
+        const newUser = await this.findByEmail(userData.email);
+        if (!newUser) {
+          throw new Error('Failed to create user');
+        }
+        return newUser;
+      }
+    } catch (error) {
+      console.error('Error in createOrUpdate:', error);
+      throw error;
+    }
+  }
+
   // Helper method to map database row to User interface
   private static mapDbToUser(dbRow: any): User {
     return {

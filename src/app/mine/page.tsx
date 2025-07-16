@@ -21,7 +21,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { PromptTemplate } from '@/types'
-import { localStorageService } from '@/services/local-storage'
+import { templateService } from '@/services/template-service'
 import { Brain, Database, Settings, Workflow, Plus, Upload, Download, TrendingUp, BarChart3, Activity } from 'lucide-react'
 
 export default function MyTemplatesPage() {
@@ -41,7 +41,7 @@ export default function MyTemplatesPage() {
   const loadTemplates = async () => {
     try {
       setLoading(true)
-      const userTemplates = await localStorageService.getAllTemplates()
+      const userTemplates = await templateService.getAllTemplates()
       // Filter to show only current user's templates (in real app, this would be based on userId)
       const myTemplates = userTemplates.filter(t => t.userId === 'current-user' || t.author === 'Current User')
       setTemplates(myTemplates)
@@ -80,7 +80,7 @@ export default function MyTemplatesPage() {
         license: 'MIT'
       } as PromptTemplate
 
-      const savedTemplate = await localStorageService.saveTemplate(newTemplate)
+      const savedTemplate = await templateService.saveTemplate(newTemplate)
       setTemplates(prev => [...prev, savedTemplate])
       
       toast({
@@ -110,7 +110,7 @@ export default function MyTemplatesPage() {
         updatedAt: new Date().toISOString()
       }
 
-      const savedTemplate = await localStorageService.saveTemplate(updatedTemplate)
+      const savedTemplate = await templateService.saveTemplate(updatedTemplate)
       
       setTemplates(prev => 
         prev.map(t => t.id === id ? savedTemplate : t)
@@ -141,7 +141,7 @@ export default function MyTemplatesPage() {
         status: 'published' as const
       };
       
-      const savedTemplate = await localStorageService.saveTemplate(updatedTemplate);
+      const savedTemplate = await templateService.saveTemplate(updatedTemplate);
       
       setTemplates(prev => 
         prev.map(t => t.id === template.id ? savedTemplate : t)
@@ -172,7 +172,7 @@ export default function MyTemplatesPage() {
         status: 'draft' as const
       };
       
-      const savedTemplate = await localStorageService.saveTemplate(updatedTemplate);
+      const savedTemplate = await templateService.saveTemplate(updatedTemplate);
       
       setTemplates(prev => 
         prev.map(t => t.id === template.id ? savedTemplate : t)
@@ -205,7 +205,7 @@ export default function MyTemplatesPage() {
     if (!templateToDelete) return
     
     try {
-      const success = await localStorageService.deleteTemplate(templateToDelete.id)
+      const success = await templateService.deleteTemplate(templateToDelete.id)
       if (success) {
         setTemplates(prev => prev.filter(t => t.id !== templateToDelete.id))
         if (selectedTemplate?.id === templateToDelete.id) {
@@ -244,7 +244,7 @@ export default function MyTemplatesPage() {
         throw new Error('Template not found')
       }
 
-      const clonedTemplate = await localStorageService.cloneTemplate(
+      const clonedTemplate = await templateService.cloneTemplate(
         id,
         `${templateToClone.title} (Copy)`
       )
@@ -271,7 +271,7 @@ export default function MyTemplatesPage() {
       const importResults = []
       
       for (const template of importedTemplates) {
-        const result = await localStorageService.importTemplate(JSON.stringify(template))
+        const result = await templateService.importTemplate(JSON.stringify(template))
         importResults.push(result)
       }
 
