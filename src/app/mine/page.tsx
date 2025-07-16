@@ -433,7 +433,7 @@ export default function MyTemplatesPage() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
-                  {templates.reduce((sum, t) => sum + t.forkCount, 0)}
+                  {templates.reduce((sum, t) => sum + (t.forkCount || 0), 0)}
                 </div>
                 <p className="text-xs text-muted-foreground">
                   Times your templates were forked
@@ -492,7 +492,7 @@ export default function MyTemplatesPage() {
                             <Activity className="h-3 w-3" />
                             <span>Usage</span>
                           </div>
-                          <div className="text-sm font-bold">{template.usageCount.toLocaleString()}</div>
+                          <div className="text-sm font-bold">{(template.usageCount || 0).toLocaleString()}</div>
                         </div>
                         
                         {/* Fork Count */}
@@ -501,7 +501,7 @@ export default function MyTemplatesPage() {
                             <Database className="h-3 w-3" />
                             <span>Forks</span>
                           </div>
-                          <div className="text-sm font-bold">{template.forkCount}</div>
+                          <div className="text-sm font-bold">{template.forkCount || 0}</div>
                         </div>
                         
                         {/* Rating */}
@@ -510,7 +510,7 @@ export default function MyTemplatesPage() {
                             <Badge className="h-3 w-3 rounded-full p-0" />
                             <span>Rating</span>
                           </div>
-                          <div className="text-sm font-bold">{template.rating}/5</div>
+                          <div className="text-sm font-bold">{template.rating || 0}/5</div>
                         </div>
                         
                         {/* Trending Indicator */}
@@ -524,12 +524,12 @@ export default function MyTemplatesPage() {
                               <div 
                                 className="h-full bg-gradient-to-r from-green-500 to-blue-500 rounded-full transition-all duration-1000"
                                 style={{ 
-                                  width: `${Math.min(100, (template.usageCount / Math.max(...templates.map(t => t.usageCount))) * 100)}%` 
+                                  width: `${Math.min(100, (template.usageCount / Math.max(...templates.map(t => t.usageCount || 0).filter(count => count > 0), 1)) * 100)}%` 
                                 }}
                               />
                             </div>
                             <span className="text-xs font-medium text-green-600">
-                              {template.usageCount > templates.reduce((sum, t) => sum + t.usageCount, 0) / templates.length ? '↑' : '→'}
+                              {(template.usageCount || 0) > templates.reduce((sum, t) => sum + (t.usageCount || 0), 0) / templates.length ? '↑' : '→'}
                             </span>
                           </div>
                         </div>
@@ -682,11 +682,11 @@ export default function MyTemplatesPage() {
                       </CardHeader>
                       <CardContent>
                         {(() => {
-                          const topTemplate = templates.sort((a, b) => b.usageCount - a.usageCount)[0]
+                          const topTemplate = templates.sort((a, b) => (b.usageCount || 0) - (a.usageCount || 0))[0]
                           return (
                             <div>
                               <div className="text-lg font-bold truncate">{topTemplate.title}</div>
-                              <div className="text-sm text-muted-foreground">{topTemplate.usageCount} uses</div>
+                              <div className="text-sm text-muted-foreground">{topTemplate.usageCount || 0} uses</div>
                             </div>
                           )
                         })()}
@@ -699,11 +699,11 @@ export default function MyTemplatesPage() {
                       </CardHeader>
                       <CardContent>
                         {(() => {
-                          const mostForked = templates.sort((a, b) => b.forkCount - a.forkCount)[0]
+                          const mostForked = templates.sort((a, b) => (b.forkCount || 0) - (a.forkCount || 0))[0]
                           return (
                             <div>
                               <div className="text-lg font-bold truncate">{mostForked.title}</div>
-                              <div className="text-sm text-muted-foreground">{mostForked.forkCount} forks</div>
+                              <div className="text-sm text-muted-foreground">{mostForked.forkCount || 0} forks</div>
                             </div>
                           )
                         })()}
@@ -716,11 +716,11 @@ export default function MyTemplatesPage() {
                       </CardHeader>
                       <CardContent>
                         {(() => {
-                          const highestRated = templates.sort((a, b) => b.rating - a.rating)[0]
+                          const highestRated = templates.sort((a, b) => (b.rating || 0) - (a.rating || 0))[0]
                           return (
                             <div>
                               <div className="text-lg font-bold truncate">{highestRated.title}</div>
-                              <div className="text-sm text-muted-foreground">{highestRated.rating}/5 stars</div>
+                              <div className="text-sm text-muted-foreground">{highestRated.rating || 0}/5 stars</div>
                             </div>
                           )
                         })()}

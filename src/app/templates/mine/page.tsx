@@ -370,7 +370,7 @@ export default function MyTemplatesPage() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
-                  {templates.reduce((sum, t) => sum + t.forkCount, 0)}
+                  {templates.reduce((sum, t) => sum + (t.forkCount || 0), 0)}
                 </div>
                 <p className="text-xs text-muted-foreground">
                   Times your templates were forked
@@ -419,9 +419,9 @@ export default function MyTemplatesPage() {
                   <div>
                     <h4 className="font-medium mb-2">Statistics</h4>
                     <div className="space-y-1 text-sm">
-                      <div>Usage Count: {selectedTemplate.usageCount}</div>
-                      <div>Fork Count: {selectedTemplate.forkCount}</div>
-                      <div>Rating: {selectedTemplate.rating}/5</div>
+                      <div>Usage Count: {selectedTemplate.usageCount || 0}</div>
+                      <div>Fork Count: {selectedTemplate.forkCount || 0}</div>
+                      <div>Rating: {selectedTemplate.rating || 0}/5</div>
                       <div>Created: {new Date(selectedTemplate.createdAt).toLocaleDateString()}</div>
                     </div>
                   </div>
