@@ -408,7 +408,7 @@ export default function MyTemplatesPage() {
                   <div>
                     <h4 className="font-medium mb-2">Tags</h4>
                     <div className="flex flex-wrap gap-1">
-                      {selectedTemplate.tags.map((tag) => (
+                      {selectedTemplate.tags && selectedTemplate.tags.map((tag) => (
                         <Badge key={tag} variant="outline" className="text-xs">
                           {tag}
                         </Badge>

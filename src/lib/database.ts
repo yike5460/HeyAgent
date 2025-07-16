@@ -501,9 +501,9 @@ export class TemplateQueries {
     // Parse JSON fields with error handling
     const parsed = {
       ...template,
-      promptConfig: template.prompt_config ? this.safeJsonParse(template.prompt_config, null) : null,
+      promptConfig: template.prompt_config ? this.safeJsonParse(template.prompt_config, { systemPrompt: '', userPromptTemplate: '', parameters: [] }) : { systemPrompt: '', userPromptTemplate: '', parameters: [] },
       agentConfig: template.agent_config ? this.safeJsonParse(template.agent_config, null) : null,
-      executionEnvironment: template.execution_environment ? this.safeJsonParse(template.execution_environment, null) : null,
+      executionEnvironment: template.execution_environment ? this.safeJsonParse(template.execution_environment, []) : [],
       metadata: template.metadata ? this.safeJsonParse(template.metadata, {}) : {},
       tags: template.tags ? this.safeJsonParse(template.tags, []) : [],
       useCase: template.use_case,

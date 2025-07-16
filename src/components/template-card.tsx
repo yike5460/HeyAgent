@@ -141,7 +141,7 @@ export function TemplateCard({
                   {tag}
                 </Badge>
               ))}
-              {template.tags.length > 3 && (
+              {template.tags && template.tags.length > 3 && (
                 <Badge 
                   variant="outline" 
                   className="text-xs font-normal rounded-full bg-muted/20 text-muted-foreground border-muted/40 hover:bg-muted/30 transition-colors px-2 py-0.5"

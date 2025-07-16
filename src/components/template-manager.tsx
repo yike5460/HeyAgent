@@ -502,7 +502,7 @@ export function TemplateManager({
                     {tag}
                   </Badge>
                 ))}
-                {template.tags.length > 3 && (
+                {template.tags && template.tags.length > 3 && (
                   <Badge variant="outline" className="text-xs">
                     +{template.tags.length - 3}
                   </Badge>
@@ -709,7 +709,7 @@ export function TemplateManager({
                 <div>
                   <h4 className="font-medium">Tags</h4>
                   <div className="flex flex-wrap gap-1">
-                    {selectedTemplate.tags.map((tag) => (
+                    {selectedTemplate.tags && selectedTemplate.tags.map((tag) => (
                       <Badge key={tag} variant="outline" className="text-xs">
                         {tag}
                       </Badge>
@@ -720,7 +720,7 @@ export function TemplateManager({
                 <div>
                   <h4 className="font-medium">MCP Servers</h4>
                   <div className="flex flex-wrap gap-1">
-                    {selectedTemplate.mcpServers.map((server) => (
+                    {selectedTemplate.mcpServers && selectedTemplate.mcpServers.map((server) => (
                       <Badge key={server.serverId} variant="outline">
                         {server.serverId}
                       </Badge>
@@ -731,7 +731,7 @@ export function TemplateManager({
                 <div>
                   <h4 className="font-medium">Execution Environment</h4>
                   <div className="flex flex-wrap gap-1">
-                    {selectedTemplate.executionEnvironment.map((env, index) => (
+                    {selectedTemplate.executionEnvironment && selectedTemplate.executionEnvironment.map((env, index) => (
                       <Badge key={index} variant="outline">
                         {env?.infrastructure?.replace('-', ' ') || 'Unknown'} {env?.requirements && `(${env.requirements.substring(0, 20)}...)`}
                       </Badge>

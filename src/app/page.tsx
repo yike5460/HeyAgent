@@ -403,11 +403,11 @@ export default function HomePage() {
       const matchesSearch = searchQuery === '' || 
         template.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         template.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        template.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        (template.tags && template.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))) ||
         template.author.toLowerCase().includes(searchQuery.toLowerCase())
       
       const matchesIndustry = industryFilter === 'all' || template.industry === industryFilter
-      const matchesComplexity = complexityFilter === 'all' || template.metadata.complexity === complexityFilter
+      const matchesComplexity = complexityFilter === 'all' || template.metadata?.complexity === complexityFilter
       
       return matchesSearch && matchesIndustry && matchesComplexity
     })
@@ -494,7 +494,7 @@ export default function HomePage() {
   const publicStats = {
     totalTemplates: templates.length,
     totalUsage: templates.reduce((sum, t) => sum + t.usageCount, 0),
-    averageRating: templates.reduce((sum, t) => sum + t.rating, 0) / templates.length,
+    averageRating: templates.length > 0 ? templates.reduce((sum, t) => sum + t.rating, 0) / templates.length : 0,
     totalForks: templates.reduce((sum, t) => sum + t.forkCount, 0)
   }
 

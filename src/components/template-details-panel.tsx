@@ -209,7 +209,7 @@ export function TemplateDetailsPanel({
                     </CardHeader>
                     <CardContent>
                       <div className="flex flex-wrap gap-2">
-                        {template.tags.map((tag) => (
+                        {template.tags && template.tags.map((tag) => (
                           <Badge key={tag} variant="outline" className="text-xs">
                             {tag}
                           </Badge>
@@ -230,20 +230,20 @@ export function TemplateDetailsPanel({
                   </CardContent>
                 </Card>
 
-                {template.mcpServers.length > 0 && (
+                {template.mcpServers && template.mcpServers.length > 0 && (
                   <Card>
                     <CardHeader>
                       <CardTitle>MCP Servers</CardTitle>
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-3">
-                        {template.mcpServers.map((server, index) => (
+                        {template.mcpServers && template.mcpServers.map((server, index) => (
                           <div key={index} className="flex items-center justify-between p-3 bg-muted rounded-lg">
                             <div>
                               <h4 className="font-medium">{server.serverId}</h4>
                               <p className="text-sm text-muted-foreground">{server.serverType}</p>
                             </div>
-                            <Badge variant="outline">{server.tools.length} tools</Badge>
+                            <Badge variant="outline">{server.tools?.length || 0} tools</Badge>
                           </div>
                         ))}
                       </div>
@@ -251,14 +251,14 @@ export function TemplateDetailsPanel({
                   </Card>
                 )}
 
-                {template.executionEnvironment.length > 0 && (
+                {template.executionEnvironment && template.executionEnvironment.length > 0 && (
                   <Card>
                     <CardHeader>
                       <CardTitle>SaaS Integrations</CardTitle>
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-3">
-                        {template.executionEnvironment.map((integration, index) => (
+                        {template.executionEnvironment && template.executionEnvironment.map((integration, index) => (
                           <div key={index} className="flex items-center justify-between p-3 bg-muted rounded-lg">
                             <div>
                               <h4 className="font-medium capitalize">{integration?.infrastructure?.replace('-', ' ') || 'Unknown'}</h4>
@@ -334,19 +334,19 @@ export function TemplateDetailsPanel({
                               <div className="space-y-2">
                                 <div className="flex items-center justify-between p-2 border rounded">
                                   <span className="text-sm">MCP Servers</span>
-                                  <Badge variant="outline">{template.mcpServers.length}</Badge>
+                                  <Badge variant="outline">{template.mcpServers ? template.mcpServers.length : 0}</Badge>
                                 </div>
                                 <div className="flex items-center justify-between p-2 border rounded">
                                   <span className="text-sm">SaaS Integrations</span>
-                                  <Badge variant="outline">{template.executionEnvironment.length}</Badge>
+                                  <Badge variant="outline">{template.executionEnvironment ? template.executionEnvironment.length : 0}</Badge>
                                 </div>
                                 <div className="flex items-center justify-between p-2 border rounded">
                                   <span className="text-sm">Parameters</span>
-                                  <Badge variant="outline">{template.promptConfig.parameters.length}</Badge>
+                                  <Badge variant="outline">{template.promptConfig?.parameters?.length || 0}</Badge>
                                 </div>
                                 <div className="flex items-center justify-between p-2 border rounded">
                                   <span className="text-sm">Dependencies</span>
-                                  <Badge variant="outline">{template.metadata.dependencies.length}</Badge>
+                                  <Badge variant="outline">{template.metadata?.dependencies?.length || 0}</Badge>
                                 </div>
                               </div>
                             </div>
@@ -497,7 +497,7 @@ export function TemplateDetailsPanel({
                         </pre>
                       </div>
                     </div>
-                    {template.promptConfig.parameters.length > 0 && (
+                    {template.promptConfig?.parameters && template.promptConfig.parameters.length > 0 && (
                       <div>
                         <details className="group">
                           <summary className="cursor-pointer hover:bg-muted/50 p-2 rounded-md transition-colors list-none">
@@ -510,11 +510,11 @@ export function TemplateDetailsPanel({
                               >
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                               </svg>
-                              Template Parameters ({template.promptConfig.parameters.length})
+                              Template Parameters ({template.promptConfig?.parameters?.length || 0})
                             </h4>
                           </summary>
                           <div className="mt-2 space-y-2">
-                      {template.promptConfig.parameters.map((param) => (
+                      {template.promptConfig?.parameters && template.promptConfig.parameters.map((param) => (
                         <div key={param.name} className="flex items-center justify-between p-3 bg-muted rounded-lg">
                           <div className="space-y-1">
                             <div className="flex items-center space-x-2">
@@ -547,7 +547,7 @@ export function TemplateDetailsPanel({
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    {template.mcpServers.length > 0 ? (
+                    {template.mcpServers && template.mcpServers.length > 0 ? (
                       <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2">
                         {template.mcpServers.map((server, index) => (
                           <div key={index} className="border rounded-lg p-3 space-y-2">
@@ -561,7 +561,7 @@ export function TemplateDetailsPanel({
                                   {server.serverType === 'custom' && 'Custom server implementation with specialized functionality'}
                                 </p>
                               </div>
-                              <Badge variant="outline">{server.tools.length} tools</Badge>
+                              <Badge variant="outline">{server.tools?.length || 0} tools</Badge>
                             </div>
                             <details className="group">
                               <summary className="cursor-pointer hover:bg-muted/50 p-2 rounded-md transition-colors list-none">
@@ -611,7 +611,7 @@ export function TemplateDetailsPanel({
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    {template.executionEnvironment.length > 0 ? (
+                    {template.executionEnvironment && template.executionEnvironment.length > 0 ? (
                       <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2">
                         {template.executionEnvironment.map((integration, index) => (
                           <div key={index} className="border rounded-lg p-3 space-y-2">

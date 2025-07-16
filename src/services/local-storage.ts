@@ -234,7 +234,7 @@ export class LocalStorageService {
           duration: 2500,
           status: 'completed'
         },
-        ...template.mcpServers.map((server, index) => ({
+        ...(template.mcpServers || []).map((server, index) => ({
           stepId: `mcp_${index}`,
           name: `Execute ${server.serverId}`,
           type: 'mcp-call',
@@ -302,7 +302,7 @@ export class LocalStorageService {
 
       // Filter by tags
       const matchesTags = !filters?.tags?.length || 
-        filters.tags.some(tag => template.tags.includes(tag))
+        filters.tags.some(tag => template.tags && template.tags.includes(tag))
 
       // Filter by status
       const matchesStatus = !filters?.status || template.status === filters.status

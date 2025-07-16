@@ -377,11 +377,11 @@ export default function TemplateGalleryPage() {
       const matchesSearch = searchQuery === '' || 
         template.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         template.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        template.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        (template.tags && template.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))) ||
         template.author.toLowerCase().includes(searchQuery.toLowerCase())
       
       const matchesIndustry = industryFilter === 'all' || template.industry === industryFilter
-      const matchesComplexity = complexityFilter === 'all' || template.metadata.complexity === complexityFilter
+      const matchesComplexity = complexityFilter === 'all' || template.metadata?.complexity === complexityFilter
       
       return matchesSearch && matchesIndustry && matchesComplexity
     })
@@ -489,7 +489,7 @@ export default function TemplateGalleryPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {(templates.reduce((sum, t) => sum + t.rating, 0) / templates.length).toFixed(1)}
+              {templates.length > 0 ? (templates.reduce((sum, t) => sum + t.rating, 0) / templates.length).toFixed(1) : '0.0'}
             </div>
             <p className="text-xs text-muted-foreground">Community rating</p>
           </CardContent>
