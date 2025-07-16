@@ -41,12 +41,11 @@ export default function MyTemplatesPage() {
   const loadTemplates = async () => {
     try {
       setLoading(true)
-      const userTemplates = await templateService.getAllTemplates()
-      // Filter to show only current user's templates (in real app, this would be based on userId)
-      const myTemplates = userTemplates.filter(t => t.userId === 'current-user' || t.author === 'Current User')
-      setTemplates(myTemplates)
-      if (myTemplates.length > 0 && !selectedTemplate) {
-        setSelectedTemplate(myTemplates[0])
+      const userTemplates = await templateService.getUserTemplates()
+      // API now handles user authentication and returns appropriate templates
+      setTemplates(userTemplates)
+      if (userTemplates.length > 0 && !selectedTemplate) {
+        setSelectedTemplate(userTemplates[0])
       }
     } catch (error) {
       console.error('Error loading templates:', error)

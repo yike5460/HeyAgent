@@ -8,14 +8,15 @@ class TemplateService {
   }
 
   // Template CRUD Operations
-  async getAllTemplates(): Promise<PromptTemplate[]> {
+  async getAllTemplates(includeUserTemplates: boolean = false): Promise<PromptTemplate[]> {
     if (this.useDatabase()) {
       try {
         // Try to get from local cache first for faster loading
         const cachedTemplates = await localStorageService.getAllTemplates()
         
         // Fetch from API in background
-        const response = await fetch('/api/templates')
+        const url = includeUserTemplates ? '/api/templates?includeUserTemplates=true' : '/api/templates'
+        const response = await fetch(url)
         if (!response.ok) {
           console.error('Failed to fetch templates from API:', response.status)
           // Return cached templates if API fails
@@ -44,6 +45,10 @@ class TemplateService {
     } else {
       return await localStorageService.getAllTemplates()
     }
+  }
+
+  async getUserTemplates(): Promise<PromptTemplate[]> {
+    return this.getAllTemplates(true)
   }
 
   async getTemplate(id: string): Promise<PromptTemplate | null> {

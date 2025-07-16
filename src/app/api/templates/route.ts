@@ -43,10 +43,40 @@ export async function GET(request: NextRequest) {
 
     // Special handling for user's own templates
     const userId = searchParams.get('userId')
+    const includeUserTemplates = searchParams.get('includeUserTemplates') === 'true'
     let templates: PromptTemplate[]
     
     if (userId) {
       templates = await TemplateQueries.findByUserId(userId)
+    } else if (includeUserTemplates) {
+      // Get current user's session
+      const session = await auth()
+      if (session?.user?.id) {
+        // Get both public templates and user's private templates
+        const publicTemplates = await TemplateQueries.findAll(filters, sort, limit, offset)
+        const userTemplates = await TemplateQueries.findByUserId(session.user.id)
+        
+        // Combine and deduplicate templates
+        const templateMap = new Map<string, PromptTemplate>()
+        
+        // Add public templates first
+        publicTemplates.forEach(t => templateMap.set(t.id, t))
+        
+        // Add user templates (will override public ones if same ID)
+        userTemplates.forEach(t => templateMap.set(t.id, t))
+        
+        templates = Array.from(templateMap.values())
+        
+        // Apply sorting to combined results
+        templates.sort((a, b) => {
+          const aTime = new Date(a.createdAt).getTime()
+          const bTime = new Date(b.createdAt).getTime()
+          return sort.direction === 'desc' ? bTime - aTime : aTime - bTime
+        })
+      } else {
+        // Not authenticated, return only public templates
+        templates = await TemplateQueries.findAll(filters, sort, limit, offset)
+      }
     } else {
       templates = await TemplateQueries.findAll(filters, sort, limit, offset)
     }
