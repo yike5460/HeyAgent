@@ -39,9 +39,10 @@ export default function MyTemplatesPage() {
       setLoading(true)
       const userTemplates = await templateService.getUserTemplates()
       // API now handles user authentication and returns appropriate templates
-      setTemplates(userTemplates)
-      if (userTemplates.length > 0 && !selectedTemplate) {
-        setSelectedTemplate(userTemplates[0])
+      const validTemplates = Array.isArray(userTemplates) ? userTemplates.filter(t => t && t.id) : []
+      setTemplates(validTemplates)
+      if (validTemplates.length > 0 && !selectedTemplate) {
+        setSelectedTemplate(validTemplates[0])
       }
     } catch (error) {
       console.error('Error loading templates:', error)
@@ -388,7 +389,7 @@ export default function MyTemplatesPage() {
                 <div className="flex flex-wrap gap-2">
                   <Badge>{selectedTemplate.industry}</Badge>
                   <Badge variant="outline">{selectedTemplate.useCase}</Badge>
-                  <Badge variant="outline">{selectedTemplate.metadata.complexity}</Badge>
+                  <Badge variant="outline">{selectedTemplate.metadata?.complexity || 'Unknown'}</Badge>
                   <Badge variant="outline" className={
                     selectedTemplate.status === 'published' ? 'bg-green-100 text-green-800' :
                     selectedTemplate.status === 'draft' ? 'bg-yellow-100 text-yellow-800' :
