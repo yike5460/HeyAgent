@@ -43,9 +43,10 @@ export default function MyTemplatesPage() {
       setLoading(true)
       const userTemplates = await templateService.getUserTemplates()
       // API now handles user authentication and returns appropriate templates
-      setTemplates(userTemplates)
-      if (userTemplates.length > 0 && !selectedTemplate) {
-        setSelectedTemplate(userTemplates[0])
+      const validTemplates = Array.isArray(userTemplates) ? userTemplates.filter(t => t && t.id) : []
+      setTemplates(validTemplates)
+      if (validTemplates.length > 0 && !selectedTemplate) {
+        setSelectedTemplate(validTemplates[0])
       }
     } catch (error) {
       console.error('Error loading templates:', error)
@@ -478,7 +479,7 @@ export default function MyTemplatesPage() {
                             <h4 className="text-sm font-medium truncate">{template.title}</h4>
                             <div className="flex items-center space-x-2 mt-1">
                               <Badge variant="outline" className="text-xs">{template.industry}</Badge>
-                              <Badge variant="outline" className="text-xs">{template.metadata.complexity}</Badge>
+                              <Badge variant="outline" className="text-xs">{template.metadata?.complexity || 'Unknown'}</Badge>
                             </div>
                           </div>
                         </div>

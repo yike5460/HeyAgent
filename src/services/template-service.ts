@@ -24,19 +24,21 @@ class TemplateService {
         }
         
         const result = await response.json()
-        const apiTemplates = result.data || result
+        const apiTemplates = result?.data || result || []
         
         // Update local cache with fresh data
-        if (Array.isArray(apiTemplates)) {
+        if (Array.isArray(apiTemplates) && apiTemplates.length > 0) {
           // Store each template in local cache for faster access next time
           for (const template of apiTemplates) {
-            await localStorageService.saveTemplate(template).catch(() => {
-              // Ignore cache errors, don't break the main flow
-            })
+            if (template && template.id) {
+              await localStorageService.saveTemplate(template).catch(() => {
+                // Ignore cache errors, don't break the main flow
+              })
+            }
           }
         }
         
-        return apiTemplates
+        return Array.isArray(apiTemplates) ? apiTemplates : []
       } catch (error) {
         console.error('Error fetching templates from API:', error)
         // Fallback to cached templates
@@ -66,7 +68,7 @@ class TemplateService {
         }
         
         const result = await response.json()
-        const apiTemplate = result.data || result
+        const apiTemplate = result?.data || result
         
         // Update local cache
         if (apiTemplate) {
@@ -116,7 +118,7 @@ class TemplateService {
         }
 
         const result = await response.json()
-        const savedTemplate = result.data || result // Handle both { data: template } and direct template responses
+        const savedTemplate = result?.data || result // Handle both { data: template } and direct template responses
         
         // Update local cache with the saved template
         await localStorageService.saveTemplate(savedTemplate).catch(() => {
