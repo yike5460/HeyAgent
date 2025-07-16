@@ -49,8 +49,15 @@ export async function GET(request: NextRequest) {
     if (userId) {
       templates = await TemplateQueries.findByUserId(userId)
     } else if (includeUserTemplates) {
-      // Get current user's session
-      const session = await auth()
+      // Get current user's session with error handling
+      let session = null
+      try {
+        session = await auth()
+      } catch (error) {
+        console.error('Authentication error:', error)
+        session = null
+      }
+      
       if (session?.user?.id) {
         // Get both public templates and user's private templates
         const publicTemplates = await TemplateQueries.findAll(filters, sort, limit, offset)

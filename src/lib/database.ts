@@ -63,6 +63,13 @@ export function getDatabase(env?: any) {
     console.error('Database binding not found. Available env keys:', env ? Object.keys(env) : 'no env provided');
     console.error('Global keys containing DB:', typeof globalThis !== 'undefined' ? 
       Object.keys(globalThis).filter(k => k.toLowerCase().includes('db') || k.includes('PROD')) : 'no globalThis');
+    
+    // In development, return null instead of throwing
+    if (typeof process !== 'undefined' && process.env.NODE_ENV === 'development') {
+      console.warn('Database not available in development - returning null');
+      return null;
+    }
+    
     throw new Error('Database not available. Make sure D1 binding is configured.');
   }
   
@@ -479,16 +486,26 @@ export class TemplateQueries {
     );
   }
 
+  // Helper method to safely parse JSON with fallback
+  private static safeJsonParse(jsonString: string, fallback: any): any {
+    try {
+      return JSON.parse(jsonString);
+    } catch (error) {
+      console.error('JSON parsing error:', error, 'Input:', jsonString);
+      return fallback;
+    }
+  }
+
   // Helper method to enrich template with related data
   private static async enrichTemplate(template: any): Promise<PromptTemplate> {
-    // Parse JSON fields
+    // Parse JSON fields with error handling
     const parsed = {
       ...template,
-      promptConfig: template.prompt_config ? JSON.parse(template.prompt_config) : null,
-      agentConfig: template.agent_config ? JSON.parse(template.agent_config) : null,
-      executionEnvironment: template.execution_environment ? JSON.parse(template.execution_environment) : null,
-      metadata: template.metadata ? JSON.parse(template.metadata) : null,
-      tags: template.tags ? JSON.parse(template.tags) : [],
+      promptConfig: template.prompt_config ? this.safeJsonParse(template.prompt_config, null) : null,
+      agentConfig: template.agent_config ? this.safeJsonParse(template.agent_config, null) : null,
+      executionEnvironment: template.execution_environment ? this.safeJsonParse(template.execution_environment, null) : null,
+      metadata: template.metadata ? this.safeJsonParse(template.metadata, {}) : {},
+      tags: template.tags ? this.safeJsonParse(template.tags, []) : [],
       useCase: template.use_case,
       userId: template.user_id,
       is_public: Boolean(template.is_public),
