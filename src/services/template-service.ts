@@ -48,22 +48,34 @@ class TemplateService {
   async saveTemplate(template: PromptTemplate): Promise<PromptTemplate> {
     if (this.useDatabase()) {
       try {
-        const method = template.id ? 'PUT' : 'POST'
-        const url = template.id ? `/api/templates/${template.id}` : '/api/templates'
+        // Determine if this is a new template or an existing one
+        // New templates will have client-generated IDs starting with "template-"
+        // Existing templates will have server-generated IDs or have been fetched from the API
+        const isNewTemplate = !template.id || template.id.startsWith('template-')
+        
+        const method = isNewTemplate ? 'POST' : 'PUT'
+        const url = isNewTemplate ? '/api/templates' : `/api/templates/${template.id}`
+        
+        // For new templates, remove the client-generated ID to let server generate it
+        const templateData = isNewTemplate ? 
+          { ...template, id: undefined } : 
+          template
         
         const response = await fetch(url, {
           method,
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify(template)
+          body: JSON.stringify(templateData)
         })
 
         if (!response.ok) {
-          throw new Error(`Failed to save template: ${response.status}`)
+          const errorData = await response.json().catch(() => ({ error: 'Unknown error' }))
+          throw new Error(`Failed to save template: ${response.status} - ${JSON.stringify(errorData)}`)
         }
 
-        return await response.json()
+        const result = await response.json()
+        return result.data || result // Handle both { data: template } and direct template responses
       } catch (error) {
         console.error('Error saving template to API:', error)
         throw error
