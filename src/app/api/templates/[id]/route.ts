@@ -148,7 +148,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
       )
     }
 
-    // Check if template exists and get ownership info without enriching
+    // Check if template exists and verify ownership
     const templateCheck = await TemplateQueries.findBasicById(params.id)
     if (!templateCheck) {
       return NextResponse.json(

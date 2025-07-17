@@ -92,7 +92,7 @@ export async function executeQuery<T = any>(query: string, params: any[] = [], e
 export class UserQueries {
   static async findByEmail(email: string): Promise<User | null> {
     const result = await executeQuery(
-      'SELECT * FROM users WHERE email = ? AND deleted_at IS NULL LIMIT 1',
+      'SELECT * FROM users WHERE email = ? LIMIT 1',
       [email]
     );
     if (!result[0]) return null;
@@ -103,7 +103,7 @@ export class UserQueries {
 
   static async findByOAuth(provider: string, providerId: string): Promise<User | null> {
     const result = await executeQuery(
-      'SELECT * FROM users WHERE oauth_provider = ? AND oauth_provider_id = ? AND deleted_at IS NULL LIMIT 1',
+      'SELECT * FROM users WHERE oauth_provider = ? AND oauth_provider_id = ? LIMIT 1',
       [provider, providerId]
     );
     if (!result[0]) return null;
@@ -267,7 +267,7 @@ export class TemplateQueries {
   // Basic template lookup without enrichment for operations like delete
   static async findBasicById(id: string): Promise<any | null> {
     const templates = await executeQuery(
-      'SELECT id, user_id, title, status FROM templates WHERE id = ? AND deleted_at IS NULL',
+      'SELECT id, user_id, title, status FROM templates WHERE id = ?',
       [id]
     );
     
@@ -279,7 +279,7 @@ export class TemplateQueries {
       `SELECT t.*, u.name as author_name 
        FROM templates t 
        LEFT JOIN users u ON t.user_id = u.id 
-       WHERE t.id = ? AND t.deleted_at IS NULL`,
+       WHERE t.id = ?`,
       [id]
     );
     
@@ -293,7 +293,7 @@ export class TemplateQueries {
       SELECT t.*, u.name as author_name 
       FROM templates t 
       LEFT JOIN users u ON t.user_id = u.id 
-      WHERE t.deleted_at IS NULL AND t.is_public = 1
+      WHERE t.is_public = 1
     `;
     const params: any[] = [];
 
@@ -345,7 +345,7 @@ export class TemplateQueries {
       `SELECT t.*, u.name as author_name 
        FROM templates t 
        LEFT JOIN users u ON t.user_id = u.id 
-       WHERE t.user_id = ? AND t.deleted_at IS NULL 
+       WHERE t.user_id = ? 
        ORDER BY t.created_at DESC`,
       [userId]
     );
@@ -483,26 +483,11 @@ export class TemplateQueries {
   }
 
   static async delete(id: string): Promise<void> {
-    try {
-      // Perform soft delete directly - let the database handle the validation
-      await executeQuery(
-        'UPDATE templates SET deleted_at = ? WHERE id = ? AND deleted_at IS NULL',
-        [new Date().toISOString(), id]
-      );
-      
-      // Note: D1 doesn't return affected row count reliably, so we'll skip that check
-      // The API endpoint will handle the "template not found" case by checking beforehand
-      
-    } catch (error) {
-      console.error('Error in template deletion:', error);
-      
-      // Re-throw with more specific error message if it's the column issue
-      if (error instanceof Error && error.message.includes('no such column')) {
-        throw new Error(`Database schema error: ${error.message}`);
-      }
-      
-      throw error;
-    }
+    // Simple hard deletion - CASCADE relationships will automatically clean up:
+    // - template_parameters, mcp_servers, template_tags, template_forks (as forked)
+    // - user_favorites, template_ratings, template_versions, template_usage, collection_items
+    // - FTS trigger will automatically remove from template_search
+    await executeQuery('DELETE FROM templates WHERE id = ?', [id]);
   }
 
   static async incrementUsage(id: string): Promise<void> {
@@ -673,8 +658,7 @@ export class SearchQueries {
       `SELECT t.*, u.name as author_name 
        FROM templates t 
        LEFT JOIN users u ON t.user_id = u.id 
-       WHERE t.id IN (${templateIds.map(() => '?').join(',')}) 
-       AND t.deleted_at IS NULL`,
+       WHERE t.id IN (${templateIds.map(() => '?').join(',')})`,
       templateIds
     );
 
@@ -686,7 +670,7 @@ export class SearchQueries {
       `SELECT tag, COUNT(*) as count 
        FROM template_tags tt
        JOIN templates t ON tt.template_id = t.id
-       WHERE t.deleted_at IS NULL AND t.is_public = 1
+       WHERE t.is_public = 1
        GROUP BY tag 
        ORDER BY count DESC 
        LIMIT ?`,
