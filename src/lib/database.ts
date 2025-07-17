@@ -84,9 +84,6 @@ export async function executeQuery<T = any>(query: string, params: any[] = [], e
     return [];
   }
   
-  // Enable foreign key constraints for this connection
-  await db.prepare('PRAGMA foreign_keys = ON').run();
-  
   const stmt = db.prepare(query);
   const result = await stmt.bind(...params).all();
   return result.results as T[];
@@ -488,18 +485,46 @@ export class TemplateQueries {
 
   static async delete(id: string): Promise<void> {
     // True hard deletion - delete template and all related data
-    // Foreign key constraints are now enabled with proper CASCADE behavior
+    // Manual deletion to handle D1 foreign key constraints properly
     
     try {
-      // Delete fork relationships where this template is the original
-      // (original_template_id constraint doesn't have CASCADE DELETE)
-      await executeQuery('DELETE FROM template_forks WHERE original_template_id = ?', [id]);
+      // Delete all related records manually to avoid foreign key constraint issues
+      // Order matters: delete child records first, then parent
       
-      // Delete the template - CASCADE will handle other related data automatically
-      // The FTS trigger will also clean up the search index
+      // 1. Delete template parameters
+      await executeQuery('DELETE FROM template_parameters WHERE template_id = ?', [id]);
+      
+      // 2. Delete MCP server configurations
+      await executeQuery('DELETE FROM mcp_servers WHERE template_id = ?', [id]);
+      
+      // 3. Delete template tags
+      await executeQuery('DELETE FROM template_tags WHERE template_id = ?', [id]);
+      
+      // 4. Delete template forks (both directions)
+      await executeQuery('DELETE FROM template_forks WHERE original_template_id = ? OR forked_template_id = ?', [id, id]);
+      
+      // 5. Delete user favorites
+      await executeQuery('DELETE FROM user_favorites WHERE template_id = ?', [id]);
+      
+      // 6. Delete template ratings
+      await executeQuery('DELETE FROM template_ratings WHERE template_id = ?', [id]);
+      
+      // 7. Delete template versions
+      await executeQuery('DELETE FROM template_versions WHERE template_id = ?', [id]);
+      
+      // 8. Delete template usage records
+      await executeQuery('DELETE FROM template_usage WHERE template_id = ?', [id]);
+      
+      // 9. Delete collection items
+      await executeQuery('DELETE FROM collection_items WHERE template_id = ?', [id]);
+      
+      // 10. Delete from FTS search table
+      await executeQuery('DELETE FROM template_search WHERE template_id = ?', [id]);
+      
+      // 11. Finally delete the template itself
       await executeQuery('DELETE FROM templates WHERE id = ?', [id]);
       
-      console.log(`Template ${id} deleted successfully`);
+      console.log(`Template ${id} and all related data deleted successfully`);
       
     } catch (error) {
       console.error('Template deletion failed:', error);
