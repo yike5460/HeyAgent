@@ -484,10 +484,14 @@ export class TemplateQueries {
 
   static async delete(id: string): Promise<void> {
     // True hard deletion - delete template and all related data
-    // With the refactored schema, FTS triggers work properly
+    // Handle foreign key constraints that don't have CASCADE DELETE
     
     try {
-      // Delete template - CASCADE will handle related data automatically
+      // First, delete fork relationships where this template is the original
+      // (forked_template_id has CASCADE DELETE but original_template_id doesn't)
+      await executeQuery('DELETE FROM template_forks WHERE original_template_id = ?', [id]);
+      
+      // Now delete the template - CASCADE will handle other related data automatically
       // The FTS trigger will also clean up the search index
       await executeQuery('DELETE FROM templates WHERE id = ?', [id]);
       
