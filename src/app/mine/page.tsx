@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from 'react'
+import { useSession } from 'next-auth/react'
 import { TemplateCard } from '@/components/template-card'
 import { TemplateDetailsPanel } from '@/components/template-details-panel'
 import { CreateTemplateDialog } from '@/components/create-template-dialog'
@@ -25,6 +26,7 @@ import { templateService } from '@/services/template-service'
 import { Brain, Database, Settings, Workflow, Plus, Upload, Download, TrendingUp, BarChart3, Activity } from 'lucide-react'
 
 export default function MyTemplatesPage() {
+  const { data: session } = useSession()
   const [templates, setTemplates] = useState<PromptTemplate[]>([])
   const [selectedTemplate, setSelectedTemplate] = useState<PromptTemplate | null>(null)
   const [loading, setLoading] = useState(true)
@@ -69,8 +71,8 @@ export default function MyTemplatesPage() {
         status: 'draft',
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
-        userId: 'current-user',
-        author: 'Current User',
+        userId: session?.user?.id || 'current-user',
+        author: session?.user?.name || session?.user?.email || 'Current User',
         rating: 0,
         usageCount: 0,
         forkCount: 0,
@@ -638,7 +640,7 @@ export default function MyTemplatesPage() {
                   onPublish={handleTemplatePublish}
                   onUnpublish={handleTemplateUnpublish}
                   showPublishStatus={true}
-                  currentUserId="current-user"
+                  currentUserId={session?.user?.id || 'current-user'}
                 />
               ))
             )}

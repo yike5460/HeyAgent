@@ -44,10 +44,36 @@ export async function GET(request: NextRequest) {
     // Special handling for user's own templates
     const userId = searchParams.get('userId')
     const includeUserTemplates = searchParams.get('includeUserTemplates') === 'true'
+    const userTemplatesOnly = searchParams.get('userTemplatesOnly') === 'true'
     let templates: PromptTemplate[]
     
     if (userId) {
       templates = await TemplateQueries.findByUserId(userId)
+    } else if (userTemplatesOnly) {
+      // Get only current user's templates (for "My Templates" page)
+      let session = null
+      try {
+        session = await auth()
+      } catch (error) {
+        console.error('Authentication error:', error)
+        session = null
+      }
+      
+      if (session?.user?.id) {
+        templates = await TemplateQueries.findByUserId(session.user.id)
+        
+        // Apply sorting to user templates
+        templates.sort((a, b) => {
+          const aDate = new Date(a.createdAt || 0)
+          const bDate = new Date(b.createdAt || 0)
+          const aTime = isNaN(aDate.getTime()) ? 0 : aDate.getTime()
+          const bTime = isNaN(bDate.getTime()) ? 0 : bDate.getTime()
+          return sort.direction === 'desc' ? bTime - aTime : aTime - bTime
+        })
+      } else {
+        // Not authenticated, return empty array
+        templates = []
+      }
     } else if (includeUserTemplates) {
       // Get current user's session with error handling
       let session = null

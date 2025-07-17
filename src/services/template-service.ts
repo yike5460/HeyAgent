@@ -50,7 +50,45 @@ class TemplateService {
   }
 
   async getUserTemplates(): Promise<PromptTemplate[]> {
-    return this.getAllTemplates(true)
+    if (this.useDatabase()) {
+      try {
+        // Try to get from local cache first for faster loading
+        const cachedTemplates = await localStorageService.getAllTemplates()
+        
+        // Fetch from API in background - use userTemplatesOnly parameter
+        const response = await fetch('/api/templates?userTemplatesOnly=true')
+        if (!response.ok) {
+          console.error('Failed to fetch user templates from API:', response.status)
+          // Return cached templates if API fails
+          return cachedTemplates.filter(t => t.userId === 'current-user') // Filter cached templates too
+        }
+        
+        const result = await response.json()
+        const apiTemplates = result?.data || result || []
+        
+        // Update local cache with fresh data
+        if (Array.isArray(apiTemplates) && apiTemplates.length > 0) {
+          // Store each template in local cache for faster access next time
+          for (const template of apiTemplates) {
+            if (template && template.id) {
+              await localStorageService.saveTemplate(template).catch(() => {
+                // Ignore cache errors, don't break the main flow
+              })
+            }
+          }
+        }
+        
+        return Array.isArray(apiTemplates) ? apiTemplates : []
+      } catch (error) {
+        console.error('Error fetching user templates from API:', error)
+        // Fallback to cached templates filtered by user
+        const cachedTemplates = await localStorageService.getAllTemplates()
+        return cachedTemplates.filter(t => t.userId === 'current-user')
+      }
+    } else {
+      const allTemplates = await localStorageService.getAllTemplates()
+      return allTemplates.filter(t => t.userId === 'current-user')
+    }
   }
 
   async getTemplate(id: string): Promise<PromptTemplate | null> {
