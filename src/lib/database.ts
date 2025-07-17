@@ -524,21 +524,89 @@ export class TemplateQueries {
 
   // Helper method to enrich template with related data
   private static async enrichTemplate(template: any): Promise<PromptTemplate> {
-    // Parse JSON fields with error handling
+    // Parse JSON fields with error handling and map database columns to TypeScript interface
     const parsed = {
-      ...template,
-      promptConfig: template.prompt_config ? this.safeJsonParse(template.prompt_config, { systemPrompt: '', userPromptTemplate: '', parameters: [] }) : { systemPrompt: '', userPromptTemplate: '', parameters: [] },
-      agentConfig: template.agent_config ? this.safeJsonParse(template.agent_config, null) : null,
-      executionEnvironment: template.execution_environment ? this.safeJsonParse(template.execution_environment, []) : [],
-      metadata: template.metadata ? this.safeJsonParse(template.metadata, {}) : {},
-      tags: template.tags ? this.safeJsonParse(template.tags, []) : [],
-      useCase: template.use_case,
+      id: template.id,
+      title: template.title,
+      description: template.description || '',
+      industry: template.industry,
+      useCase: template.use_case || '',
+      version: parseInt(template.version) || 1,
+      status: template.status || 'draft',
+      createdAt: template.created_at,
+      updatedAt: template.updated_at,
       userId: template.user_id,
-      is_public: Boolean(template.is_public),
+      author: template.author_name || template.user_id || 'Unknown',
       rating: template.rating || 0,
       usageCount: template.usage_count || 0,
-      forkCount: template.fork_count || 0
+      forkCount: template.fork_count || 0,
+      isPublic: Boolean(template.is_public),
+      license: template.license || 'MIT',
+      
+      // JSON field parsing with fallbacks
+      promptConfig: template.prompt_config ? 
+        this.safeJsonParse(template.prompt_config, { 
+          systemPrompt: '', 
+          userPromptTemplate: '', 
+          parameters: [],
+          constraints: {}
+        }) : { 
+          systemPrompt: '', 
+          userPromptTemplate: '', 
+          parameters: [],
+          constraints: {}
+        },
+      agentConfig: template.agent_config ? 
+        this.safeJsonParse(template.agent_config, {
+          workflow: [],
+          errorHandling: { retryPolicy: { maxRetries: 3, backoffStrategy: 'exponential', baseDelay: 1000, maxDelay: 10000 }, fallbackActions: [], errorNotifications: [] },
+          monitoring: { enabled: false, metricsCollection: [], alerting: { enabled: false, rules: [] } },
+          scaling: { autoScaling: false, minInstances: 1, maxInstances: 1, scalingTriggers: [] }
+        }) : {
+          workflow: [],
+          errorHandling: { retryPolicy: { maxRetries: 3, backoffStrategy: 'exponential', baseDelay: 1000, maxDelay: 10000 }, fallbackActions: [], errorNotifications: [] },
+          monitoring: { enabled: false, metricsCollection: [], alerting: { enabled: false, rules: [] } },
+          scaling: { autoScaling: false, minInstances: 1, maxInstances: 1, scalingTriggers: [] }
+        },
+      executionEnvironment: template.execution_environment ? 
+        this.safeJsonParse(template.execution_environment, []) : [],
+      metadata: template.metadata ? 
+        this.safeJsonParse(template.metadata, {}) : {},
+      
+      // Fields that will be populated by additional queries
+      tags: [] as string[], // Will be populated from template_tags table
+      mcpServers: [] as any[], // Will be populated from mcp_servers table
+      
+      // Template inheritance and collaboration (TODO: implement fully)
+      parentTemplateId: undefined,
+      isForked: false, // TODO: Check template_forks table
+      inheritanceConfig: undefined,
+      exportMetadata: undefined,
+      collaborators: [] // TODO: Implement collaborators system
     };
+
+    // Fetch template tags from template_tags table
+    const tagRows = await executeQuery(
+      'SELECT tag FROM template_tags WHERE template_id = ? ORDER BY created_at',
+      [template.id]
+    );
+    parsed.tags = tagRows.map(row => row.tag);
+
+    // Fetch template parameters from template_parameters table
+    const parameterRows = await executeQuery(
+      'SELECT * FROM template_parameters WHERE template_id = ? ORDER BY display_order',
+      [template.id]
+    );
+    if (parameterRows.length > 0) {
+      parsed.promptConfig.parameters = parameterRows.map(param => ({
+        name: param.name,
+        type: param.type as 'string' | 'number' | 'boolean' | 'array' | 'object',
+        description: param.description || '',
+        required: Boolean(param.required),
+        defaultValue: param.default_value ? this.safeJsonParse(param.default_value, null) : undefined,
+        validation: param.validation_rules ? this.safeJsonParse(param.validation_rules, []) : []
+      }));
+    }
 
     // Fetch MCP servers
     const mcpServers = await executeQuery(
@@ -546,31 +614,44 @@ export class TemplateQueries {
       [template.id]
     );
     
-    parsed.mcpServers = mcpServers.map(server => ({
-      serverId: server.name,
-      serverType: 'firecrawl' as const,
-      configuration: {
-        endpoint: 'https://api.firecrawl.dev',
-        authentication: {
-          type: 'apiKey' as const,
-          credentials: server.config ? JSON.parse(server.config) : {}
+    parsed.mcpServers = mcpServers.map(server => {
+      const serverConfig = server.config ? this.safeJsonParse(server.config, {}) : {};
+      return {
+        serverId: server.id,
+        serverType: (server.name || 'custom') as 'firecrawl' | 'custom' | 'api-integrator' | 'file-processor',
+        configuration: {
+          endpoint: serverConfig.endpoint || 'https://api.example.com',
+          authentication: {
+            type: (serverConfig.authenticationType || 'apiKey') as 'apiKey' | 'oauth' | 'basic' | 'bearer',
+            credentials: serverConfig.credentials || {}
+          },
+          rateLimit: {
+            requestsPerMinute: serverConfig.requestsPerMinute || 60,
+            requestsPerHour: serverConfig.requestsPerHour || 1000,
+            burstLimit: serverConfig.burstLimit || 10
+          },
+          fallback: {
+            enabled: serverConfig.fallbackEnabled !== false,
+            fallbackServers: serverConfig.fallbackServers || [],
+            retryAttempts: serverConfig.retryAttempts || 3,
+            timeoutMs: serverConfig.timeoutMs || 30000
+          }
         },
-        rateLimit: {
-          requestsPerMinute: 60,
-          requestsPerHour: 1000,
-          burstLimit: 10
-        },
-        fallback: {
-          enabled: true,
-          fallbackServers: [],
-          retryAttempts: 3,
-          timeoutMs: 30000
-        }
-      },
-      tools: [],
-      resources: []
-    }));
+        tools: serverConfig.tools || [],
+        resources: serverConfig.resources || []
+      };
+    });
 
+    // Check if this template is a fork by looking in template_forks table
+    const forkCheck = await executeQuery(
+      'SELECT original_template_id FROM template_forks WHERE forked_template_id = ?',
+      [template.id]
+    );
+    if (forkCheck.length > 0) {
+      parsed.isForked = true;
+      parsed.parentTemplateId = forkCheck[0].original_template_id;
+    }
+    
     return parsed as PromptTemplate;
   }
 }
