@@ -83,6 +83,10 @@ export async function executeQuery<T = any>(query: string, params: any[] = [], e
     // Return empty results in development
     return [];
   }
+  
+  // Enable foreign key constraints for this connection
+  await db.prepare('PRAGMA foreign_keys = ON').run();
+  
   const stmt = db.prepare(query);
   const result = await stmt.bind(...params).all();
   return result.results as T[];
@@ -484,14 +488,14 @@ export class TemplateQueries {
 
   static async delete(id: string): Promise<void> {
     // True hard deletion - delete template and all related data
-    // Handle foreign key constraints that don't have CASCADE DELETE
+    // Foreign key constraints are now enabled with proper CASCADE behavior
     
     try {
-      // First, delete fork relationships where this template is the original
-      // (forked_template_id has CASCADE DELETE but original_template_id doesn't)
+      // Delete fork relationships where this template is the original
+      // (original_template_id constraint doesn't have CASCADE DELETE)
       await executeQuery('DELETE FROM template_forks WHERE original_template_id = ?', [id]);
       
-      // Now delete the template - CASCADE will handle other related data automatically
+      // Delete the template - CASCADE will handle other related data automatically
       // The FTS trigger will also clean up the search index
       await executeQuery('DELETE FROM templates WHERE id = ?', [id]);
       
