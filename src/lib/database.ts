@@ -492,103 +492,52 @@ export class TemplateQueries {
   }
 
   static async delete(id: string): Promise<void> {
-    // Get database connection for transaction
-    const db = getDatabase();
-    if (!db) {
-      throw new Error('Database connection not available');
-    }
-    
-    console.log(`Starting deletion process for template: ${id}`);
-    const debugInfo: string[] = [];
-    
+    // Simple deletion approach - delete related records manually to avoid FK constraints
     try {
-      // First, check what records exist for this template
-      const templateExists = await executeQuery('SELECT id, title FROM templates WHERE id = ?', [id]);
-      debugInfo.push(`Template exists: ${JSON.stringify(templateExists)}`);
+      console.log(`Starting deletion process for template: ${id}`);
       
-      if (templateExists.length === 0) {
-        throw new Error('Template not found');
-      }
+      // Delete all related records manually in the correct order
+      // Delete child records first, then parent
       
-      // Check related records count before deletion
-      const relatedCounts = {
-        parameters: await executeQuery('SELECT COUNT(*) as count FROM template_parameters WHERE template_id = ?', [id]),
-        mcpServers: await executeQuery('SELECT COUNT(*) as count FROM mcp_servers WHERE template_id = ?', [id]),
-        tags: await executeQuery('SELECT COUNT(*) as count FROM template_tags WHERE template_id = ?', [id]),
-        forksOriginal: await executeQuery('SELECT COUNT(*) as count FROM template_forks WHERE original_template_id = ?', [id]),
-        forksForked: await executeQuery('SELECT COUNT(*) as count FROM template_forks WHERE forked_template_id = ?', [id]),
-        favorites: await executeQuery('SELECT COUNT(*) as count FROM user_favorites WHERE template_id = ?', [id]),
-        ratings: await executeQuery('SELECT COUNT(*) as count FROM template_ratings WHERE template_id = ?', [id]),
-        versions: await executeQuery('SELECT COUNT(*) as count FROM template_versions WHERE template_id = ?', [id]),
-        usage: await executeQuery('SELECT COUNT(*) as count FROM template_usage WHERE template_id = ?', [id]),
-        collections: await executeQuery('SELECT COUNT(*) as count FROM collection_items WHERE template_id = ?', [id]),
-        search: await executeQuery('SELECT COUNT(*) as count FROM template_search WHERE template_id = ?', [id])
-      };
-      debugInfo.push(`Related records: ${JSON.stringify(relatedCounts)}`);
+      // 1. Delete template parameters (has CASCADE DELETE)
+      await executeQuery('DELETE FROM template_parameters WHERE template_id = ?', [id]);
       
-      // Try to disable foreign keys temporarily (might not work in D1)
-      try {
-        await db.prepare('PRAGMA foreign_keys = OFF').run();
-        debugInfo.push('Foreign keys disabled for deletion');
-      } catch (e) {
-        debugInfo.push('Could not disable foreign keys, proceeding with manual deletion');
-      }
+      // 2. Delete MCP server configurations (has CASCADE DELETE)
+      await executeQuery('DELETE FROM mcp_servers WHERE template_id = ?', [id]);
       
-      // Use batch operations for more efficient deletion
-      const deletionQueries = [
-        'DELETE FROM template_parameters WHERE template_id = ?',
-        'DELETE FROM mcp_servers WHERE template_id = ?', 
-        'DELETE FROM template_tags WHERE template_id = ?',
-        'DELETE FROM template_forks WHERE original_template_id = ?',
-        'DELETE FROM template_forks WHERE forked_template_id = ?',
-        'DELETE FROM user_favorites WHERE template_id = ?',
-        'DELETE FROM template_ratings WHERE template_id = ?',
-        'DELETE FROM template_versions WHERE template_id = ?',
-        'DELETE FROM template_usage WHERE template_id = ?',
-        'DELETE FROM collection_items WHERE template_id = ?',
-        'DELETE FROM template_search WHERE template_id = ?',
-        'DELETE FROM templates WHERE id = ?'
-      ];
+      // 3. Delete template tags (has CASCADE DELETE)
+      await executeQuery('DELETE FROM template_tags WHERE template_id = ?', [id]);
       
-      // Execute all deletion queries
-      for (let i = 0; i < deletionQueries.length; i++) {
-        const query = deletionQueries[i];
-        const step = query.split(' ')[2]; // Extract table name
-        
-        try {
-          debugInfo.push(`Step ${i + 1}: Deleting from ${step}...`);
-          await db.prepare(query).bind(id).run();
-          debugInfo.push(`✓ Successfully deleted from ${step}`);
-        } catch (error) {
-          debugInfo.push(`✗ Failed to delete from ${step}: ${error instanceof Error ? error.message : 'Unknown error'}`);
-          throw new Error(`Deletion failed at ${step}: ${error instanceof Error ? error.message : 'Unknown error'}. Debug: ${debugInfo.join('; ')}`);
-        }
-      }
+      // 4. Delete template forks - handle both directions
+      await executeQuery('DELETE FROM template_forks WHERE original_template_id = ?', [id]);
+      await executeQuery('DELETE FROM template_forks WHERE forked_template_id = ?', [id]);
       
-      // Try to re-enable foreign keys
-      try {
-        await db.prepare('PRAGMA foreign_keys = ON').run();
-        debugInfo.push('Foreign keys re-enabled');
-      } catch (e) {
-        debugInfo.push('Could not re-enable foreign keys');
-      }
+      // 5. Delete user favorites (has CASCADE DELETE)
+      await executeQuery('DELETE FROM user_favorites WHERE template_id = ?', [id]);
       
-      debugInfo.push(`Template ${id} and all related data deleted successfully`);
-      console.log(debugInfo.join('\n'));
+      // 6. Delete template ratings (has CASCADE DELETE)
+      await executeQuery('DELETE FROM template_ratings WHERE template_id = ?', [id]);
+      
+      // 7. Delete template versions (has CASCADE DELETE)
+      await executeQuery('DELETE FROM template_versions WHERE template_id = ?', [id]);
+      
+      // 8. Delete template usage records (has CASCADE DELETE)
+      await executeQuery('DELETE FROM template_usage WHERE template_id = ?', [id]);
+      
+      // 9. Delete collection items (has CASCADE DELETE)
+      await executeQuery('DELETE FROM collection_items WHERE template_id = ?', [id]);
+      
+      // 10. Delete from FTS search table
+      await executeQuery('DELETE FROM template_search WHERE template_id = ?', [id]);
+      
+      // 11. Finally delete the template itself
+      await executeQuery('DELETE FROM templates WHERE id = ?', [id]);
+      
+      console.log(`Template ${id} and all related data deleted successfully`);
       
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      debugInfo.push(`ERROR: ${errorMessage}`);
       console.error('Template deletion failed:', error);
-      
-      // Try to re-enable foreign keys on error
-      try {
-        await db.prepare('PRAGMA foreign_keys = ON').run();
-      } catch (e) {
-        // Ignore re-enable errors
-      }
-      
-      throw new Error(`Failed to delete template: ${errorMessage}. Debug: ${debugInfo.join('; ')}`);
+      throw new Error(`Failed to delete template: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
 

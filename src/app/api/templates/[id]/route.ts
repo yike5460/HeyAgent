@@ -177,10 +177,10 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
       )
     }
 
-    await TemplateQueries.delete(params.id)
-    
-    // Record deletion analytics
+    // Record deletion analytics BEFORE deleting the template
     await AnalyticsQueries.recordUsage(params.id, session.user.id, 'delete')
+    
+    await TemplateQueries.delete(params.id)
 
     return NextResponse.json({
       success: true,
