@@ -267,7 +267,7 @@ export class TemplateQueries {
   // Basic template lookup without enrichment for operations like delete
   static async findBasicById(id: string): Promise<any | null> {
     const templates = await executeQuery(
-      'SELECT id, user_id, title, status FROM templates WHERE id = ? AND deleted_at IS NULL',
+      'SELECT id, user_id, title, status FROM templates WHERE id = ?',
       [id]
     );
     
@@ -279,7 +279,7 @@ export class TemplateQueries {
       `SELECT t.*, u.name as author_name 
        FROM templates t 
        LEFT JOIN users u ON t.user_id = u.id 
-       WHERE t.id = ? AND t.deleted_at IS NULL`,
+       WHERE t.id = ?`,
       [id]
     );
     
@@ -293,7 +293,7 @@ export class TemplateQueries {
       SELECT t.*, u.name as author_name 
       FROM templates t 
       LEFT JOIN users u ON t.user_id = u.id 
-      WHERE t.deleted_at IS NULL AND t.is_public = 1
+      WHERE t.is_public = 1
     `;
     const params: any[] = [];
 
@@ -345,7 +345,7 @@ export class TemplateQueries {
       `SELECT t.*, u.name as author_name 
        FROM templates t 
        LEFT JOIN users u ON t.user_id = u.id 
-       WHERE t.user_id = ? AND t.deleted_at IS NULL 
+       WHERE t.user_id = ? 
        ORDER BY t.created_at DESC`,
       [userId]
     );
@@ -483,40 +483,15 @@ export class TemplateQueries {
   }
 
   static async delete(id: string): Promise<void> {
-    // Since FTS triggers are causing database-level conflicts that prevent even
-    // Cloudflare console deletion, we'll use a workaround approach:
-    // 1. Manually clean up all related data
-    // 2. Rename the template with a deleted marker to "hide" it
-    // 3. Remove from FTS index
+    // True hard deletion - delete template and all related data
+    // With the refactored schema, FTS triggers work properly
     
     try {
-      // Step 1: Clean up FTS index manually
-      await executeQuery('DELETE FROM template_search WHERE template_id = ?', [id]);
+      // Delete template - CASCADE will handle related data automatically
+      // The FTS trigger will also clean up the search index
+      await executeQuery('DELETE FROM templates WHERE id = ?', [id]);
       
-      // Step 2: Delete all related data (this should work since these tables don't have FTS triggers)
-      await executeQuery('DELETE FROM template_parameters WHERE template_id = ?', [id]);
-      await executeQuery('DELETE FROM mcp_servers WHERE template_id = ?', [id]);
-      await executeQuery('DELETE FROM template_tags WHERE template_id = ?', [id]);
-      await executeQuery('DELETE FROM template_usage WHERE template_id = ?', [id]);
-      await executeQuery('DELETE FROM user_favorites WHERE template_id = ?', [id]);
-      await executeQuery('DELETE FROM template_ratings WHERE template_id = ?', [id]);
-      await executeQuery('DELETE FROM template_versions WHERE template_id = ?', [id]);
-      await executeQuery('DELETE FROM collection_items WHERE template_id = ?', [id]);
-      await executeQuery('DELETE FROM template_forks WHERE forked_template_id = ?', [id]);
-      
-      // Step 3: Instead of DELETE (which triggers FTS issues), UPDATE to mark as deleted
-      // This will effectively "hide" the template by making it invisible to all queries
-      const deletedMarker = `[DELETED-${Date.now()}]`;
-      await executeQuery(`
-        UPDATE templates 
-        SET title = ?, 
-            description = '[DELETED TEMPLATE]',
-            is_public = 0,
-            deleted_at = ?
-        WHERE id = ?
-      `, [deletedMarker, new Date().toISOString(), id]);
-      
-      console.log(`Template ${id} marked as deleted and all related data removed`);
+      console.log(`Template ${id} deleted successfully`);
       
     } catch (error) {
       console.error('Template deletion failed:', error);
@@ -692,8 +667,7 @@ export class SearchQueries {
       `SELECT t.*, u.name as author_name 
        FROM templates t 
        LEFT JOIN users u ON t.user_id = u.id 
-       WHERE t.id IN (${templateIds.map(() => '?').join(',')}) 
-       AND t.deleted_at IS NULL`,
+       WHERE t.id IN (${templateIds.map(() => '?').join(',')})`,
       templateIds
     );
 
@@ -705,7 +679,7 @@ export class SearchQueries {
       `SELECT tag, COUNT(*) as count 
        FROM template_tags tt
        JOIN templates t ON tt.template_id = t.id
-       WHERE t.deleted_at IS NULL AND t.is_public = 1
+       WHERE t.is_public = 1
        GROUP BY tag 
        ORDER BY count DESC 
        LIMIT ?`,

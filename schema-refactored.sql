@@ -1,5 +1,5 @@
--- HeyPrompt Platform Database Schema for Cloudflare D1
--- This schema supports agent templates, user profiles, and community features
+-- HeyPrompt Platform Database Schema for Cloudflare D1 (Refactored)
+-- This schema removes soft deletion and fixes FTS trigger conflicts
 
 -- Users table for authentication and profiles
 CREATE TABLE users (
@@ -17,8 +17,7 @@ CREATE TABLE users (
   oauth_provider TEXT NOT NULL, -- 'github', 'google'
   oauth_provider_id TEXT NOT NULL,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  deleted_at DATETIME NULL
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Create unique index for OAuth provider combination
@@ -26,7 +25,7 @@ CREATE UNIQUE INDEX idx_users_oauth ON users(oauth_provider, oauth_provider_id);
 CREATE INDEX idx_users_email ON users(email);
 CREATE INDEX idx_users_created_at ON users(created_at);
 
--- Main templates table
+-- Main templates table (removed deleted_at for hard deletion)
 CREATE TABLE templates (
   id TEXT PRIMARY KEY,
   title TEXT NOT NULL,
@@ -57,7 +56,6 @@ CREATE TABLE templates (
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   published_at DATETIME NULL,
-  deleted_at DATETIME NULL,
   
   FOREIGN KEY (user_id) REFERENCES users(id)
 );
@@ -251,39 +249,35 @@ CREATE INDEX idx_collection_items_collection ON collection_items(collection_id);
 CREATE INDEX idx_collection_items_template ON collection_items(template_id);
 
 -- Full-text search support (virtual table for SQLite FTS)
+-- FIXED: Removed problematic content='templates' and content_rowid='rowid' settings
+-- These caused the "T.template_id" column reference errors
 CREATE VIRTUAL TABLE template_search USING fts5(
-  template_id,
+  template_id UNINDEXED,
   title,
   description,
   tags,
   industry,
-  use_case,
-  content='templates',
-  content_rowid='rowid'
+  use_case
 );
 
--- Triggers to keep FTS table updated
+-- Simplified triggers that manually maintain the FTS table
+-- This avoids the automatic sync issues that caused database conflicts
 CREATE TRIGGER templates_search_insert AFTER INSERT ON templates BEGIN
   INSERT INTO template_search(template_id, title, description, tags, industry, use_case)
   VALUES (NEW.id, NEW.title, NEW.description, NEW.tags, NEW.industry, NEW.use_case);
 END;
 
 CREATE TRIGGER templates_search_update AFTER UPDATE ON templates BEGIN
-  UPDATE template_search SET
-    title = NEW.title,
-    description = NEW.description,
-    tags = NEW.tags,
-    industry = NEW.industry,
-    use_case = NEW.use_case
-  WHERE template_id = NEW.id;
+  DELETE FROM template_search WHERE template_id = NEW.id;
+  INSERT INTO template_search(template_id, title, description, tags, industry, use_case)
+  VALUES (NEW.id, NEW.title, NEW.description, NEW.tags, NEW.industry, NEW.use_case);
 END;
 
 CREATE TRIGGER templates_search_delete AFTER DELETE ON templates BEGIN
   DELETE FROM template_search WHERE template_id = OLD.id;
 END;
 
--- Insert default industry categories (optional)
--- These can be used for validation or as reference data
+-- Industry categories reference table
 CREATE TABLE industries (
   id TEXT PRIMARY KEY,
   name TEXT UNIQUE NOT NULL,

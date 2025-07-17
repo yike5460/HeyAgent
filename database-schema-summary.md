@@ -1,7 +1,7 @@
-# HeyAgent Database Schema Summary
+# HeyPrompt Database Schema Summary
 
 ## Overview
-The HeyAgent platform uses a comprehensive relational database schema built on Cloudflare D1 (SQLite) to support AI template management, user collaboration, and analytics.
+The HeyPrompt platform uses a comprehensive relational database schema built on Cloudflare D1 (SQLite) to support AI template management, user collaboration, and analytics. The schema has been refactored to use hard deletion and resolve FTS trigger conflicts.
 
 ## Core Entities
 
@@ -27,15 +27,16 @@ The HeyAgent platform uses a comprehensive relational database schema built on C
 
 ### Analytics & Search
 - **template_usage**: Usage tracking and analytics
-- **template_search**: Full-text search virtual table (FTS5)
+- **template_search**: Full-text search virtual table (FTS5) with fixed configuration
 
 ## Key Features
 - **Multi-industry Support**: 8 industry verticals with specialized templates
 - **Version Control**: Complete template history with snapshots
 - **Social Features**: Ratings, reviews, favorites, and forking
-- **Full-text Search**: SQLite FTS5 for advanced template discovery
+- **Full-text Search**: SQLite FTS5 with fixed configuration for reliable template discovery
 - **MCP Integration**: Seamless Model Context Protocol server management
 - **Analytics**: Comprehensive usage tracking and metrics
+- **Hard Deletion**: True deletion with CASCADE cleanup for data integrity
 
 ## Table Relationships Diagram
 
@@ -72,6 +73,11 @@ erDiagram
         string avatar_url
         string bio
         string company
+        string location
+        string website
+        string github_username
+        string twitter_username
+        string linkedin_username
         string oauth_provider
         string oauth_provider_id
         datetime created_at
@@ -83,21 +89,25 @@ erDiagram
         string title
         string description
         string industry FK
+        string use_case
         string version
         string status
         string user_id FK
+        string author_name
         real rating
         integer usage_count
         integer fork_count
-        text prompt_config "JSON"
-        text agent_config "JSON"
-        text execution_environment "JSON"
-        text metadata "JSON"
-        text tags "JSON"
+        string license
+        text prompt_config
+        text agent_config
+        text execution_environment
+        text metadata
+        text tags
         boolean is_public
         boolean is_featured
         datetime created_at
         datetime updated_at
+        datetime published_at
     }
     
     template_parameters {
@@ -108,26 +118,30 @@ erDiagram
         string description
         string default_value
         boolean required
-        text options "JSON"
-        text validation_rules "JSON"
+        text options
+        text validation_rules
         integer display_order
+        datetime created_at
     }
     
     mcp_servers {
         string id PK
         string template_id FK
         string name
+        string description
         string command
-        text args "JSON"
-        text env_vars "JSON"
-        text config "JSON"
+        text args
+        text env_vars
+        text config
         boolean enabled
+        datetime created_at
     }
     
     template_tags {
         string id PK
         string template_id FK
         string tag
+        datetime created_at
     }
     
     template_forks {
@@ -152,6 +166,7 @@ erDiagram
         integer rating
         text review
         datetime created_at
+        datetime updated_at
     }
     
     template_versions {
@@ -159,10 +174,12 @@ erDiagram
         string template_id FK
         string version
         string title
-        text prompt_config "JSON"
-        text agent_config "JSON"
-        text execution_environment "JSON"
-        text metadata "JSON"
+        string description
+        text prompt_config
+        text agent_config
+        text execution_environment
+        text metadata
+        text tags
         string created_by FK
         datetime created_at
     }
@@ -174,6 +191,7 @@ erDiagram
         string description
         boolean is_public
         datetime created_at
+        datetime updated_at
     }
     
     collection_items {
@@ -181,6 +199,7 @@ erDiagram
         string collection_id FK
         string template_id FK
         integer display_order
+        datetime created_at
     }
     
     template_usage {
@@ -188,13 +207,14 @@ erDiagram
         string template_id FK
         string user_id FK
         string usage_type
-        text metadata "JSON"
+        text metadata
         string ip_address
+        string user_agent
         datetime created_at
     }
     
     template_search {
-        string template_id FK
+        string template_id
         string title
         string description
         string tags
@@ -252,7 +272,21 @@ erDiagram
 
 ## Performance Optimizations
 - **Indexes**: Strategic indexes on foreign keys, status fields, and search columns
-- **FTS5**: Full-text search with automatic triggers for real-time updates
+- **FTS5**: Full-text search with fixed configuration and manual triggers for reliable updates
 - **JSON Columns**: Flexible schema for complex configurations
-- **Cascade Deletes**: Proper cleanup of related records
+- **CASCADE Deletes**: Automatic cleanup of related records with true hard deletion
 - **Unique Constraints**: Data integrity for critical relationships
+
+## Recent Schema Refactoring (2025-07-17)
+
+### Changes Made:
+- **Removed Soft Deletion**: Eliminated all `deleted_at` columns for true hard deletion
+- **Fixed FTS Configuration**: Removed problematic `content='templates'` and `content_rowid='rowid'` settings
+- **Simplified Triggers**: Manual FTS maintenance to avoid auto-sync conflicts
+- **Enhanced Cascade**: Proper foreign key relationships with CASCADE cleanup
+
+### Benefits:
+- **✅ Resolved FTS Errors**: No more "T.template_id" column reference conflicts
+- **✅ Simplified Queries**: Removed `WHERE deleted_at IS NULL` filters
+- **✅ Better Performance**: Fewer query conditions and cleaner database
+- **✅ True Deletion**: Complete removal of templates and related data

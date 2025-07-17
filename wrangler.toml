@@ -20,12 +20,12 @@ GITHUB_CLIENT_SECRET = ""
 [[d1_databases]]
 binding = "DB"
 database_name = "heyprompt-platform"
-database_id = "d4b930e4-0fe0-4264-83de-3eeb7ac706a3"
+database_id = "821e4d51-b3d6-471d-b202-121200317af4"
 
 [[d1_databases]]
 binding = "PROD_DB"
 database_name = "heyprompt-platform"
-database_id = "d4b930e4-0fe0-4264-83de-3eeb7ac706a3"
+database_id = "821e4d51-b3d6-471d-b202-121200317af4"
 
 [env.preview]
 vars = { ENV = "preview" }
