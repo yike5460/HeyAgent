@@ -499,11 +499,12 @@ export class TemplateQueries {
     }
     
     console.log(`Starting deletion process for template: ${id}`);
+    const debugInfo: string[] = [];
     
     try {
       // First, check what records exist for this template
       const templateExists = await executeQuery('SELECT id, title FROM templates WHERE id = ?', [id]);
-      console.log(`Template exists:`, templateExists);
+      debugInfo.push(`Template exists: ${JSON.stringify(templateExists)}`);
       
       if (templateExists.length === 0) {
         throw new Error('Template not found');
@@ -523,14 +524,14 @@ export class TemplateQueries {
         collections: await executeQuery('SELECT COUNT(*) as count FROM collection_items WHERE template_id = ?', [id]),
         search: await executeQuery('SELECT COUNT(*) as count FROM template_search WHERE template_id = ?', [id])
       };
-      console.log(`Related records count:`, relatedCounts);
+      debugInfo.push(`Related records: ${JSON.stringify(relatedCounts)}`);
       
       // Try to disable foreign keys temporarily (might not work in D1)
       try {
         await db.prepare('PRAGMA foreign_keys = OFF').run();
-        console.log('Foreign keys disabled for deletion');
+        debugInfo.push('Foreign keys disabled for deletion');
       } catch (e) {
-        console.log('Could not disable foreign keys, proceeding with manual deletion');
+        debugInfo.push('Could not disable foreign keys, proceeding with manual deletion');
       }
       
       // Use batch operations for more efficient deletion
@@ -555,32 +556,30 @@ export class TemplateQueries {
         const step = query.split(' ')[2]; // Extract table name
         
         try {
-          console.log(`Step ${i + 1}: Deleting from ${step}...`);
+          debugInfo.push(`Step ${i + 1}: Deleting from ${step}...`);
           await db.prepare(query).bind(id).run();
-          console.log(`✓ Successfully deleted from ${step}`);
+          debugInfo.push(`✓ Successfully deleted from ${step}`);
         } catch (error) {
-          console.error(`✗ Failed to delete from ${step}:`, error);
-          throw new Error(`Deletion failed at ${step}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+          debugInfo.push(`✗ Failed to delete from ${step}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+          throw new Error(`Deletion failed at ${step}: ${error instanceof Error ? error.message : 'Unknown error'}. Debug: ${debugInfo.join('; ')}`);
         }
       }
       
       // Try to re-enable foreign keys
       try {
         await db.prepare('PRAGMA foreign_keys = ON').run();
-        console.log('Foreign keys re-enabled');
+        debugInfo.push('Foreign keys re-enabled');
       } catch (e) {
-        console.log('Could not re-enable foreign keys');
+        debugInfo.push('Could not re-enable foreign keys');
       }
       
-      console.log(`Template ${id} and all related data deleted successfully`);
+      debugInfo.push(`Template ${id} and all related data deleted successfully`);
+      console.log(debugInfo.join('\n'));
       
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      debugInfo.push(`ERROR: ${errorMessage}`);
       console.error('Template deletion failed:', error);
-      console.error('Full error details:', {
-        message: error instanceof Error ? error.message : 'Unknown error',
-        stack: error instanceof Error ? error.stack : undefined,
-        templateId: id
-      });
       
       // Try to re-enable foreign keys on error
       try {
@@ -589,7 +588,7 @@ export class TemplateQueries {
         // Ignore re-enable errors
       }
       
-      throw new Error(`Failed to delete template: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(`Failed to delete template: ${errorMessage}. Debug: ${debugInfo.join('; ')}`);
     }
   }
 
