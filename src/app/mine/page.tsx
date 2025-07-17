@@ -654,6 +654,21 @@ export default function MyTemplatesPage() {
             onOpenChange={setIsCreateDialogOpen}
             onTemplateCreate={handleTemplateCreate}
           />
+
+          {/* Template Details Panel - Added to Management Tab */}
+          <TemplateDetailsPanel
+            template={selectedTemplate}
+            isOpen={isPreviewOpen}
+            onOpenChange={setIsPreviewOpen}
+            onUseTemplate={(template) => {
+              toast({
+                title: "Use Template",
+                description: `Template "${template.title}" will be used in sandbox.`
+              })
+            }}
+            onCloneTemplate={(template) => handleTemplateClone(template.id)}
+            onForkTemplate={(template) => handleTemplateClone(template.id)}
+          />
         </TabsContent>
 
         <TabsContent value="analytic">
