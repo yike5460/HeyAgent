@@ -148,8 +148,9 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
       )
     }
 
-    const template = await TemplateQueries.findById(params.id)
-    if (!template) {
+    // Check if template exists and get ownership info without enriching
+    const templateCheck = await TemplateQueries.findBasicById(params.id)
+    if (!templateCheck) {
       return NextResponse.json(
         {
           success: false,
@@ -163,7 +164,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
     }
 
     // Check ownership
-    if (template.userId !== session.user.id) {
+    if (templateCheck.user_id !== session.user.id) {
       return NextResponse.json(
         {
           success: false,

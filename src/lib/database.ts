@@ -264,6 +264,16 @@ export class UserQueries {
 
 // Template management queries
 export class TemplateQueries {
+  // Basic template lookup without enrichment for operations like delete
+  static async findBasicById(id: string): Promise<any | null> {
+    const templates = await executeQuery(
+      'SELECT id, user_id, title, status FROM templates WHERE id = ? AND deleted_at IS NULL',
+      [id]
+    );
+    
+    return templates[0] || null;
+  }
+
   static async findById(id: string): Promise<PromptTemplate | null> {
     const templates = await executeQuery(
       `SELECT t.*, u.name as author_name 
@@ -473,10 +483,26 @@ export class TemplateQueries {
   }
 
   static async delete(id: string): Promise<void> {
-    await executeQuery(
-      'UPDATE templates SET deleted_at = ? WHERE id = ?',
-      [new Date().toISOString(), id]
-    );
+    try {
+      // Perform soft delete directly - let the database handle the validation
+      await executeQuery(
+        'UPDATE templates SET deleted_at = ? WHERE id = ? AND deleted_at IS NULL',
+        [new Date().toISOString(), id]
+      );
+      
+      // Note: D1 doesn't return affected row count reliably, so we'll skip that check
+      // The API endpoint will handle the "template not found" case by checking beforehand
+      
+    } catch (error) {
+      console.error('Error in template deletion:', error);
+      
+      // Re-throw with more specific error message if it's the column issue
+      if (error instanceof Error && error.message.includes('no such column')) {
+        throw new Error(`Database schema error: ${error.message}`);
+      }
+      
+      throw error;
+    }
   }
 
   static async incrementUsage(id: string): Promise<void> {
