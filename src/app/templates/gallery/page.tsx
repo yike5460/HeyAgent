@@ -684,7 +684,6 @@ export default function TemplateGalleryPage() {
         template={selectedTemplate}
         isOpen={isTemplateDetailsOpen}
         onOpenChange={setIsTemplateDetailsOpen}
-        onCloneTemplate={handleClone}
         onForkTemplate={handleFork}
       />
     </div>

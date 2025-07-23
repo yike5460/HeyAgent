@@ -573,7 +573,6 @@ export default function MyTemplatesPage() {
                 description: `Template "${template.title}" will be used in sandbox.`
               })
             }}
-            onCloneTemplate={(template) => handleTemplateClone(template.id)}
             onForkTemplate={(template) => handleTemplateClone(template.id)}
           />
         </TabsContent>
@@ -616,7 +615,6 @@ export default function MyTemplatesPage() {
                     setSelectedTemplate(template)
                     setIsPreviewOpen(true)
                   }}
-                  onClone={(template) => handleTemplateClone(template.id)}
                   onFork={(template) => handleTemplateClone(template.id)}
                   onExport={(template) => {
                     const blob = new Blob([JSON.stringify(template, null, 2)], {
@@ -666,7 +664,6 @@ export default function MyTemplatesPage() {
                 description: `Template "${template.title}" will be used in sandbox.`
               })
             }}
-            onCloneTemplate={(template) => handleTemplateClone(template.id)}
             onForkTemplate={(template) => handleTemplateClone(template.id)}
           />
         </TabsContent>
