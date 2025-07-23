@@ -334,6 +334,11 @@ export class TemplateQueries {
       params.push(`%${filters.search}%`, `%${filters.search}%`);
     }
 
+    if (filters.status) {
+      query += ` AND t.status = ?`;
+      params.push(filters.status);
+    }
+
     // Apply sorting
     const sortField = sort.field === 'createdAt' ? 't.created_at' : 
                      sort.field === 'rating' ? 't.rating' : 
@@ -689,6 +694,52 @@ export class TemplateQueries {
     }
     
     return parsed as PromptTemplate;
+  }
+
+  // Add favorites/star functionality
+  static async addToFavorites(templateId: string, userId: string): Promise<void> {
+    const id = `${userId}_${templateId}`;
+    await executeQuery(
+      'INSERT OR IGNORE INTO user_favorites (id, user_id, template_id, created_at) VALUES (?, ?, ?, ?)',
+      [id, userId, templateId, new Date().toISOString()]
+    );
+  }
+
+  static async removeFromFavorites(templateId: string, userId: string): Promise<void> {
+    await executeQuery(
+      'DELETE FROM user_favorites WHERE user_id = ? AND template_id = ?',
+      [userId, templateId]
+    );
+  }
+
+  static async isFavorite(templateId: string, userId: string): Promise<boolean> {
+    const result = await executeQuery(
+      'SELECT id FROM user_favorites WHERE user_id = ? AND template_id = ?',
+      [userId, templateId]
+    );
+    return result.length > 0;
+  }
+
+  static async getFavoriteCount(templateId: string): Promise<number> {
+    const result = await executeQuery(
+      'SELECT COUNT(*) as count FROM user_favorites WHERE template_id = ?',
+      [templateId]
+    );
+    return result[0]?.count || 0;
+  }
+
+  static async getUserFavorites(userId: string): Promise<PromptTemplate[]> {
+    const templates = await executeQuery(
+      `SELECT t.*, u.name as author_name 
+       FROM templates t 
+       LEFT JOIN users u ON t.user_id = u.id 
+       INNER JOIN user_favorites uf ON t.id = uf.template_id 
+       WHERE uf.user_id = ? 
+       ORDER BY uf.created_at DESC`,
+      [userId]
+    );
+    
+    return Promise.all(templates.map(t => this.enrichTemplate(t)));
   }
 }
 

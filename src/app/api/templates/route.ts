@@ -113,7 +113,9 @@ export async function GET(request: NextRequest) {
         templates = await TemplateQueries.findAll(filters, sort, limit, offset)
       }
     } else {
-      templates = await TemplateQueries.findAll(filters, sort, limit, offset)
+      // For public template gallery, only show published templates
+      const publicFilters = { ...filters, status: 'published' as const }
+      templates = await TemplateQueries.findAll(publicFilters, sort, limit, offset)
     }
 
     // Get total count for pagination (simplified - in production you'd have a separate count query)

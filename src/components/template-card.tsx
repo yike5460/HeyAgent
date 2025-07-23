@@ -31,8 +31,9 @@ import { useSession } from "next-auth/react"
 interface TemplateCardProps {
   template: PromptTemplate
   onPreview?: (template: PromptTemplate) => void
-  onClone?: (template: PromptTemplate) => void
   onFork?: (template: PromptTemplate) => void
+  onStar?: (template: PromptTemplate) => void
+  onUnstar?: (template: PromptTemplate) => void
   onExport?: (template: PromptTemplate) => void
   onDelete?: (template: PromptTemplate) => void
   onPublish?: (template: PromptTemplate) => void
@@ -40,20 +41,25 @@ interface TemplateCardProps {
   variant?: 'default' | 'compact'
   showPublishStatus?: boolean
   currentUserId?: string
+  isFavorite?: boolean
+  favoriteCount?: number
 }
 
 export function TemplateCard({ 
   template, 
   onPreview, 
-  onClone, 
   onFork, 
+  onStar,
+  onUnstar,
   onExport,
   onDelete,
   onPublish,
   onUnpublish,
   variant = 'default',
   showPublishStatus = false,
-  currentUserId
+  currentUserId,
+  isFavorite = false,
+  favoriteCount = 0
 }: TemplateCardProps) {
   const { data: session } = useSession()
   const isCurrentUserTemplate = currentUserId ? template.userId === currentUserId : session?.user?.email === template.author
@@ -228,6 +234,10 @@ export function TemplateCard({
                 <GitBranch className="h-3 w-3 text-secondary" />
                 <span className="font-medium">{template.forkCount}</span>
               </div>
+              <div className="flex items-center space-x-1">
+                <Star className="h-3 w-3 text-amber-500" />
+                <span className="font-medium">{favoriteCount}</span>
+              </div>
               {showPublishStatus && (
                 <div className="flex items-center space-x-1">
                   {isPublished ? (
@@ -262,29 +272,35 @@ export function TemplateCard({
               </Button>
             )}
             
-            {/* Clone/Copy button - Available to everyone */}
-            {onClone && (
+            {/* Star/Unstar button - Available to logged in users only */}
+            {session?.user && (
               <Button 
                 size="sm" 
                 variant="outline" 
-                onClick={() => onClone(template)}
-                className="group/btn hover:border-secondary/30 hover:bg-secondary/5 h-7 flex-1 flex items-center justify-center min-w-0"
-                title="Clone Template"
+                onClick={() => isFavorite ? onUnstar?.(template) : onStar?.(template)}
+                className={`group/btn h-7 flex-1 flex items-center justify-center min-w-0 ${
+                  isFavorite 
+                    ? 'hover:border-amber-600/30 hover:bg-amber-500/5 border-amber-500/30 bg-amber-50/30' 
+                    : 'hover:border-amber-600/30 hover:bg-amber-500/5'
+                }`}
+                title={isFavorite ? "Remove from favorites" : "Add to favorites"}
               >
-                <Copy className="h-3 w-3 group-hover/btn:scale-110 transition-transform text-secondary" />
+                <Star className={`h-3 w-3 group-hover/btn:scale-110 transition-transform ${
+                  isFavorite ? 'fill-amber-500 text-amber-500' : 'text-amber-500'
+                }`} />
               </Button>
             )}
             
-            {/* Fork button - Available to everyone */}
-            {onFork && (
+            {/* Fork button - Available to logged in users only */}
+            {session?.user && onFork && (
               <Button 
                 size="sm" 
                 variant="outline" 
                 onClick={() => onFork(template)}
-                className="group/btn hover:border-accent/30 hover:bg-accent/5 h-7 flex-1 flex items-center justify-center min-w-0"
+                className="group/btn hover:border-secondary/30 hover:bg-secondary/5 h-7 flex-1 flex items-center justify-center min-w-0"
                 title="Fork Template"
               >
-                <GitBranch className="h-3 w-3 group-hover/btn:scale-110 transition-transform text-accent-foreground" />
+                <GitBranch className="h-3 w-3 group-hover/btn:scale-110 transition-transform text-secondary" />
               </Button>
             )}
             

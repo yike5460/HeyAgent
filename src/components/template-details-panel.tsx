@@ -14,7 +14,6 @@ import {
   Users, 
   GitBranch, 
   Download, 
-  Copy, 
   Play, 
   Eye,
   Settings,
@@ -32,7 +31,6 @@ interface TemplateDetailsPanelProps {
   isOpen: boolean
   onOpenChange: (open: boolean) => void
   onUseTemplate?: (template: PromptTemplate) => void
-  onCloneTemplate?: (template: PromptTemplate) => void
   onForkTemplate?: (template: PromptTemplate) => void
 }
 
@@ -41,7 +39,6 @@ export function TemplateDetailsPanel({
   isOpen, 
   onOpenChange,
   onUseTemplate,
-  onCloneTemplate,
   onForkTemplate
 }: TemplateDetailsPanelProps) {
   const [activeTab, setActiveTab] = useState('overview')
@@ -59,16 +56,6 @@ export function TemplateDetailsPanel({
     }
   }
 
-  const handleCloneTemplate = () => {
-    if (onCloneTemplate) {
-      onCloneTemplate(template)
-    } else {
-      toast({
-        title: "Clone Template",
-        description: `Template "${template.title}" will be cloned to your workspace.`
-      })
-    }
-  }
 
   const handleForkTemplate = () => {
     if (onForkTemplate) {
@@ -130,10 +117,6 @@ export function TemplateDetailsPanel({
               <Button onClick={handleUseTemplate} className="bg-primary hover:bg-primary/90">
                 <Play className="h-4 w-4 mr-2" />
                 Use Template
-              </Button>
-              <Button variant="outline" onClick={handleCloneTemplate}>
-                <Copy className="h-4 w-4 mr-2" />
-                Clone
               </Button>
               <Button variant="outline" onClick={handleForkTemplate}>
                 <GitBranch className="h-4 w-4 mr-2" />

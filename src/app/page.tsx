@@ -387,16 +387,77 @@ export default function HomePage() {
   const [loading, setLoading] = useState(true)
   const [selectedTemplate, setSelectedTemplate] = useState<PromptTemplate | null>(null)
   const [isTemplateDetailsOpen, setIsTemplateDetailsOpen] = useState(false)
-  const [templates, setTemplates] = useState<PromptTemplate[]>(mockPublicTemplates)
-  const [filteredTemplates, setFilteredTemplates] = useState<PromptTemplate[]>(mockPublicTemplates)
+  const [templates, setTemplates] = useState<PromptTemplate[]>([])
+  const [filteredTemplates, setFilteredTemplates] = useState<PromptTemplate[]>([])
   const [searchQuery, setSearchQuery] = useState('')
   const [industryFilter, setIndustryFilter] = useState<IndustryVertical | 'all'>('all')
   const [complexityFilter, setComplexityFilter] = useState<'all' | 'beginner' | 'intermediate' | 'advanced'>('all')
   const [sortBy, setSortBy] = useState<'rating' | 'usageCount' | 'createdAt' | 'forkCount'>('rating')
+  const [templateFavorites, setTemplateFavorites] = useState<Record<string, { isFavorite: boolean, count: number }>>({})
 
   useEffect(() => {
     loadMyTemplatesStats()
+    loadPublishedTemplates()
   }, [])
+
+  const loadPublishedTemplates = async () => {
+    try {
+      // Load published templates sorted by popularity (rating * usageCount)
+      const response = await fetch('/api/templates?sortField=rating&sortDirection=desc&limit=100')
+      const data = await response.json()
+      
+      if (data.success && data.data) {
+        // Filter only published templates and sort by popularity
+        const publishedTemplates = data.data
+          .filter((template: PromptTemplate) => template.status === 'published')
+          .sort((a: PromptTemplate, b: PromptTemplate) => {
+            // Sort by popularity: (rating * usageCount) + forkCount
+            const aPopularity = (a.rating * a.usageCount) + a.forkCount
+            const bPopularity = (b.rating * b.usageCount) + b.forkCount
+            return bPopularity - aPopularity
+          })
+        
+        setTemplates(publishedTemplates)
+        
+        // Load favorite information for each template if user is logged in
+        if (session?.user) {
+          loadTemplateFavorites(publishedTemplates)
+        }
+      }
+    } catch (error) {
+      console.error('Error loading published templates:', error)
+      // Fallback to mock data if API fails
+      setTemplates(mockPublicTemplates)
+    }
+  }
+
+  const loadTemplateFavorites = async (templates: PromptTemplate[]) => {
+    try {
+      const favoritePromises = templates.map(async (template) => {
+        const response = await fetch(`/api/templates/${template.id}/favorite`)
+        const data = await response.json()
+        return {
+          templateId: template.id,
+          isFavorite: data.success ? data.data.isFavorite : false,
+          count: data.success ? data.data.favoriteCount : 0
+        }
+      })
+      
+      const favoriteResults = await Promise.all(favoritePromises)
+      
+      const favoritesMap = favoriteResults.reduce((acc, result) => {
+        acc[result.templateId] = {
+          isFavorite: result.isFavorite,
+          count: result.count
+        }
+        return acc
+      }, {} as Record<string, { isFavorite: boolean, count: number }>)
+      
+      setTemplateFavorites(favoritesMap)
+    } catch (error) {
+      console.error('Error loading template favorites:', error)
+    }
+  }
 
   useEffect(() => {
     let filtered = templates.filter(template => {
@@ -456,20 +517,109 @@ export default function HomePage() {
     setIsTemplateDetailsOpen(true)
   }
 
-  const handleClone = (template: PromptTemplate) => {
-    // In real implementation, this would navigate to the clone page or open a clone dialog
-    toast({
-      title: "Clone Template",
-      description: `Template "${template.title}" will be cloned to your workspace.`
-    })
+  const handleFork = async (template: PromptTemplate) => {
+    try {
+      const response = await fetch(`/api/templates/${template.id}/fork`, {
+        method: 'POST'
+      })
+      
+      const data = await response.json()
+      
+      if (data.success) {
+        toast({
+          title: "Fork Created",
+          description: `Template "${template.title}" has been forked to your workspace.`
+        })
+        // Refresh the templates to show updated fork count
+        loadPublishedTemplates()
+      } else {
+        toast({
+          title: "Fork Failed",
+          description: data.error?.message || "Failed to fork template",
+          variant: "destructive"
+        })
+      }
+    } catch (error) {
+      toast({
+        title: "Fork Failed",
+        description: "An error occurred while forking the template",
+        variant: "destructive"
+      })
+    }
   }
 
-  const handleFork = (template: PromptTemplate) => {
-    // In real implementation, this would create a fork
-    toast({
-      title: "Fork Template",
-      description: `Template "${template.title}" will be forked to your workspace.`
-    })
+  const handleStar = async (template: PromptTemplate) => {
+    try {
+      const response = await fetch(`/api/templates/${template.id}/favorite`, {
+        method: 'POST'
+      })
+      
+      const data = await response.json()
+      
+      if (data.success) {
+        toast({
+          title: "Added to Favorites",
+          description: `Template "${template.title}" has been added to your favorites.`
+        })
+        // Update the template's favorite status and count
+        setTemplateFavorites(prev => ({
+          ...prev,
+          [template.id]: {
+            isFavorite: true,
+            count: data.data.favoriteCount
+          }
+        }))
+      } else {
+        toast({
+          title: "Failed to Add to Favorites",
+          description: data.error?.message || "Failed to add to favorites",
+          variant: "destructive"
+        })
+      }
+    } catch (error) {
+      toast({
+        title: "Failed to Add to Favorites",
+        description: "An error occurred while adding to favorites",
+        variant: "destructive"
+      })
+    }
+  }
+
+  const handleUnstar = async (template: PromptTemplate) => {
+    try {
+      const response = await fetch(`/api/templates/${template.id}/favorite`, {
+        method: 'DELETE'
+      })
+      
+      const data = await response.json()
+      
+      if (data.success) {
+        toast({
+          title: "Removed from Favorites",
+          description: `Template "${template.title}" has been removed from your favorites.`
+        })
+        // Update the template's favorite status and count
+        setTemplateFavorites(prev => ({
+          ...prev,
+          [template.id]: {
+            isFavorite: false,
+            count: data.data.favoriteCount
+          }
+        }))
+      } else {
+        toast({
+          title: "Failed to Remove from Favorites",
+          description: data.error?.message || "Failed to remove from favorites",
+          variant: "destructive"
+        })
+      }
+    } catch (error) {
+      toast({
+        title: "Failed to Remove from Favorites",
+        description: "An error occurred while removing from favorites",
+        variant: "destructive"
+      })
+    }
   }
 
   const handleExport = (template: PromptTemplate) => {
@@ -594,10 +744,13 @@ export default function HomePage() {
                 setSelectedTemplate(template)
                 setIsTemplateDetailsOpen(true)
               }}
-              onClone={handleClone}
               onFork={handleFork}
+              onStar={handleStar}
+              onUnstar={handleUnstar}
               onExport={handleExport}
               currentUserId={session?.user?.email || ''}
+              isFavorite={templateFavorites[template.id]?.isFavorite || false}
+              favoriteCount={templateFavorites[template.id]?.count || 0}
             />
           ))
         )}
@@ -649,7 +802,6 @@ export default function HomePage() {
         template={selectedTemplate}
         isOpen={isTemplateDetailsOpen}
         onOpenChange={setIsTemplateDetailsOpen}
-        onCloneTemplate={handleClone}
         onForkTemplate={handleFork}
       />
     </div>

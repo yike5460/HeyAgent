@@ -423,6 +423,7 @@ export interface SearchFilters {
   author?: string
   license?: string[]
   search?: string
+  status?: 'draft' | 'published' | 'archived'
   dateRange?: {
     start: string
     end: string

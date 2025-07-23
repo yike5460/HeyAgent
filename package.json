@@ -4,7 +4,7 @@
   "description": "Comprehensive Prompt Gallery Platform for AI-powered application templates",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev -H 0.0.0.0 -p 3001",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
