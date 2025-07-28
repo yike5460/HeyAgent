@@ -129,16 +129,25 @@ class TemplateService {
   async saveTemplate(template: PromptTemplate): Promise<PromptTemplate> {
     if (this.useDatabase()) {
       try {
-        // Check if template exists in database first
-        let isNewTemplate = !template.id || template.id.startsWith('template-')
+        // Determine if this is a new template or existing one
+        let isNewTemplate = !template.id
         
-        // If template has an ID, try to fetch it to determine if it exists
-        if (template.id && !template.id.startsWith('template-')) {
+        // Client-generated IDs have specific pattern: template-{timestamp} (without additional dash)
+        // Server-generated IDs have pattern: template-{timestamp}-{random} (with additional dash)
+        const isClientGeneratedId = template.id && /^template-\d+$/.test(template.id)
+        const isServerGeneratedId = template.id && /^template-\d+-[a-z0-9]+$/.test(template.id)
+        
+        if (isClientGeneratedId) {
+          // This is a client-generated temporary ID, treat as new template
+          isNewTemplate = true
+        } else if (isServerGeneratedId) {
+          // This is a server-generated ID, verify it exists in database
           try {
             const existingTemplate = await this.getTemplate(template.id)
             isNewTemplate = !existingTemplate
           } catch (error) {
             // If fetch fails, assume it's new
+            console.error('Failed to fetch template for update check:', error)
             isNewTemplate = true
           }
         }
