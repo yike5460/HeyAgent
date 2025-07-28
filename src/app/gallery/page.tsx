@@ -93,7 +93,6 @@ const mockPublicTemplates: PromptTemplate[] = [
     updatedAt: '2024-01-15T10:00:00Z',
     userId: 'user1',
     author: 'John Doe',
-    rating: 4.8,
     usageCount: 1250,
     tags: ['video', 'script', 'automation', 'content-creation', 'drama', 'entertainment'],
     forkCount: 12,
@@ -254,7 +253,6 @@ const mockPublicTemplates: PromptTemplate[] = [
     updatedAt: '2024-01-20T10:00:00Z',
     userId: 'user2',
     author: 'Jane Smith',
-    rating: 4.5,
     usageCount: 890,
     tags: ['ecommerce', 'copywriting', 'seo', 'marketing', 'retail'],
     forkCount: 8,
@@ -340,7 +338,6 @@ const mockPublicTemplates: PromptTemplate[] = [
     updatedAt: '2024-01-25T10:00:00Z',
     userId: 'user3',
     author: 'Dr. Michael Chen',
-    rating: 4.9,
     usageCount: 2100,
     tags: ['healthcare', 'medical', 'diagnosis', 'symptoms', 'analysis'],
     forkCount: 25,
@@ -370,8 +367,9 @@ export default function TemplateGalleryPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [industryFilter, setIndustryFilter] = useState<IndustryVertical | 'all'>('all')
   const [complexityFilter, setComplexityFilter] = useState<'all' | 'beginner' | 'intermediate' | 'advanced'>('all')
-  const [sortBy, setSortBy] = useState<'rating' | 'usageCount' | 'createdAt' | 'forkCount'>('rating')
+  const [sortBy, setSortBy] = useState<'usageCount' | 'createdAt' | 'forkCount'>('usageCount')
   const [loading, setLoading] = useState(true)
+  const [templateFavorites, setTemplateFavorites] = useState<Record<string, { isFavorite: boolean, count: number }>>({})
 
   useEffect(() => {
     loadPublishedTemplates()
@@ -380,11 +378,16 @@ export default function TemplateGalleryPage() {
   const loadPublishedTemplates = async () => {
     try {
       setLoading(true)
-      const response = await fetch('/api/templates?sortField=rating&sortDirection=desc&limit=100')
+      const response = await fetch('/api/templates?sortField=usageCount&sortDirection=desc&limit=100')
       const data = await response.json()
       
       if (data.success && data.data) {
         setTemplates(data.data)
+        
+        // Load favorite information for each template if user is logged in
+        if (session?.user) {
+          loadTemplateFavorites(data.data)
+        }
       }
     } catch (error) {
       console.error('Error loading published templates:', error)
@@ -392,6 +395,34 @@ export default function TemplateGalleryPage() {
       setTemplates(mockPublicTemplates)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const loadTemplateFavorites = async (templates: PromptTemplate[]) => {
+    try {
+      const favoritePromises = templates.map(async (template) => {
+        const response = await fetch(`/api/templates/${template.id}/favorite`)
+        const data = await response.json()
+        return {
+          templateId: template.id,
+          isFavorite: data.success ? data.data.isFavorite : false,
+          count: data.success ? data.data.favoriteCount : 0
+        }
+      })
+      
+      const favoriteResults = await Promise.all(favoritePromises)
+      
+      const favoritesMap = favoriteResults.reduce((acc, result) => {
+        acc[result.templateId] = {
+          isFavorite: result.isFavorite,
+          count: result.count
+        }
+        return acc
+      }, {} as Record<string, { isFavorite: boolean, count: number }>)
+      
+      setTemplateFavorites(favoritesMap)
+    } catch (error) {
+      console.error('Error loading template favorites:', error)
     }
   }
 
@@ -412,8 +443,6 @@ export default function TemplateGalleryPage() {
     // Sort templates
     filtered.sort((a, b) => {
       switch (sortBy) {
-        case 'rating':
-          return b.rating - a.rating
         case 'usageCount':
           return b.usageCount - a.usageCount
         case 'forkCount':
@@ -452,6 +481,80 @@ export default function TemplateGalleryPage() {
       title: "Fork Template",
       description: `Template "${template.title}" will be forked to your workspace.`
     })
+  }
+
+  const handleStar = async (template: PromptTemplate) => {
+    try {
+      const response = await fetch(`/api/templates/${template.id}/favorite`, {
+        method: 'POST'
+      })
+      
+      const data = await response.json()
+      
+      if (data.success) {
+        toast({
+          title: "Added to Favorites",
+          description: `Template "${template.title}" has been added to your favorites.`
+        })
+        // Update the template's favorite status and count
+        setTemplateFavorites(prev => ({
+          ...prev,
+          [template.id]: {
+            isFavorite: true,
+            count: data.data.favoriteCount
+          }
+        }))
+      } else {
+        toast({
+          title: "Failed to Add to Favorites",
+          description: data.error?.message || "Failed to add to favorites",
+          variant: "destructive"
+        })
+      }
+    } catch (error) {
+      toast({
+        title: "Failed to Add to Favorites",
+        description: "An error occurred while adding to favorites",
+        variant: "destructive"
+      })
+    }
+  }
+
+  const handleUnstar = async (template: PromptTemplate) => {
+    try {
+      const response = await fetch(`/api/templates/${template.id}/favorite`, {
+        method: 'DELETE'
+      })
+      
+      const data = await response.json()
+      
+      if (data.success) {
+        toast({
+          title: "Removed from Favorites",
+          description: `Template "${template.title}" has been removed from your favorites.`
+        })
+        // Update the template's favorite status and count
+        setTemplateFavorites(prev => ({
+          ...prev,
+          [template.id]: {
+            isFavorite: false,
+            count: data.data.favoriteCount
+          }
+        }))
+      } else {
+        toast({
+          title: "Failed to Remove from Favorites",
+          description: data.error?.message || "Failed to remove from favorites",
+          variant: "destructive"
+        })
+      }
+    } catch (error) {
+      toast({
+        title: "Failed to Remove from Favorites",
+        description: "An error occurred while removing from favorites",
+        variant: "destructive"
+      })
+    }
   }
 
   const handleExport = (template: PromptTemplate) => {
@@ -508,13 +611,13 @@ export default function TemplateGalleryPage() {
         
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Average Rating</CardTitle>
+            <CardTitle className="text-sm font-medium">Total Favorites</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {templates.length > 0 ? (templates.reduce((sum, t) => sum + t.rating, 0) / templates.length).toFixed(1) : '0.0'}
+              {Object.values(templateFavorites).reduce((sum, t) => sum + t.count, 0)}
             </div>
-            <p className="text-xs text-muted-foreground">Community rating</p>
+            <p className="text-xs text-muted-foreground">Community favorites</p>
           </CardContent>
         </Card>
         
@@ -577,7 +680,6 @@ export default function TemplateGalleryPage() {
               <SelectValue placeholder="Sort by" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="rating">Rating</SelectItem>
               <SelectItem value="usageCount">Usage</SelectItem>
               <SelectItem value="forkCount">Forks</SelectItem>
               <SelectItem value="createdAt">Newest</SelectItem>
@@ -615,8 +717,12 @@ export default function TemplateGalleryPage() {
                 setIsTemplateDetailsOpen(true)
               }}
               onFork={handleFork}
+              onStar={handleStar}
+              onUnstar={handleUnstar}
               onExport={handleExport}
               currentUserId={session?.user?.email || ''}
+              isFavorite={templateFavorites[template.id]?.isFavorite || false}
+              favoriteCount={templateFavorites[template.id]?.count || 0}
             />
           ))
         )}

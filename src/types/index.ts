@@ -16,7 +16,6 @@ export interface PromptTemplate {
   updatedAt: string
   userId: string
   author: string
-  rating: number
   usageCount: number
   tags: string[]
   
@@ -418,7 +417,6 @@ export interface APIResponse<T = any> {
 export interface SearchFilters {
   industry?: string[]
   tags?: string[]
-  rating?: number
   complexity?: string
   author?: string
   license?: string[]
@@ -431,6 +429,6 @@ export interface SearchFilters {
 }
 
 export interface SortOptions {
-  field: 'createdAt' | 'updatedAt' | 'rating' | 'usageCount' | 'title'
+  field: 'createdAt' | 'updatedAt' | 'usageCount' | 'forkCount' | 'title'
   direction: 'asc' | 'desc'
 }

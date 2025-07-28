@@ -23,9 +23,6 @@ export async function GET(request: NextRequest) {
       filters.tags = searchParams.get('tags')!.split(',')
     }
     
-    if (searchParams.get('rating')) {
-      filters.rating = parseFloat(searchParams.get('rating')!)
-    }
     
     if (searchParams.get('license')) {
       filters.license = searchParams.get('license')!.split(',')
@@ -185,7 +182,6 @@ export async function POST(request: NextRequest) {
           version: '1.0.0',
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
-          rating: 0,
           usageCount: 0,
           forkCount: 0,
           is_public: false
@@ -225,7 +221,9 @@ export async function POST(request: NextRequest) {
       exportMetadata: undefined,
       collaborators: [],
       isPublic: templateData.isPublic || false,
-      license: templateData.license || 'MIT'
+      license: templateData.license || 'MIT',
+      usageCount: 0,
+      forkCount: 0
     }
 
     const created = await TemplateQueries.create(newTemplate)

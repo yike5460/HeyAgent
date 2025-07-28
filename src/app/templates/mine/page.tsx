@@ -421,7 +421,7 @@ export default function MyTemplatesPage() {
                     <div className="space-y-1 text-sm">
                       <div>Usage Count: {selectedTemplate.usageCount || 0}</div>
                       <div>Fork Count: {selectedTemplate.forkCount || 0}</div>
-                      <div>Rating: {selectedTemplate.rating || 0}/5</div>
+                      <div>Favorites: 0</div>
                       <div>Created: {new Date(selectedTemplate.createdAt).toLocaleDateString()}</div>
                     </div>
                   </div>

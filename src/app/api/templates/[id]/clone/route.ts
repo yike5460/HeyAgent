@@ -65,7 +65,6 @@ const mockTemplates: PromptTemplate[] = [
     updatedAt: '2024-01-15T10:00:00Z',
     userId: 'user1',
     author: 'John Doe',
-    rating: 4.8,
     usageCount: 1250,
     tags: ['video', 'script', 'automation', 'content-creation'],
     forkCount: 12,
@@ -114,7 +113,6 @@ export async function POST(
       updatedAt: new Date().toISOString(),
       userId: 'current-user-id', // TODO: Get from auth
       author: 'Current User', // TODO: Get from auth
-      rating: 0,
       usageCount: 0,
       forkCount: 0,
       isForked: true,

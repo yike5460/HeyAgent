@@ -92,7 +92,6 @@ const mockPublicTemplates: PromptTemplate[] = [
     updatedAt: '2024-01-15T10:00:00Z',
     userId: 'user1',
     author: 'John Doe',
-    rating: 4.8,
     usageCount: 1250,
     tags: ['video', 'script', 'automation', 'content-creation', 'drama', 'entertainment'],
     forkCount: 12,
@@ -253,7 +252,6 @@ const mockPublicTemplates: PromptTemplate[] = [
     updatedAt: '2024-01-20T10:00:00Z',
     userId: 'user2',
     author: 'Jane Smith',
-    rating: 4.5,
     usageCount: 890,
     tags: ['ecommerce', 'copywriting', 'seo', 'marketing', 'retail'],
     forkCount: 8,
@@ -339,7 +337,6 @@ const mockPublicTemplates: PromptTemplate[] = [
     updatedAt: '2024-01-25T10:00:00Z',
     userId: 'user3',
     author: 'Dr. Michael Chen',
-    rating: 4.9,
     usageCount: 2100,
     tags: ['healthcare', 'medical', 'diagnosis', 'symptoms', 'analysis'],
     forkCount: 25,
@@ -368,7 +365,7 @@ export default function TemplateGalleryPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [industryFilter, setIndustryFilter] = useState<IndustryVertical | 'all'>('all')
   const [complexityFilter, setComplexityFilter] = useState<'all' | 'beginner' | 'intermediate' | 'advanced'>('all')
-  const [sortBy, setSortBy] = useState<'rating' | 'usageCount' | 'createdAt' | 'forkCount'>('rating')
+  const [sortBy, setSortBy] = useState<'usageCount' | 'createdAt' | 'forkCount'>('usageCount')
 
   useEffect(() => {
     let filtered = templates.filter(template => {
@@ -387,8 +384,6 @@ export default function TemplateGalleryPage() {
     // Sort templates
     filtered.sort((a, b) => {
       switch (sortBy) {
-        case 'rating':
-          return b.rating - a.rating
         case 'usageCount':
           return b.usageCount - a.usageCount
         case 'forkCount':
@@ -483,13 +478,13 @@ export default function TemplateGalleryPage() {
         
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Average Rating</CardTitle>
+            <CardTitle className="text-sm font-medium">Total Favorites</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {templates.length > 0 ? (templates.reduce((sum, t) => sum + t.rating, 0) / templates.length).toFixed(1) : '0.0'}
+              0
             </div>
-            <p className="text-xs text-muted-foreground">Community rating</p>
+            <p className="text-xs text-muted-foreground">Community favorites</p>
           </CardContent>
         </Card>
         
@@ -599,7 +594,7 @@ export default function TemplateGalleryPage() {
                   </div>
                   <div className="flex items-center space-x-1 text-sm text-muted-foreground">
                     <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                    <span>{template.rating}</span>
+                    <span>0</span>
                   </div>
                 </div>
                 <CardDescription className="line-clamp-3">

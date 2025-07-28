@@ -124,7 +124,7 @@ export function TemplateCard({
             </div>
             <div className="flex items-center space-x-1 text-sm text-muted-foreground flex-shrink-0">
               <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-500" />
-              <span className="font-medium text-xs">{template.rating}</span>
+              <span className="font-medium text-xs">{favoriteCount}</span>
             </div>
           </div>
           
@@ -278,7 +278,7 @@ export function TemplateCard({
                 size="sm" 
                 variant="outline" 
                 onClick={() => isFavorite ? onUnstar?.(template) : onStar?.(template)}
-                className={`group/btn h-7 flex-1 flex items-center justify-center min-w-0 ${
+                className={`group/btn h-7 flex-1 flex items-center justify-center min-w-0 space-x-1 ${
                   isFavorite 
                     ? 'hover:border-amber-600/30 hover:bg-amber-500/5 border-amber-500/30 bg-amber-50/30' 
                     : 'hover:border-amber-600/30 hover:bg-amber-500/5'
@@ -288,6 +288,7 @@ export function TemplateCard({
                 <Star className={`h-3 w-3 group-hover/btn:scale-110 transition-transform ${
                   isFavorite ? 'fill-amber-500 text-amber-500' : 'text-amber-500'
                 }`} />
+                <span className="text-xs font-medium">{favoriteCount}</span>
               </Button>
             )}
             

@@ -91,7 +91,6 @@ export class LocalStorageService {
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       usageCount: 0,
-      rating: 0,
       inheritanceConfig: inheritanceConfig ? {
         inheritedComponents: inheritanceConfig.inheritedComponents as any,
         customizations: [],
@@ -165,8 +164,7 @@ export class LocalStorageService {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
         usageCount: 0,
-        rating: 0,
-        forkCount: 0,
+          forkCount: 0,
         isForked: false,
         status: 'draft'
       }

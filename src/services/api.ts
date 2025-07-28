@@ -47,7 +47,6 @@ class APIService {
     if (filters) {
       if (filters.industry) params.append('industry', filters.industry.join(','))
       if (filters.tags) params.append('tags', filters.tags.join(','))
-      if (filters.rating) params.append('rating', filters.rating.toString())
       if (filters.complexity) params.append('complexity', filters.complexity)
       if (filters.author) params.append('author', filters.author)
       if (filters.dateRange) {

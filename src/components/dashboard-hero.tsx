@@ -34,7 +34,7 @@ interface DashboardHeroProps {
   publicStats: {
     totalTemplates: number
     totalUsage: number
-    averageRating: number
+    averageFavorites: number
     totalForks: number
   }
   myTemplatesCount: number

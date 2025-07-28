@@ -314,10 +314,6 @@ export class TemplateQueries {
       params.push(...filters.tags.map(tag => `%"${tag}"%`));
     }
 
-    if (filters.rating) {
-      query += ` AND t.rating >= ?`;
-      params.push(filters.rating);
-    }
 
     if (filters.license?.length) {
       query += ` AND t.license IN (${filters.license.map(() => '?').join(',')})`;
@@ -336,8 +332,8 @@ export class TemplateQueries {
 
     // Apply sorting
     const sortField = sort.field === 'createdAt' ? 't.created_at' : 
-                     sort.field === 'rating' ? 't.rating' : 
                      sort.field === 'usageCount' ? 't.usage_count' :
+                     sort.field === 'forkCount' ? 't.fork_count' :
                      't.created_at';
     query += ` ORDER BY ${sortField} ${sort.direction?.toUpperCase() || 'DESC'}`;
 
@@ -521,8 +517,6 @@ export class TemplateQueries {
       // 5. Delete user favorites (has CASCADE DELETE)
       await executeQuery('DELETE FROM user_favorites WHERE template_id = ?', [id]);
       
-      // 6. Delete template ratings (has CASCADE DELETE)
-      await executeQuery('DELETE FROM template_ratings WHERE template_id = ?', [id]);
       
       // 7. Delete template versions (has CASCADE DELETE)
       await executeQuery('DELETE FROM template_versions WHERE template_id = ?', [id]);
@@ -579,7 +573,6 @@ export class TemplateQueries {
       updatedAt: template.updated_at,
       userId: template.user_id,
       author: template.author_name || template.user_id || 'Unknown',
-      rating: template.rating || 0,
       usageCount: template.usage_count || 0,
       forkCount: template.fork_count || 0,
       isPublic: Boolean(template.is_public),

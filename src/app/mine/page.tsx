@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import { PromptTemplate } from '@/types'
 import { templateService } from '@/services/template-service'
-import { Brain, Database, Settings, Workflow, Plus, Upload, Download, TrendingUp, BarChart3, Activity } from 'lucide-react'
+import { Brain, Database, Settings, Workflow, Plus, Upload, Download, TrendingUp, BarChart3, Activity, Star } from 'lucide-react'
 
 export default function MyTemplatesPage() {
   const { data: session } = useSession()
@@ -73,7 +73,6 @@ export default function MyTemplatesPage() {
         updatedAt: new Date().toISOString(),
         userId: session?.user?.id || 'current-user',
         author: session?.user?.name || session?.user?.email || 'Current User',
-        rating: 0,
         usageCount: 0,
         forkCount: 0,
         isForked: false,
@@ -508,13 +507,13 @@ export default function MyTemplatesPage() {
                           <div className="text-sm font-bold">{template.forkCount || 0}</div>
                         </div>
                         
-                        {/* Rating */}
+                        {/* Favorites */}
                         <div className="text-center">
                           <div className="flex items-center space-x-1 text-xs text-muted-foreground mb-1">
-                            <Badge className="h-3 w-3 rounded-full p-0" />
-                            <span>Rating</span>
+                            <Star className="h-3 w-3" />
+                            <span>Favorites</span>
                           </div>
-                          <div className="text-sm font-bold">{template.rating || 0}/5</div>
+                          <div className="text-sm font-bold">0</div>
                         </div>
                         
                         {/* Trending Indicator */}
@@ -728,15 +727,15 @@ export default function MyTemplatesPage() {
                     
                     <Card>
                       <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium">Highest Rated</CardTitle>
+                        <CardTitle className="text-sm font-medium">Most Used</CardTitle>
                       </CardHeader>
                       <CardContent>
                         {(() => {
-                          const highestRated = templates.sort((a, b) => (b.rating || 0) - (a.rating || 0))[0]
+                          const mostUsed = templates.sort((a, b) => (b.usageCount || 0) - (a.usageCount || 0))[0]
                           return (
                             <div>
-                              <div className="text-lg font-bold truncate">{highestRated.title}</div>
-                              <div className="text-sm text-muted-foreground">{highestRated.rating || 0}/5 stars</div>
+                              <div className="text-lg font-bold truncate">{mostUsed?.title || 'None'}</div>
+                              <div className="text-sm text-muted-foreground">{mostUsed?.usageCount || 0} uses</div>
                             </div>
                           )
                         })()}

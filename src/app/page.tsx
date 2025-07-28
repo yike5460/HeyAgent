@@ -112,7 +112,6 @@ const mockPublicTemplates: PromptTemplate[] = [
     updatedAt: '2024-01-15T10:00:00Z',
     userId: 'user1',
     author: 'John Doe',
-    rating: 4.8,
     usageCount: 1250,
     tags: ['video', 'script', 'automation', 'content-creation', 'drama', 'entertainment'],
     forkCount: 12,
@@ -273,7 +272,6 @@ const mockPublicTemplates: PromptTemplate[] = [
     updatedAt: '2024-01-20T10:00:00Z',
     userId: 'user2',
     author: 'Jane Smith',
-    rating: 4.5,
     usageCount: 890,
     tags: ['ecommerce', 'copywriting', 'seo', 'marketing', 'retail'],
     forkCount: 8,
@@ -359,7 +357,6 @@ const mockPublicTemplates: PromptTemplate[] = [
     updatedAt: '2024-01-25T10:00:00Z',
     userId: 'user3',
     author: 'Dr. Michael Chen',
-    rating: 4.9,
     usageCount: 2100,
     tags: ['healthcare', 'medical', 'diagnosis', 'symptoms', 'analysis'],
     forkCount: 25,
@@ -392,7 +389,7 @@ export default function HomePage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [industryFilter, setIndustryFilter] = useState<IndustryVertical | 'all'>('all')
   const [complexityFilter, setComplexityFilter] = useState<'all' | 'beginner' | 'intermediate' | 'advanced'>('all')
-  const [sortBy, setSortBy] = useState<'rating' | 'usageCount' | 'createdAt' | 'forkCount'>('rating')
+  const [sortBy, setSortBy] = useState<'usageCount' | 'createdAt' | 'forkCount'>('usageCount')
   const [templateFavorites, setTemplateFavorites] = useState<Record<string, { isFavorite: boolean, count: number }>>({})
 
   useEffect(() => {
@@ -402,8 +399,8 @@ export default function HomePage() {
 
   const loadPublishedTemplates = async () => {
     try {
-      // Load published templates sorted by popularity (rating * usageCount)
-      const response = await fetch('/api/templates?sortField=rating&sortDirection=desc&limit=100')
+      // Load published templates sorted by usage
+      const response = await fetch('/api/templates?sortField=usageCount&sortDirection=desc&limit=100')
       const data = await response.json()
       
       if (data.success && data.data) {
@@ -411,9 +408,9 @@ export default function HomePage() {
         const publishedTemplates = data.data
           .filter((template: PromptTemplate) => template.status === 'published')
           .sort((a: PromptTemplate, b: PromptTemplate) => {
-            // Sort by popularity: (rating * usageCount) + forkCount
-            const aPopularity = (a.rating * a.usageCount) + a.forkCount
-            const bPopularity = (b.rating * b.usageCount) + b.forkCount
+            // Sort by popularity: usageCount + forkCount
+            const aPopularity = a.usageCount + a.forkCount
+            const bPopularity = b.usageCount + b.forkCount
             return bPopularity - aPopularity
           })
         
@@ -476,8 +473,6 @@ export default function HomePage() {
     // Sort templates
     filtered.sort((a, b) => {
       switch (sortBy) {
-        case 'rating':
-          return b.rating - a.rating
         case 'usageCount':
           return b.usageCount - a.usageCount
         case 'forkCount':
@@ -644,7 +639,7 @@ export default function HomePage() {
   const publicStats = {
     totalTemplates: templates.length,
     totalUsage: templates.reduce((sum, t) => sum + t.usageCount, 0),
-    averageRating: templates.length > 0 ? templates.reduce((sum, t) => sum + t.rating, 0) / templates.length : 0,
+    averageFavorites: templates.length > 0 ? Object.values(templateFavorites).reduce((sum, t) => sum + t.count, 0) / templates.length : 0,
     totalForks: templates.reduce((sum, t) => sum + t.forkCount, 0)
   }
 
@@ -712,7 +707,6 @@ export default function HomePage() {
               <SelectValue placeholder="Sort by" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="rating">Rating</SelectItem>
               <SelectItem value="usageCount">Usage</SelectItem>
               <SelectItem value="forkCount">Forks</SelectItem>
               <SelectItem value="createdAt">Newest</SelectItem>

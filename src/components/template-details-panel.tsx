@@ -101,7 +101,7 @@ export function TemplateDetailsPanel({
                 <span>by {template.author}</span>
                 <div className="flex items-center space-x-1">
                   <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                  <span>{template.rating}</span>
+                  <span>0</span>
                 </div>
                 <div className="flex items-center space-x-1">
                   <Users className="h-4 w-4" />
@@ -293,14 +293,14 @@ export function TemplateDetailsPanel({
 
                         <Card>
                           <CardHeader className="pb-2">
-                            <CardTitle className="text-sm font-medium">Rating</CardTitle>
+                            <CardTitle className="text-sm font-medium">Favorites</CardTitle>
                           </CardHeader>
                           <CardContent>
                             <div className="text-2xl font-bold flex items-center space-x-1">
-                              <span>{template.rating}</span>
+                              <span>0</span>
                               <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
                             </div>
-                            <div className="text-xs text-muted-foreground">Average rating</div>
+                            <div className="text-xs text-muted-foreground">Favorite count</div>
                           </CardContent>
                         </Card>
                       </div>
@@ -379,7 +379,7 @@ export function TemplateDetailsPanel({
                               </div>
                             </div>
                             <p className="text-sm text-muted-foreground">
-                              This template has been used {template.usageCount} times with a {template.rating}/5 average rating
+                              This template has been used {template.usageCount} times and has been favorited by the community
                             </p>
                           </div>
                         </CardContent>

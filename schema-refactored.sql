@@ -36,7 +36,6 @@ CREATE TABLE templates (
   status TEXT DEFAULT 'draft', -- 'draft', 'published', 'archived'
   user_id TEXT NOT NULL,
   author_name TEXT,
-  rating REAL DEFAULT 0.0,
   usage_count INTEGER DEFAULT 0,
   fork_count INTEGER DEFAULT 0,
   license TEXT DEFAULT 'MIT', -- 'MIT', 'Apache-2.0', 'GPL-3.0', 'Custom', 'Proprietary'
@@ -67,7 +66,6 @@ CREATE INDEX idx_templates_industry ON templates(industry);
 CREATE INDEX idx_templates_public ON templates(is_public);
 CREATE INDEX idx_templates_featured ON templates(is_featured);
 CREATE INDEX idx_templates_created_at ON templates(created_at);
-CREATE INDEX idx_templates_rating ON templates(rating);
 CREATE INDEX idx_templates_usage_count ON templates(usage_count);
 
 -- Template parameters for dynamic prompts
@@ -154,24 +152,6 @@ CREATE UNIQUE INDEX idx_user_favorites_unique ON user_favorites(user_id, templat
 CREATE INDEX idx_user_favorites_user ON user_favorites(user_id);
 CREATE INDEX idx_user_favorites_template ON user_favorites(template_id);
 
--- Template ratings and reviews
-CREATE TABLE template_ratings (
-  id TEXT PRIMARY KEY,
-  template_id TEXT NOT NULL,
-  user_id TEXT NOT NULL,
-  rating INTEGER NOT NULL CHECK (rating >= 1 AND rating <= 5),
-  review TEXT,
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  
-  FOREIGN KEY (template_id) REFERENCES templates(id) ON DELETE CASCADE,
-  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-);
-
-CREATE UNIQUE INDEX idx_template_ratings_unique ON template_ratings(template_id, user_id);
-CREATE INDEX idx_template_ratings_template ON template_ratings(template_id);
-CREATE INDEX idx_template_ratings_user ON template_ratings(user_id);
-CREATE INDEX idx_template_ratings_rating ON template_ratings(rating);
 
 -- Template version history
 CREATE TABLE template_versions (

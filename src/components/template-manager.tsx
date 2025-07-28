@@ -285,7 +285,6 @@ export function TemplateManager({
       },
       version: 1,
       status: 'draft',
-      rating: 0,
       usageCount: 0
     }
 
