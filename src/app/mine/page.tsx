@@ -34,6 +34,7 @@ export default function MyTemplatesPage() {
   const [isPreviewOpen, setIsPreviewOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [templateToDelete, setTemplateToDelete] = useState<PromptTemplate | null>(null)
+  const [templateFavorites, setTemplateFavorites] = useState<Record<string, { isFavorite: boolean, count: number }>>({})
 
   // Load templates from local storage on component mount
   useEffect(() => {
@@ -50,6 +51,11 @@ export default function MyTemplatesPage() {
       if (validTemplates.length > 0 && !selectedTemplate) {
         setSelectedTemplate(validTemplates[0])
       }
+      
+      // Load favorite information for each template if user is logged in
+      if (session?.user && validTemplates.length > 0) {
+        loadTemplateFavorites(validTemplates)
+      }
     } catch (error) {
       console.error('Error loading templates:', error)
       toast({
@@ -59,6 +65,108 @@ export default function MyTemplatesPage() {
       })
     } finally {
       setLoading(false)
+    }
+  }
+
+  const loadTemplateFavorites = async (templates: PromptTemplate[]) => {
+    try {
+      const favoritePromises = templates.map(async (template) => {
+        const response = await fetch(`/api/templates/${template.id}/favorite`)
+        const data = await response.json()
+        return {
+          templateId: template.id,
+          isFavorite: data.success ? data.data.isFavorite : false,
+          count: data.success ? data.data.favoriteCount : 0
+        }
+      })
+      
+      const favoriteResults = await Promise.all(favoritePromises)
+      
+      const favoritesMap = favoriteResults.reduce((acc, result) => {
+        acc[result.templateId] = {
+          isFavorite: result.isFavorite,
+          count: result.count
+        }
+        return acc
+      }, {} as Record<string, { isFavorite: boolean, count: number }>)
+      
+      setTemplateFavorites(favoritesMap)
+    } catch (error) {
+      console.error('Error loading template favorites:', error)
+    }
+  }
+
+  const handleStar = async (template: PromptTemplate) => {
+    try {
+      const response = await fetch(`/api/templates/${template.id}/favorite`, {
+        method: 'POST'
+      })
+      
+      const data = await response.json()
+      
+      if (data.success) {
+        toast({
+          title: "Added to Favorites",
+          description: `Template "${template.title}" has been added to your favorites.`
+        })
+        // Update the template's favorite status and count
+        setTemplateFavorites(prev => ({
+          ...prev,
+          [template.id]: {
+            isFavorite: true,
+            count: data.data.favoriteCount
+          }
+        }))
+      } else {
+        toast({
+          title: "Failed to Add to Favorites",
+          description: data.error?.message || "Failed to add to favorites",
+          variant: "destructive"
+        })
+      }
+    } catch (error) {
+      toast({
+        title: "Failed to Add to Favorites",
+        description: "An error occurred while adding to favorites",
+        variant: "destructive"
+      })
+    }
+  }
+
+  const handleUnstar = async (template: PromptTemplate) => {
+    try {
+      const response = await fetch(`/api/templates/${template.id}/favorite`, {
+        method: 'DELETE'
+      })
+      
+      const data = await response.json()
+      
+      if (data.success) {
+        toast({
+          title: "Removed from Favorites",
+          description: `Template "${template.title}" has been removed from your favorites.`
+        })
+        // Update the template's favorite status and count
+        setTemplateFavorites(prev => ({
+          ...prev,
+          [template.id]: {
+            isFavorite: false,
+            count: data.data.favoriteCount
+          }
+        }))
+      } else {
+        toast({
+          title: "Failed to Remove from Favorites",
+          description: data.error?.message || "Failed to remove from favorites",
+          variant: "destructive"
+        })
+      }
+    } catch (error) {
+      toast({
+        title: "Failed to Remove from Favorites",
+        description: "An error occurred while removing from favorites",
+        variant: "destructive"
+      })
     }
   }
 
@@ -638,8 +746,12 @@ export default function MyTemplatesPage() {
                   onDelete={handleTemplateDeleteRequest}
                   onPublish={handleTemplatePublish}
                   onUnpublish={handleTemplateUnpublish}
+                  onStar={handleStar}
+                  onUnstar={handleUnstar}
                   showPublishStatus={true}
                   currentUserId={session?.user?.id || 'current-user'}
+                  isFavorite={templateFavorites[template.id]?.isFavorite || false}
+                  favoriteCount={templateFavorites[template.id]?.count || 0}
                 />
               ))
             )}
