@@ -129,10 +129,19 @@ class TemplateService {
   async saveTemplate(template: PromptTemplate): Promise<PromptTemplate> {
     if (this.useDatabase()) {
       try {
-        // Determine if this is a new template or an existing one
-        // New templates will have client-generated IDs starting with "template-"
-        // Existing templates will have server-generated IDs or have been fetched from the API
-        const isNewTemplate = !template.id || template.id.startsWith('template-')
+        // Check if template exists in database first
+        let isNewTemplate = !template.id || template.id.startsWith('template-')
+        
+        // If template has an ID, try to fetch it to determine if it exists
+        if (template.id && !template.id.startsWith('template-')) {
+          try {
+            const existingTemplate = await this.getTemplate(template.id)
+            isNewTemplate = !existingTemplate
+          } catch (error) {
+            // If fetch fails, assume it's new
+            isNewTemplate = true
+          }
+        }
         
         const method = isNewTemplate ? 'POST' : 'PUT'
         const url = isNewTemplate ? '/api/templates' : `/api/templates/${template.id}`

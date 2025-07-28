@@ -3,12 +3,7 @@ import type { PromptTemplate, User, SearchFilters, SortOptions } from '@/types';
 // Database connection utility for Cloudflare D1
 export function getDatabase(env?: any) {
   // In production, this will be injected by Cloudflare Workers/Pages
-  // For development, you might use a local D1 database
-  if (typeof process !== 'undefined' && process.env.NODE_ENV === 'development') {
-    // Development database connection - return mock or local D1
-    console.warn('Using development database - make sure to set up local D1');
-    return null; // Skip database operations in development
-  }
+  // For development with wrangler, the DB binding should be available
   
   // Try multiple ways to access the D1 binding in Cloudflare environment
   let db = null;
@@ -302,7 +297,7 @@ export class TemplateQueries {
       SELECT t.*, u.name as author_name 
       FROM templates t 
       LEFT JOIN users u ON t.user_id = u.id 
-      WHERE t.is_public = 1
+      WHERE t.status = 'published' AND t.is_public = 1
     `;
     const params: any[] = [];
 
@@ -431,6 +426,12 @@ export class TemplateQueries {
         values.push(updates[field] as any);
       }
     });
+
+    // Handle isPublic field specially
+    if (updates.isPublic !== undefined) {
+      fields.push('is_public = ?');
+      values.push(updates.isPublic ? 1 : 0);
+    }
 
     // Handle JSON fields
     if (updates.promptConfig) {

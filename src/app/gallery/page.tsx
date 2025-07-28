@@ -363,14 +363,37 @@ const industryOptions: IndustryVertical[] = [
 
 export default function TemplateGalleryPage() {
   const { data: session } = useSession()
-  const [templates, setTemplates] = useState<PromptTemplate[]>(mockPublicTemplates)
-  const [filteredTemplates, setFilteredTemplates] = useState<PromptTemplate[]>(mockPublicTemplates)
+  const [templates, setTemplates] = useState<PromptTemplate[]>([])
+  const [filteredTemplates, setFilteredTemplates] = useState<PromptTemplate[]>([])
   const [selectedTemplate, setSelectedTemplate] = useState<PromptTemplate | null>(null)
   const [isTemplateDetailsOpen, setIsTemplateDetailsOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [industryFilter, setIndustryFilter] = useState<IndustryVertical | 'all'>('all')
   const [complexityFilter, setComplexityFilter] = useState<'all' | 'beginner' | 'intermediate' | 'advanced'>('all')
   const [sortBy, setSortBy] = useState<'rating' | 'usageCount' | 'createdAt' | 'forkCount'>('rating')
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    loadPublishedTemplates()
+  }, [])
+
+  const loadPublishedTemplates = async () => {
+    try {
+      setLoading(true)
+      const response = await fetch('/api/templates?sortField=rating&sortDirection=desc&limit=100')
+      const data = await response.json()
+      
+      if (data.success && data.data) {
+        setTemplates(data.data)
+      }
+    } catch (error) {
+      console.error('Error loading published templates:', error)
+      // Fallback to mock data if API fails
+      setTemplates(mockPublicTemplates)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   useEffect(() => {
     let filtered = templates.filter(template => {
@@ -570,7 +593,12 @@ export default function TemplateGalleryPage() {
 
       {/* Templates Grid */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {filteredTemplates.length === 0 ? (
+        {loading ? (
+          <div className="col-span-full text-center py-12">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-muted-foreground">Loading published templates...</p>
+          </div>
+        ) : filteredTemplates.length === 0 ? (
           <div className="col-span-full text-center py-12">
             <p className="text-muted-foreground text-lg">No templates found</p>
             <p className="text-sm text-muted-foreground mt-2">

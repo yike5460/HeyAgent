@@ -140,7 +140,8 @@ export default function MyTemplatesPage() {
     try {
       const updatedTemplate = {
         ...template,
-        status: 'published' as const
+        status: 'published' as const,
+        isPublic: true
       };
       
       const savedTemplate = await templateService.saveTemplate(updatedTemplate);
@@ -171,7 +172,8 @@ export default function MyTemplatesPage() {
     try {
       const updatedTemplate = {
         ...template,
-        status: 'draft' as const
+        status: 'draft' as const,
+        isPublic: false
       };
       
       const savedTemplate = await templateService.saveTemplate(updatedTemplate);
