@@ -31,6 +31,8 @@ interface CreateTemplateDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   onTemplateCreate?: (template: Partial<PromptTemplate>) => void
+  editingTemplate?: PromptTemplate
+  isEditing?: boolean
 }
 
 const industries: IndustryVertical[] = [
@@ -189,7 +191,7 @@ const providerDefaults = {
   }
 }
 
-export function CreateTemplateDialog({ open, onOpenChange, onTemplateCreate }: CreateTemplateDialogProps) {
+export function CreateTemplateDialog({ open, onOpenChange, onTemplateCreate, editingTemplate, isEditing = false }: CreateTemplateDialogProps) {
   const [activeTab, setActiveTab] = useState('basic')
   const [formData, setFormData] = useState({
     // Basic Information
@@ -271,6 +273,66 @@ export function CreateTemplateDialog({ open, onOpenChange, onTemplateCreate }: C
     infrastructure: "",
     requirements: ""
   })
+
+  // Populate form data when editing a template
+  React.useEffect(() => {
+    if (isEditing && editingTemplate) {
+      setFormData({
+        // Basic Information
+        title: editingTemplate.title || "",
+        description: editingTemplate.description || "",
+        industry: editingTemplate.industry || "" as IndustryVertical,
+        useCase: editingTemplate.useCase || "",
+        category: editingTemplate.metadata?.category || "Custom",
+        complexity: editingTemplate.metadata?.complexity || "intermediate" as 'beginner' | 'intermediate' | 'advanced',
+        estimatedRuntime: editingTemplate.metadata?.estimatedRuntime || 60,
+        
+        // Tags
+        tags: editingTemplate.tags || [],
+        
+        // Model Configuration - use defaults since model config is handled separately
+        modelProvider: "openai",
+        modelName: "gpt-4",
+        temperature: editingTemplate.promptConfig?.constraints?.temperature || 1.0,
+        maxTokens: editingTemplate.promptConfig?.constraints?.maxTokens || 2000,
+        topP: editingTemplate.promptConfig?.constraints?.topP || 1.0,
+        
+        // Provider-specific parameters - use defaults since they're not in the PromptConfig
+        frequencyPenalty: editingTemplate.promptConfig?.constraints?.frequencyPenalty || 0.0,
+        presencePenalty: editingTemplate.promptConfig?.constraints?.presencePenalty || 0.0,
+        stopSequences: [],
+        parallelToolCalls: true,
+        stream: false,
+        topK: 5,
+        thinking: false,
+        guardrailId: "",
+        guardrailVersion: "",
+        streaming: true,
+        safetySettings: "",
+        
+        // Prompt Configuration
+        systemPrompt: editingTemplate.promptConfig?.systemPrompt || "",
+        userPromptTemplate: editingTemplate.promptConfig?.userPromptTemplate || "",
+        parameters: editingTemplate.promptConfig?.parameters || [],
+        
+        // MCP Servers - convert from MCPServerConfig to form format
+        mcpServers: editingTemplate.mcpServers?.map(server => ({
+          name: server.serverId,
+          description: `MCP Server: ${server.serverType}`,
+          configuration: JSON.stringify(server.configuration || {})
+        })) || [],
+        
+        // Execution Environment
+        executionEnvironment: editingTemplate.executionEnvironment?.map(env => ({
+          infrastructure: env.infrastructure,
+          requirements: JSON.stringify(env.requirements || {})
+        })) || [],
+        
+        // Dependencies
+        dependencies: editingTemplate.metadata?.dependencies || []
+      })
+    }
+  }, [isEditing, editingTemplate])
 
   const handleAddTag = () => {
     if (newTag.trim() && !formData.tags.includes(newTag.trim())) {
@@ -564,9 +626,12 @@ export function CreateTemplateDialog({ open, onOpenChange, onTemplateCreate }: C
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden">
         <DialogHeader>
-          <DialogTitle>Create New Template</DialogTitle>
+          <DialogTitle>{isEditing ? 'Edit Template' : 'Create New Template'}</DialogTitle>
           <DialogDescription>
-            Create a comprehensive AI template with model configuration, prompts, MCP servers, and SaaS integrations.
+            {isEditing 
+              ? 'Update your AI template with modified configuration, prompts, MCP servers, and integrations.'
+              : 'Create a comprehensive AI template with model configuration, prompts, MCP servers, and SaaS integrations.'
+            }
           </DialogDescription>
         </DialogHeader>
 
@@ -1220,7 +1285,7 @@ export function CreateTemplateDialog({ open, onOpenChange, onTemplateCreate }: C
           <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button onClick={handleSubmit}>Create Template</Button>
+          <Button onClick={handleSubmit}>{isEditing ? 'Update Template' : 'Create Template'}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
