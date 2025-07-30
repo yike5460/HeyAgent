@@ -22,7 +22,8 @@ import {
   Globe,
   Lock,
   AlertCircle,
-  CheckCircle2
+  CheckCircle2,
+  Edit
 } from "lucide-react"
 import { formatDate, formatNumber } from "@/lib/utils"
 import { PromptTemplate } from "@/types"
@@ -34,6 +35,7 @@ interface TemplateCardProps {
   onFork?: (template: PromptTemplate) => void
   onStar?: (template: PromptTemplate) => void
   onUnstar?: (template: PromptTemplate) => void
+  onEdit?: (template: PromptTemplate) => void
   onExport?: (template: PromptTemplate) => void
   onDelete?: (template: PromptTemplate) => void
   onPublish?: (template: PromptTemplate) => void
@@ -51,6 +53,7 @@ export function TemplateCard({
   onFork, 
   onStar,
   onUnstar,
+  onEdit,
   onExport,
   onDelete,
   onPublish,
@@ -272,8 +275,21 @@ export function TemplateCard({
               </Button>
             )}
             
-            {/* Star/Unstar button - Available to logged in users only */}
-            {session?.user && (
+            {/* Edit button - Available to template owner only */}
+            {isCurrentUserTemplate && onEdit && (
+              <Button 
+                size="sm" 
+                variant="outline" 
+                onClick={() => onEdit(template)}
+                className="group/btn hover:border-blue-600/30 hover:bg-blue-500/5 h-7 flex-1 flex items-center justify-center min-w-0"
+                title="Edit Template"
+              >
+                <Edit className="h-3 w-3 group-hover/btn:scale-110 transition-transform text-blue-600" />
+              </Button>
+            )}
+            
+            {/* Star/Unstar button - Available to logged in users only and when onStar/onUnstar are provided */}
+            {session?.user && (onStar || onUnstar) && (
               <Button 
                 size="sm" 
                 variant="outline" 

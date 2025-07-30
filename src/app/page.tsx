@@ -31,6 +31,7 @@ import {
   Copy
 } from 'lucide-react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 
 // Full template data for gallery
 const mockPublicTemplates: PromptTemplate[] = [
@@ -379,6 +380,7 @@ const industryOptions: IndustryVertical[] = [
 
 export default function HomePage() {
   const { data: session } = useSession()
+  const router = useRouter()
   const [myTemplatesCount, setMyTemplatesCount] = useState(0)
   const [myDraftCount, setMyDraftCount] = useState(0)
   const [loading, setLoading] = useState(true)
@@ -527,6 +529,8 @@ export default function HomePage() {
         })
         // Refresh the templates to show updated fork count
         loadPublishedTemplates()
+        // Redirect to mine page for editing
+        router.push('/mine')
       } else {
         toast({
           title: "Fork Failed",

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
+import { useRouter } from 'next/navigation'
 import { TemplateCard } from '@/components/template-card'
 import { TemplateDetailsPanel } from '@/components/template-details-panel'
 import { CreateTemplateDialog } from '@/components/create-template-dialog'
@@ -27,6 +28,7 @@ import { Brain, Database, Settings, Workflow, Plus, Upload, Download, TrendingUp
 
 export default function MyTemplatesPage() {
   const { data: session } = useSession()
+  const router = useRouter()
   const [templates, setTemplates] = useState<PromptTemplate[]>([])
   const [selectedTemplate, setSelectedTemplate] = useState<PromptTemplate | null>(null)
   const [loading, setLoading] = useState(true)
@@ -346,6 +348,18 @@ export default function MyTemplatesPage() {
   const handleDeleteDialogClose = () => {
     setIsDeleteDialogOpen(false)
     setTemplateToDelete(null)
+  }
+
+  const handleTemplateEdit = (template: PromptTemplate) => {
+    // Navigate to template edit page (if it exists) or show the template in a modal for editing
+    // For now, we'll navigate to a template detail page where editing could be implemented
+    router.push(`/templates/${template.id}?edit=true`)
+    
+    // Alternative: Show a toast indicating edit functionality
+    toast({
+      title: "Edit Template",
+      description: `Editing "${template.title}". This will redirect to the template editor.`,
+    })
   }
 
   const handleTemplateClone = async (id: string) => {
@@ -724,6 +738,7 @@ export default function MyTemplatesPage() {
                     setSelectedTemplate(template)
                     setIsPreviewOpen(true)
                   }}
+                  onEdit={handleTemplateEdit}
                   onFork={(template) => handleTemplateClone(template.id)}
                   onExport={(template) => {
                     const blob = new Blob([JSON.stringify(template, null, 2)], {
@@ -746,8 +761,6 @@ export default function MyTemplatesPage() {
                   onDelete={handleTemplateDeleteRequest}
                   onPublish={handleTemplatePublish}
                   onUnpublish={handleTemplateUnpublish}
-                  onStar={handleStar}
-                  onUnstar={handleUnstar}
                   showPublishStatus={true}
                   currentUserId={session?.user?.id || 'current-user'}
                   isFavorite={templateFavorites[template.id]?.isFavorite || false}
