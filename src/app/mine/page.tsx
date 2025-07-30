@@ -33,6 +33,8 @@ export default function MyTemplatesPage() {
   const [selectedTemplate, setSelectedTemplate] = useState<PromptTemplate | null>(null)
   const [loading, setLoading] = useState(true)
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
+  const [templateToEdit, setTemplateToEdit] = useState<PromptTemplate | null>(null)
   const [isPreviewOpen, setIsPreviewOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [templateToDelete, setTemplateToDelete] = useState<PromptTemplate | null>(null)
@@ -208,6 +210,49 @@ export default function MyTemplatesPage() {
     }
   }
 
+  const handleTemplateEditSave = async (templateData: Partial<PromptTemplate>) => {
+    if (!templateToEdit) return
+    
+    try {
+      const existingTemplate = templates.find(t => t.id === templateToEdit.id)
+      if (!existingTemplate) {
+        throw new Error('Template not found')
+      }
+
+      const updatedTemplate = {
+        ...existingTemplate,
+        ...templateData,
+        updatedAt: new Date().toISOString()
+      }
+
+      const savedTemplate = await templateService.saveTemplate(updatedTemplate)
+      
+      setTemplates(prev => 
+        prev.map(t => t.id === templateToEdit.id ? savedTemplate : t)
+      )
+      
+      if (selectedTemplate?.id === templateToEdit.id) {
+        setSelectedTemplate(savedTemplate)
+      }
+      
+      // Close the edit dialog and clear the template being edited
+      setIsEditDialogOpen(false)
+      setTemplateToEdit(null)
+      
+      toast({
+        title: "Template Updated",
+        description: "Your template has been updated successfully."
+      })
+    } catch (error) {
+      console.error('Error updating template:', error)
+      toast({
+        title: "Error",
+        description: "Failed to update template.",
+        variant: "destructive"
+      })
+    }
+  }
+
   const handleTemplateUpdate = async (id: string, templateData: Partial<PromptTemplate>) => {
     try {
       const existingTemplate = templates.find(t => t.id === id)
@@ -351,15 +396,17 @@ export default function MyTemplatesPage() {
   }
 
   const handleTemplateEdit = (template: PromptTemplate) => {
-    // Navigate to template edit page (if it exists) or show the template in a modal for editing
-    // For now, we'll navigate to a template detail page where editing could be implemented
-    router.push(`/templates/${template.id}?edit=true`)
-    
-    // Alternative: Show a toast indicating edit functionality
-    toast({
-      title: "Edit Template",
-      description: `Editing "${template.title}". This will redirect to the template editor.`,
-    })
+    // Set the template to edit and open the edit dialog
+    setTemplateToEdit(template)
+    setIsEditDialogOpen(true)
+  }
+
+  const handleEditDialogClose = (open: boolean) => {
+    setIsEditDialogOpen(open)
+    if (!open) {
+      // Clear the template being edited when dialog is closed
+      setTemplateToEdit(null)
+    }
   }
 
   const handleTemplateClone = async (id: string) => {
@@ -685,6 +732,15 @@ export default function MyTemplatesPage() {
             onTemplateCreate={handleTemplateCreate}
           />
 
+          {/* Edit Template Dialog - Available in Overview Tab */}
+          <CreateTemplateDialog
+            open={isEditDialogOpen}
+            onOpenChange={handleEditDialogClose}
+            onTemplateCreate={handleTemplateEditSave}
+            editingTemplate={templateToEdit || undefined}
+            isEditing={true}
+          />
+
           {/* Template Details Panel - Available in Overview Tab */}
           <TemplateDetailsPanel
             template={selectedTemplate}
@@ -777,6 +833,15 @@ export default function MyTemplatesPage() {
             open={isCreateDialogOpen}
             onOpenChange={setIsCreateDialogOpen}
             onTemplateCreate={handleTemplateCreate}
+          />
+
+          {/* Edit Template Dialog - Added to Management Tab */}
+          <CreateTemplateDialog
+            open={isEditDialogOpen}
+            onOpenChange={handleEditDialogClose}
+            onTemplateCreate={handleTemplateEditSave}
+            editingTemplate={templateToEdit || undefined}
+            isEditing={true}
           />
 
           {/* Template Details Panel - Added to Management Tab */}
