@@ -217,7 +217,7 @@ export function CreateTemplateDialog({ open, onOpenChange, onTemplateCreate, edi
     // OpenAI
     frequencyPenalty: 0.0,
     presencePenalty: 0.0,
-    stopSequences: [],
+    stopSequences: [] as string[],
     parallelToolCalls: true,
     stream: false,
     
@@ -290,25 +290,27 @@ export function CreateTemplateDialog({ open, onOpenChange, onTemplateCreate, edi
         // Tags
         tags: editingTemplate.tags || [],
         
-        // Model Configuration - use defaults since model config is handled separately
-        modelProvider: "openai",
-        modelName: "gpt-4",
-        temperature: editingTemplate.promptConfig?.constraints?.temperature || 1.0,
-        maxTokens: editingTemplate.promptConfig?.constraints?.maxTokens || 2000,
-        topP: editingTemplate.promptConfig?.constraints?.topP || 1.0,
+        // Model Configuration - properly load from model config
+        modelProvider: editingTemplate.promptConfig?.model?.provider || "openai",
+        modelName: editingTemplate.promptConfig?.model?.name || "gpt-4",
+        temperature: editingTemplate.promptConfig?.model?.parameters?.temperature || editingTemplate.promptConfig?.constraints?.temperature || 1.0,
+        maxTokens: editingTemplate.promptConfig?.model?.parameters?.maxTokens || editingTemplate.promptConfig?.constraints?.maxTokens || 2000,
+        topP: editingTemplate.promptConfig?.model?.parameters?.topP || editingTemplate.promptConfig?.constraints?.topP || 1.0,
         
-        // Provider-specific parameters - use defaults since they're not in the PromptConfig
-        frequencyPenalty: editingTemplate.promptConfig?.constraints?.frequencyPenalty || 0.0,
-        presencePenalty: editingTemplate.promptConfig?.constraints?.presencePenalty || 0.0,
-        stopSequences: [],
-        parallelToolCalls: true,
-        stream: false,
-        topK: 5,
-        thinking: false,
-        guardrailId: "",
-        guardrailVersion: "",
-        streaming: true,
-        safetySettings: "",
+        // Provider-specific parameters - load from model config
+        frequencyPenalty: editingTemplate.promptConfig?.model?.parameters?.frequencyPenalty || editingTemplate.promptConfig?.constraints?.frequencyPenalty || 0.0,
+        presencePenalty: editingTemplate.promptConfig?.model?.parameters?.presencePenalty || editingTemplate.promptConfig?.constraints?.presencePenalty || 0.0,
+        stopSequences: (editingTemplate.promptConfig?.model?.parameters?.stopSequences || []) as string[],
+        parallelToolCalls: editingTemplate.promptConfig?.model?.parameters?.parallelToolCalls ?? true,
+        stream: editingTemplate.promptConfig?.model?.parameters?.stream || false,
+        topK: editingTemplate.promptConfig?.model?.parameters?.topK || 5,
+        thinking: editingTemplate.promptConfig?.model?.parameters?.thinking || false,
+        guardrailId: editingTemplate.promptConfig?.model?.parameters?.guardrailId || "",
+        guardrailVersion: editingTemplate.promptConfig?.model?.parameters?.guardrailVersion || "",
+        streaming: editingTemplate.promptConfig?.model?.parameters?.streaming ?? true,
+        safetySettings: typeof editingTemplate.promptConfig?.model?.parameters?.safetySettings === 'string' 
+          ? editingTemplate.promptConfig.model.parameters.safetySettings 
+          : "",
         
         // Prompt Configuration
         systemPrompt: editingTemplate.promptConfig?.systemPrompt || "",
@@ -463,6 +465,39 @@ export function CreateTemplateDialog({ open, onOpenChange, onTemplateCreate, edi
         systemPrompt: formData.systemPrompt,
         userPromptTemplate: formData.userPromptTemplate,
         parameters: formData.parameters,
+        // Add complete model configuration
+        model: {
+          provider: formData.modelProvider as 'openai' | 'anthropic' | 'bedrock' | 'google' | 'custom',
+          name: formData.modelName,
+          parameters: {
+            temperature: formData.temperature,
+            maxTokens: formData.maxTokens,
+            topP: formData.topP,
+            // OpenAI specific
+            ...(formData.modelProvider === 'openai' && {
+              frequencyPenalty: formData.frequencyPenalty,
+              presencePenalty: formData.presencePenalty,
+              parallelToolCalls: formData.parallelToolCalls,
+              stream: formData.stream,
+              stopSequences: formData.stopSequences
+            }),
+            // Anthropic specific
+            ...(formData.modelProvider === 'anthropic' && {
+              topK: formData.topK,
+              thinking: formData.thinking
+            }),
+            // Amazon Bedrock specific
+            ...(formData.modelProvider === 'bedrock' && {
+              guardrailId: formData.guardrailId,
+              guardrailVersion: formData.guardrailVersion,
+              streaming: formData.streaming
+            }),
+            // Google specific
+            ...(formData.modelProvider === 'google' && {
+              safetySettings: formData.safetySettings
+            })
+          }
+        },
         constraints: {
           maxTokens: formData.maxTokens,
           temperature: formData.temperature,

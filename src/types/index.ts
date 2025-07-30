@@ -78,6 +78,34 @@ export interface PromptConfig {
   userPromptTemplate: string
   parameters: TemplateParameter[]
   constraints: PromptConstraints
+  model?: ModelConfig
+}
+
+export interface ModelConfig {
+  provider: 'openai' | 'anthropic' | 'bedrock' | 'google' | 'custom'
+  name: string
+  parameters: ModelParameters
+}
+
+export interface ModelParameters {
+  temperature: number
+  maxTokens: number
+  topP: number
+  // OpenAI specific
+  frequencyPenalty?: number
+  presencePenalty?: number
+  parallelToolCalls?: boolean
+  stream?: boolean
+  stopSequences?: string[]
+  // Anthropic specific
+  topK?: number
+  thinking?: boolean
+  // Amazon Bedrock specific
+  guardrailId?: string
+  guardrailVersion?: string
+  streaming?: boolean
+  // Google specific
+  safetySettings?: string | any[]
 }
 
 export interface TemplateParameter {
