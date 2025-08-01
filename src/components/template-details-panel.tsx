@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { TemplateVisualization } from '@/components/template-visualization'
 import { toast } from '@/components/ui/use-toast'
 import { PromptTemplate } from '@/types'
+import { useTemplateRefresh } from '@/hooks/use-template-refresh'
 import { 
   Star, 
   Users, 
@@ -35,13 +36,19 @@ interface TemplateDetailsPanelProps {
 }
 
 export function TemplateDetailsPanel({ 
-  template, 
+  template: propTemplate, 
   isOpen, 
   onOpenChange,
   onUseTemplate,
   onForkTemplate
 }: TemplateDetailsPanelProps) {
   const [activeTab, setActiveTab] = useState('overview')
+
+  // Use the refresh hook to get updated template data when notified
+  const { template: refreshedTemplate } = useTemplateRefresh(propTemplate?.id || '', propTemplate || undefined)
+  
+  // Use refreshed template if available, fallback to prop template
+  const template = refreshedTemplate || propTemplate
 
   if (!template) return null
 

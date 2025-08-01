@@ -15,6 +15,7 @@ import { Badge } from '@/components/ui/badge'
 import { toast } from '@/components/ui/use-toast'
 import { PromptTemplate } from '@/types'
 import { templateService } from '@/services/template-service'
+import { notifyTemplateUpdate } from '@/hooks/use-template-refresh'
 import { ArrowLeft, Edit, Save, X, Eye, Star, GitFork, Download, Share2 } from 'lucide-react'
 
 export default function TemplatePage() {
@@ -48,7 +49,6 @@ export default function TemplatePage() {
   const loadTemplate = async () => {
     try {
       setLoading(true)
-      // Use the API endpoint to fetch the template
       const response = await fetch(`/api/templates/${templateId}`)
       const data = await response.json()
       
@@ -104,11 +104,14 @@ export default function TemplatePage() {
         setTemplate(data.data)
         setIsEditDialogOpen(false)
         setIsEditing(false)
+        
+        // Notify other components about the update
+        notifyTemplateUpdate(templateId)
+        
         toast({
           title: "Template Updated",
           description: "Your template has been updated successfully."
         })
-        // Update URL to remove edit parameter
         router.replace(`/templates/${templateId}`)
       } else {
         toast({
