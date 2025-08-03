@@ -659,39 +659,44 @@ export function CreateTemplateDialog({ open, onOpenChange, onTemplateCreate, edi
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden">
-        <DialogHeader>
-          <DialogTitle>{isEditing ? 'Edit Template' : 'Create New Template'}</DialogTitle>
-          <DialogDescription>
-            {isEditing 
-              ? 'Update your AI template with modified configuration, prompts, MCP servers, and integrations.'
-              : 'Create a comprehensive AI template with model configuration, prompts, MCP servers, and SaaS integrations.'
-            }
-          </DialogDescription>
-        </DialogHeader>
+      <DialogContent className="max-w-4xl h-[90vh] max-h-[90vh] flex flex-col p-0">
+        <div className="flex-shrink-0 p-6 pb-0">
+          <DialogHeader>
+            <DialogTitle>{isEditing ? 'Edit Template' : 'Create New Template'}</DialogTitle>
+            <DialogDescription>
+              {isEditing 
+                ? 'Update your AI template with modified configuration, prompts, MCP servers, and integrations.'
+                : 'Create a comprehensive AI template with model configuration, prompts, MCP servers, and SaaS integrations.'
+              }
+            </DialogDescription>
+          </DialogHeader>
+        </div>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 overflow-hidden">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="basic" className="flex items-center space-x-2">
-              <Settings className="h-4 w-4" />
-              <span>Basic</span>
-            </TabsTrigger>
-            <TabsTrigger value="model" className="flex items-center space-x-2">
-              <Brain className="h-4 w-4" />
-              <span>Model & Prompt</span>
-            </TabsTrigger>
-            <TabsTrigger value="integrations" className="flex items-center space-x-2">
-              <Database className="h-4 w-4" />
-              <span>Integrations</span>
-            </TabsTrigger>
-            <TabsTrigger value="advanced" className="flex items-center space-x-2">
-              <Cloud className="h-4 w-4" />
-              <span>Advanced</span>
-            </TabsTrigger>
-          </TabsList>
+        <div className="flex-1 overflow-hidden min-h-0">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col">
+            <div className="flex-shrink-0 px-6">
+              <TabsList className="grid w-full grid-cols-4">
+                <TabsTrigger value="basic" className="flex items-center space-x-2">
+                  <Settings className="h-4 w-4" />
+                  <span>Basic</span>
+                </TabsTrigger>
+                <TabsTrigger value="model" className="flex items-center space-x-2">
+                  <Brain className="h-4 w-4" />
+                  <span>Model & Prompt</span>
+                </TabsTrigger>
+                <TabsTrigger value="integrations" className="flex items-center space-x-2">
+                  <Database className="h-4 w-4" />
+                  <span>Integrations</span>
+                </TabsTrigger>
+                <TabsTrigger value="advanced" className="flex items-center space-x-2">
+                  <Cloud className="h-4 w-4" />
+                  <span>Advanced</span>
+                </TabsTrigger>
+              </TabsList>
+            </div>
 
-          <div className="flex-1 overflow-y-auto mt-4">
-            <TabsContent value="basic" className="space-y-6 mt-0">
+            <div className="flex-1 overflow-y-auto min-h-0 px-6 pb-6">
+            <TabsContent value="basic" className="space-y-6 mt-4 data-[state=active]:block hidden">
               {/* Basic Information */}
               <Card>
                 <CardHeader>
@@ -815,7 +820,7 @@ export function CreateTemplateDialog({ open, onOpenChange, onTemplateCreate, edi
               </Card>
             </TabsContent>
 
-            <TabsContent value="model" className="space-y-6 mt-0">
+            <TabsContent value="model" className="space-y-6 mt-4 data-[state=active]:block hidden">
               {/* Model Configuration */}
               <Card>
                 <CardHeader>
@@ -1155,7 +1160,7 @@ export function CreateTemplateDialog({ open, onOpenChange, onTemplateCreate, edi
               </Card>
             </TabsContent>
 
-            <TabsContent value="integrations" className="space-y-6 mt-0">
+            <TabsContent value="integrations" className="space-y-6 mt-4 data-[state=active]:block hidden">
               {/* MCP Servers */}
               <Card>
                 <CardHeader>
@@ -1280,7 +1285,7 @@ export function CreateTemplateDialog({ open, onOpenChange, onTemplateCreate, edi
               </Card>
             </TabsContent>
 
-            <TabsContent value="advanced" className="space-y-6 mt-0">
+            <TabsContent value="advanced" className="space-y-6 mt-4 data-[state=active]:block hidden">
               {/* Dependencies */}
               <Card>
                 <CardHeader>
@@ -1313,15 +1318,18 @@ export function CreateTemplateDialog({ open, onOpenChange, onTemplateCreate, edi
                 </CardContent>
               </Card>
             </TabsContent>
-          </div>
-        </Tabs>
+            </div>
+          </Tabs>
+        </div>
 
-        <DialogFooter className="flex-shrink-0">
-          <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-            Cancel
-          </Button>
-          <Button onClick={handleSubmit}>{isEditing ? 'Update Template' : 'Create Template'}</Button>
-        </DialogFooter>
+        <div className="flex-shrink-0 p-6 pt-0">
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleSubmit}>{isEditing ? 'Update Template' : 'Create Template'}</Button>
+          </DialogFooter>
+        </div>
       </DialogContent>
     </Dialog>
   )

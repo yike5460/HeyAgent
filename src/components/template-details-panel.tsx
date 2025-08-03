@@ -97,70 +97,74 @@ export function TemplateDetailsPanel({
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-6xl max-h-[95vh] overflow-hidden flex flex-col">
-        <DialogHeader className="flex-shrink-0">
-          <div className="flex items-start justify-between">
-            <div className="space-y-2">
-              <DialogTitle className="text-2xl">{template.title}</DialogTitle>
-              <DialogDescription className="text-base">
-                {template.description}
-              </DialogDescription>
-              <div className="flex items-center space-x-4 text-sm text-muted-foreground">
-                <span>by {template.author}</span>
-                <div className="flex items-center space-x-1">
-                  <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                  <span>0</span>
-                </div>
-                <div className="flex items-center space-x-1">
-                  <Users className="h-4 w-4" />
-                  <span>{template.usageCount.toLocaleString()} uses</span>
-                </div>
-                <div className="flex items-center space-x-1">
-                  <GitBranch className="h-4 w-4" />
-                  <span>{template.forkCount} forks</span>
+      <DialogContent className="max-w-6xl h-[95vh] max-h-[95vh] flex flex-col p-0">
+        <div className="flex-shrink-0 p-6 pb-0">
+          <DialogHeader>
+            <div className="flex items-start justify-between">
+              <div className="space-y-2 flex-1 pr-4">
+                <DialogTitle className="text-2xl">{template.title}</DialogTitle>
+                <DialogDescription className="text-base">
+                  {template.description}
+                </DialogDescription>
+                <div className="flex items-center space-x-4 text-sm text-muted-foreground flex-wrap gap-y-2">
+                  <span>by {template.author}</span>
+                  <div className="flex items-center space-x-1">
+                    <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                    <span>0</span>
+                  </div>
+                  <div className="flex items-center space-x-1">
+                    <Users className="h-4 w-4" />
+                    <span>{template.usageCount.toLocaleString()} uses</span>
+                  </div>
+                  <div className="flex items-center space-x-1">
+                    <GitBranch className="h-4 w-4" />
+                    <span>{template.forkCount} forks</span>
+                  </div>
                 </div>
               </div>
+              <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 flex-shrink-0">
+                <Button onClick={handleUseTemplate} className="bg-primary hover:bg-primary/90" size="sm">
+                  <Play className="h-4 w-4 mr-2" />
+                  Use Template
+                </Button>
+                <Button variant="outline" onClick={handleForkTemplate} size="sm">
+                  <GitBranch className="h-4 w-4 mr-2" />
+                  Fork
+                </Button>
+                <Button variant="outline" onClick={handleExportTemplate} size="sm">
+                  <Download className="h-4 w-4 mr-2" />
+                  Export
+                </Button>
+              </div>
             </div>
-            <div className="flex space-x-2">
-              <Button onClick={handleUseTemplate} className="bg-primary hover:bg-primary/90">
-                <Play className="h-4 w-4 mr-2" />
-                Use Template
-              </Button>
-              <Button variant="outline" onClick={handleForkTemplate}>
-                <GitBranch className="h-4 w-4 mr-2" />
-                Fork
-              </Button>
-              <Button variant="outline" onClick={handleExportTemplate}>
-                <Download className="h-4 w-4 mr-2" />
-                Export
-              </Button>
-            </div>
-          </div>
-        </DialogHeader>
+          </DialogHeader>
+        </div>
         
-        <div className="flex-1 overflow-hidden">
+        <div className="flex-1 overflow-hidden min-h-0">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col">
-            <TabsList className="grid w-full grid-cols-4 flex-shrink-0">
-              <TabsTrigger value="overview" className="flex items-center space-x-2">
-                <Eye className="h-4 w-4" />
-                <span>Overview</span>
-              </TabsTrigger>
-              <TabsTrigger value="analytic" className="flex items-center space-x-2">
-                <BarChart3 className="h-4 w-4" />
-                <span>Analytic</span>
-              </TabsTrigger>
-              <TabsTrigger value="configuration" className="flex items-center space-x-2">
-                <Settings className="h-4 w-4" />
-                <span>Configuration</span>
-              </TabsTrigger>
-              <TabsTrigger value="code" className="flex items-center space-x-2">
-                <FileJson className="h-4 w-4" />
-                <span>JSON</span>
-              </TabsTrigger>
-            </TabsList>
+            <div className="flex-shrink-0 px-6">
+              <TabsList className="grid w-full grid-cols-4">
+                <TabsTrigger value="overview" className="flex items-center space-x-2">
+                  <Eye className="h-4 w-4" />
+                  <span>Overview</span>
+                </TabsTrigger>
+                <TabsTrigger value="analytic" className="flex items-center space-x-2">
+                  <BarChart3 className="h-4 w-4" />
+                  <span>Analytic</span>
+                </TabsTrigger>
+                <TabsTrigger value="configuration" className="flex items-center space-x-2">
+                  <Settings className="h-4 w-4" />
+                  <span>Configuration</span>
+                </TabsTrigger>
+                <TabsTrigger value="code" className="flex items-center space-x-2">
+                  <FileJson className="h-4 w-4" />
+                  <span>JSON</span>
+                </TabsTrigger>
+              </TabsList>
+            </div>
             
-            <div className="flex-1 overflow-y-auto mt-4">
-              <TabsContent value="overview" className="space-y-6 mt-0 h-full overflow-y-auto">
+            <div className="flex-1 overflow-y-auto min-h-0 px-6 pb-6">
+              <TabsContent value="overview" className="space-y-6 mt-4 data-[state=active]:block hidden">
                 <Card>
                   <CardHeader>
                     <CardTitle>Description</CardTitle>
@@ -182,7 +186,7 @@ export function TemplateDetailsPanel({
                 </Card>
               </TabsContent>
 
-              <TabsContent value="analytic" className="mt-0 h-full overflow-y-auto">
+              <TabsContent value="analytic" className="mt-4 data-[state=active]:block hidden">
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center space-x-2">
@@ -246,7 +250,7 @@ export function TemplateDetailsPanel({
                                   <Badge variant="outline">{template.mcpServers ? template.mcpServers.length : 0}</Badge>
                                 </div>
                                 <div className="flex items-center justify-between p-2 border rounded">
-                                  <span className="text-sm">SaaS Integrations</span>
+                                  <span className="text-sm">Execution Environment</span>
                                   <Badge variant="outline">{template.executionEnvironment ? template.executionEnvironment.length : 0}</Badge>
                                 </div>
                                 <div className="flex items-center justify-between p-2 border rounded">
@@ -315,15 +319,11 @@ export function TemplateDetailsPanel({
                 </Card>
               </TabsContent>
 
-              <TabsContent value="configuration" className="mt-0 h-full">
-                <div className="h-full overflow-y-auto pr-2">
-                  <div className="pb-6">
-                    <TemplateInfoSections template={template} mode="view" />
-                  </div>
-                </div>
+              <TabsContent value="configuration" className="mt-4 data-[state=active]:block hidden">
+                <TemplateInfoSections template={template} mode="view" />
               </TabsContent>
 
-              <TabsContent value="code" className="space-y-6 mt-0 h-full overflow-y-auto">
+              <TabsContent value="code" className="space-y-6 mt-4 data-[state=active]:block hidden">
                 <Card>
                   <CardHeader>
                     <CardTitle>Template JSON</CardTitle>
