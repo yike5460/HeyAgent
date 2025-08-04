@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { TemplateVisualization } from '@/components/template-visualization'
 import { TemplateInfoSections } from '@/components/template-info-sections'
 import { toast } from '@/components/ui/use-toast'
 import { PromptTemplate } from '@/types'
@@ -143,14 +142,10 @@ export function TemplateDetailsPanel({
         <div className="flex-1 overflow-hidden min-h-0">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col">
             <div className="flex-shrink-0 px-6">
-              <TabsList className="grid w-full grid-cols-4">
+              <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="overview" className="flex items-center space-x-2">
                   <Eye className="h-4 w-4" />
                   <span>Overview</span>
-                </TabsTrigger>
-                <TabsTrigger value="analytic" className="flex items-center space-x-2">
-                  <BarChart3 className="h-4 w-4" />
-                  <span>Analytic</span>
                 </TabsTrigger>
                 <TabsTrigger value="configuration" className="flex items-center space-x-2">
                   <Settings className="h-4 w-4" />
@@ -175,65 +170,52 @@ export function TemplateDetailsPanel({
                     </p>
                   </CardContent>
                 </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Template Visualization</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <TemplateVisualization template={template} />
-                  </CardContent>
-                </Card>
-              </TabsContent>
-
-              <TabsContent value="analytic" className="mt-4 data-[state=active]:block hidden">
+                
+                {/* Usage Statistics */}
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center space-x-2">
                       <BarChart3 className="h-5 w-5 text-primary" />
-                      <span>Template Analytics</span>
+                      <span>Usage Statistics</span>
                     </CardTitle>
-                    <CardDescription>
-                      Performance insights and usage statistics for this template
-                    </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <div className="space-y-6">
-                      {/* Performance Overview */}
-                      <div className="grid gap-4 md:grid-cols-3">
-                        <Card>
-                          <CardHeader className="pb-2">
-                            <CardTitle className="text-sm font-medium">Usage Count</CardTitle>
-                          </CardHeader>
-                          <CardContent>
-                            <div className="text-2xl font-bold">{template.usageCount.toLocaleString()}</div>
-                            <div className="text-xs text-muted-foreground">Total executions</div>
-                          </CardContent>
-                        </Card>
+                    <div className="grid gap-4 md:grid-cols-3">
+                      <Card>
+                        <CardHeader className="pb-2">
+                          <CardTitle className="text-sm font-medium">Usage Count</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="text-2xl font-bold">{template.usageCount.toLocaleString()}</div>
+                          <div className="text-xs text-muted-foreground">Total executions</div>
+                        </CardContent>
+                      </Card>
 
-                        <Card>
-                          <CardHeader className="pb-2">
-                            <CardTitle className="text-sm font-medium">Fork Count</CardTitle>
-                          </CardHeader>
-                          <CardContent>
-                            <div className="text-2xl font-bold">{template.forkCount}</div>
-                            <div className="text-xs text-muted-foreground">Times forked</div>
-                          </CardContent>
-                        </Card>
+                      <Card>
+                        <CardHeader className="pb-2">
+                          <CardTitle className="text-sm font-medium">Fork Count</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="text-2xl font-bold">{template.forkCount}</div>
+                          <div className="text-xs text-muted-foreground">Times forked</div>
+                        </CardContent>
+                      </Card>
 
-                        <Card>
-                          <CardHeader className="pb-2">
-                            <CardTitle className="text-sm font-medium">Favorites</CardTitle>
-                          </CardHeader>
-                          <CardContent>
-                            <div className="text-2xl font-bold flex items-center space-x-1">
-                              <span>0</span>
-                              <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                            </div>
-                            <div className="text-xs text-muted-foreground">Favorite count</div>
-                          </CardContent>
-                        </Card>
-                      </div>
+                      <Card>
+                        <CardHeader className="pb-2">
+                          <CardTitle className="text-sm font-medium">Favorites</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="text-2xl font-bold flex items-center space-x-1">
+                            <span>0</span>
+                            <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                          </div>
+                          <div className="text-xs text-muted-foreground">Favorite count</div>
+                        </CardContent>
+                      </Card>
+                    </div>
+                  </CardContent>
+                </Card>
 
                       {/* Template Composition */}
                       <Card>
@@ -278,10 +260,6 @@ export function TemplateDetailsPanel({
                                   </Badge>
                                 </div>
                                 <div className="flex items-center justify-between p-2 border rounded">
-                                  <span className="text-sm">Runtime (est.)</span>
-                                  <Badge variant="outline">{template.metadata.estimatedRuntime}min</Badge>
-                                </div>
-                                <div className="flex items-center justify-between p-2 border rounded">
                                   <span className="text-sm">Category</span>
                                   <Badge variant="outline">{template.metadata.category}</Badge>
                                 </div>
@@ -295,28 +273,6 @@ export function TemplateDetailsPanel({
                         </CardContent>
                       </Card>
 
-                      {/* Usage Trend */}
-                      <Card>
-                        <CardHeader>
-                          <CardTitle className="text-lg">Usage Trend</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          <div className="text-center py-8">
-                            <div className="w-full h-24 bg-muted rounded-lg flex items-center justify-center mb-4">
-                              <div className="text-muted-foreground">
-                                <BarChart3 className="h-8 w-8 mx-auto mb-2" />
-                                <p className="text-sm">Usage analytics chart would appear here</p>
-                              </div>
-                            </div>
-                            <p className="text-sm text-muted-foreground">
-                              This template has been used {template.usageCount} times and has been favorited by the community
-                            </p>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    </div>
-                  </CardContent>
-                </Card>
               </TabsContent>
 
               <TabsContent value="configuration" className="mt-4 data-[state=active]:block hidden">

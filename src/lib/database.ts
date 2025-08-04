@@ -652,8 +652,8 @@ export class TemplateQueries {
     parsed.mcpServers = mcpServers.map(server => {
       const serverConfig = server.config ? this.safeJsonParse(server.config, {}) : {};
       return {
-        serverId: server.id,
-        serverType: (server.name || 'custom') as 'firecrawl' | 'custom' | 'api-integrator' | 'file-processor',
+        serverId: server.name,
+        serverType: 'custom' as 'firecrawl' | 'custom' | 'api-integrator' | 'file-processor',
         configuration: {
           endpoint: serverConfig.endpoint || 'https://api.example.com',
           authentication: {

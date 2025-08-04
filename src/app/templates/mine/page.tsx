@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import { TemplateManager } from '@/components/template-manager'
-import { TemplateVisualization } from '@/components/template-visualization'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
@@ -462,7 +461,9 @@ export default function MyTemplatesPage() {
 
         <TabsContent value="visualization">
           {selectedTemplate ? (
-            <TemplateVisualization template={selectedTemplate} />
+            <div className="text-center py-8 text-muted-foreground">
+              <p>Template visualization has been simplified. View details in Overview tab.</p>
+            </div>
           ) : (
             <Card>
               <CardContent className="flex flex-col items-center justify-center py-12">

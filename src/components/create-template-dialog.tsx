@@ -520,8 +520,22 @@ export function CreateTemplateDialog({ open, onOpenChange, onTemplateCreate, edi
         }
       },
       tags: formData.tags,
-      mcpServers: formData.mcpServers.map((server, index) => ({
-        serverId: `${server.name.toLowerCase().replace(/\s+/g, '-')}-${Date.now()}-${index}`,
+      mcpServers: (() => {
+        const serverIds = new Set<string>()
+        return formData.mcpServers.map((server, index) => {
+          let serverId = server.name.toLowerCase().replace(/\s+/g, '-')
+          let counter = 1
+          const originalId = serverId
+          
+          // Handle duplicates by adding a counter
+          while (serverIds.has(serverId)) {
+            serverId = `${originalId}-${counter}`
+            counter++
+          }
+          serverIds.add(serverId)
+          
+          return {
+            serverId,
         serverType: 'custom' as any,
         configuration: {
           endpoint: 'https://api.custom.dev',
@@ -558,7 +572,9 @@ export function CreateTemplateDialog({ open, onOpenChange, onTemplateCreate, edi
           }
         }],
         resources: []
-      })),
+          }
+        })
+      })(),
       executionEnvironment: formData.executionEnvironment,
       agentConfig: {
         workflow: [],

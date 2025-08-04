@@ -8,7 +8,6 @@ import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { TemplateDetailsPanel } from '@/components/template-details-panel'
 import { CreateTemplateDialog } from '@/components/create-template-dialog'
-import { TemplateVisualization } from '@/components/template-visualization'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -351,7 +350,7 @@ export default function TemplatePage() {
         </CardHeader>
         
         <CardContent>
-          <TemplateVisualization template={template} />
+          <p className="text-muted-foreground">Template details and configuration information.</p>
         </CardContent>
       </Card>
 
