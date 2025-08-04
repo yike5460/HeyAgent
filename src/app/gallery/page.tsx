@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge'
 import { toast } from '@/components/ui/use-toast'
 import { PromptTemplate, IndustryVertical } from '@/types'
 import { Search, Filter, Eye, Copy, GitBranch, Star, Download } from 'lucide-react'
-import { TemplateDetailsPanel } from '@/components/template-details-panel'
+import { CreateTemplateDialog } from '@/components/create-template-dialog'
 import { TemplateCard } from '@/components/template-card'
 import { useSession } from 'next-auth/react'
 
@@ -728,11 +728,12 @@ export default function TemplateGalleryPage() {
         )}
       </div>
 
-      {/* Template Details Panel */}
-      <TemplateDetailsPanel
-        template={selectedTemplate}
-        isOpen={isTemplateDetailsOpen}
+      {/* Template View Panel */}
+      <CreateTemplateDialog
+        open={isTemplateDetailsOpen}
         onOpenChange={setIsTemplateDetailsOpen}
+        editingTemplate={selectedTemplate || undefined}
+        isViewMode={true}
         onForkTemplate={handleFork}
       />
     </div>

@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { TemplateCard } from '@/components/template-card'
-import { TemplateDetailsPanel } from '@/components/template-details-panel'
+// Removed: import { TemplateDetailsPanel } from '@/components/template-details-panel' - now using unified CreateTemplateDialog
 import { CreateTemplateDialog } from '@/components/create-template-dialog'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -740,11 +740,12 @@ export default function MyTemplatesPage() {
             isEditing={true}
           />
 
-          {/* Template Details Panel - Available in Overview Tab */}
-          <TemplateDetailsPanel
-            template={selectedTemplate}
-            isOpen={isPreviewOpen}
+          {/* Template View Panel - Unified with Edit Dialog */}
+          <CreateTemplateDialog
+            open={isPreviewOpen}
             onOpenChange={setIsPreviewOpen}
+            editingTemplate={selectedTemplate || undefined}
+            isViewMode={true}
             onUseTemplate={(template) => {
               toast({
                 title: "Use Template",
@@ -843,11 +844,12 @@ export default function MyTemplatesPage() {
             isEditing={true}
           />
 
-          {/* Template Details Panel - Added to Management Tab */}
-          <TemplateDetailsPanel
-            template={selectedTemplate}
-            isOpen={isPreviewOpen}
+          {/* Template View Panel - Unified with Edit Dialog */}
+          <CreateTemplateDialog
+            open={isPreviewOpen}
             onOpenChange={setIsPreviewOpen}
+            editingTemplate={selectedTemplate || undefined}
+            isViewMode={true}
             onUseTemplate={(template) => {
               toast({
                 title: "Use Template",

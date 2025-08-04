@@ -26,6 +26,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { X, Plus, Brain, MessageSquare, Database, Cloud, Settings } from "lucide-react"
 import { PromptTemplate, IndustryVertical, MCPServerConfig, ExecutionEnvironment, TemplateParameter } from "@/types"
+import { TemplateInfoSections } from '@/components/template-info-sections'
 
 interface CreateTemplateDialogProps {
   open: boolean
@@ -33,6 +34,9 @@ interface CreateTemplateDialogProps {
   onTemplateCreate?: (template: Partial<PromptTemplate>) => void
   editingTemplate?: PromptTemplate
   isEditing?: boolean
+  isViewMode?: boolean
+  onUseTemplate?: (template: PromptTemplate) => void
+  onForkTemplate?: (template: PromptTemplate) => void
 }
 
 const industries: IndustryVertical[] = [
@@ -191,8 +195,8 @@ const providerDefaults = {
   }
 }
 
-export function CreateTemplateDialog({ open, onOpenChange, onTemplateCreate, editingTemplate, isEditing = false }: CreateTemplateDialogProps) {
-  const [activeTab, setActiveTab] = useState('basic')
+export function CreateTemplateDialog({ open, onOpenChange, onTemplateCreate, editingTemplate, isEditing = false, isViewMode = false, onUseTemplate, onForkTemplate }: CreateTemplateDialogProps) {
+  const [activeTab, setActiveTab] = useState(isViewMode ? 'overview' : 'basic')
   const [formData, setFormData] = useState({
     // Basic Information
     title: "",
@@ -689,41 +693,206 @@ export function CreateTemplateDialog({ open, onOpenChange, onTemplateCreate, edi
       <DialogContent className="max-w-4xl h-[90vh] max-h-[90vh] flex flex-col p-0">
         <div className="flex-shrink-0 p-6 pb-0">
           <DialogHeader>
-            <DialogTitle>{isEditing ? 'Edit Template' : 'Create New Template'}</DialogTitle>
-            <DialogDescription>
-              {isEditing 
-                ? 'Update your AI template with modified configuration, prompts, MCP servers, and integrations.'
-                : 'Create a comprehensive AI template with model configuration, prompts, MCP servers, and SaaS integrations.'
-              }
-            </DialogDescription>
+            {isViewMode ? (
+              <div className="flex items-start justify-between">
+                <div className="space-y-2 flex-1 pr-4">
+                  <DialogTitle className="text-2xl">{editingTemplate?.title}</DialogTitle>
+                  <DialogDescription className="text-base">
+                    {editingTemplate?.description}
+                  </DialogDescription>
+                  <div className="flex items-center space-x-4 text-sm text-muted-foreground flex-wrap gap-y-2">
+                    <span>by {editingTemplate?.author}</span>
+                    <div className="flex items-center space-x-1">
+                      <span>{editingTemplate?.usageCount?.toLocaleString()} uses</span>
+                    </div>
+                    <div className="flex items-center space-x-1">
+                      <span>{editingTemplate?.forkCount} forks</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 flex-shrink-0">
+                  {onUseTemplate && editingTemplate && (
+                    <Button onClick={() => onUseTemplate(editingTemplate)} className="bg-primary hover:bg-primary/90" size="sm">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Use Template
+                    </Button>
+                  )}
+                  {onForkTemplate && editingTemplate && (
+                    <Button variant="outline" onClick={() => onForkTemplate(editingTemplate)} size="sm">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Fork
+                    </Button>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <>
+                <DialogTitle>{isEditing ? 'Edit Template' : 'Create New Template'}</DialogTitle>
+                <DialogDescription>
+                  {isEditing 
+                    ? 'Update your AI template with modified configuration, prompts, MCP servers, and integrations.'
+                    : 'Create a comprehensive AI template with model configuration, prompts, MCP servers, and SaaS integrations.'
+                  }
+                </DialogDescription>
+              </>
+            )}
           </DialogHeader>
         </div>
 
         <div className="flex-1 overflow-hidden min-h-0">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col">
             <div className="flex-shrink-0 px-6">
-              <TabsList className="grid w-full grid-cols-4">
-                <TabsTrigger value="basic" className="flex items-center space-x-2">
-                  <Settings className="h-4 w-4" />
-                  <span>Basic</span>
-                </TabsTrigger>
-                <TabsTrigger value="model" className="flex items-center space-x-2">
-                  <Brain className="h-4 w-4" />
-                  <span>Model & Prompt</span>
-                </TabsTrigger>
-                <TabsTrigger value="integrations" className="flex items-center space-x-2">
-                  <Database className="h-4 w-4" />
-                  <span>Integrations</span>
-                </TabsTrigger>
-                <TabsTrigger value="advanced" className="flex items-center space-x-2">
-                  <Cloud className="h-4 w-4" />
-                  <span>Advanced</span>
-                </TabsTrigger>
-              </TabsList>
+              {isViewMode ? (
+                <TabsList className="grid w-full grid-cols-3">
+                  <TabsTrigger value="overview" className="flex items-center space-x-2">
+                    <Settings className="h-4 w-4" />
+                    <span>Overview</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="configuration" className="flex items-center space-x-2">
+                    <Brain className="h-4 w-4" />
+                    <span>Configuration</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="code" className="flex items-center space-x-2">
+                    <Database className="h-4 w-4" />
+                    <span>JSON</span>
+                  </TabsTrigger>
+                </TabsList>
+              ) : (
+                <TabsList className="grid w-full grid-cols-4">
+                  <TabsTrigger value="basic" className="flex items-center space-x-2">
+                    <Settings className="h-4 w-4" />
+                    <span>Basic</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="model" className="flex items-center space-x-2">
+                    <Brain className="h-4 w-4" />
+                    <span>Model & Prompt</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="integrations" className="flex items-center space-x-2">
+                    <Database className="h-4 w-4" />
+                    <span>Integrations</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="advanced" className="flex items-center space-x-2">
+                    <Cloud className="h-4 w-4" />
+                    <span>Advanced</span>
+                  </TabsTrigger>
+                </TabsList>
+              )}
             </div>
 
             <div className="flex-1 overflow-y-auto min-h-0 px-6 pb-6">
-            <TabsContent value="basic" className="space-y-6 mt-4 data-[state=active]:block hidden">
+              {/* View-only tabs */}
+              {isViewMode && editingTemplate && (
+                <>
+                  <TabsContent value="overview" className="space-y-6 mt-4 data-[state=active]:block hidden">
+                    {/* Overview content from TemplateDetailsPanel */}
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>Description</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-sm text-muted-foreground leading-relaxed">
+                          {editingTemplate.description}
+                        </p>
+                      </CardContent>
+                    </Card>
+                    
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>Template Composition</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="grid gap-4 md:grid-cols-2">
+                          <div>
+                            <h4 className="font-medium mb-2">Components</h4>
+                            <div className="space-y-2">
+                              <div className="flex items-center justify-between p-2 border rounded">
+                                <span className="text-sm">MCP Servers</span>
+                                <Badge variant="outline">{editingTemplate.mcpServers ? editingTemplate.mcpServers.length : 0}</Badge>
+                              </div>
+                              <div className="flex items-center justify-between p-2 border rounded">
+                                <span className="text-sm">Execution Environment</span>
+                                <Badge variant="outline">{editingTemplate.executionEnvironment ? editingTemplate.executionEnvironment.length : 0}</Badge>
+                              </div>
+                              <div className="flex items-center justify-between p-2 border rounded">
+                                <span className="text-sm">Parameters</span>
+                                <Badge variant="outline">{editingTemplate.promptConfig?.parameters?.length || 0}</Badge>
+                              </div>
+                              <div className="flex items-center justify-between p-2 border rounded">
+                                <span className="text-sm">Dependencies</span>
+                                <Badge variant="outline">{editingTemplate.metadata?.dependencies?.length || 0}</Badge>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <div>
+                            <h4 className="font-medium mb-2">Metadata</h4>
+                            <div className="space-y-2">
+                              <div className="flex items-center justify-between p-2 border rounded">
+                                <span className="text-sm">Complexity</span>
+                                <Badge variant={
+                                  editingTemplate.metadata?.complexity === 'beginner' ? 'default' :
+                                  editingTemplate.metadata?.complexity === 'intermediate' ? 'secondary' :
+                                  'destructive'
+                                }>
+                                  {editingTemplate.metadata?.complexity || 'Unknown'}
+                                </Badge>
+                              </div>
+                              <div className="flex items-center justify-between p-2 border rounded">
+                                <span className="text-sm">Category</span>
+                                <Badge variant="outline">{editingTemplate.metadata?.category || 'Unknown'}</Badge>
+                              </div>
+                              <div className="flex items-center justify-between p-2 border rounded">
+                                <span className="text-sm">Industry</span>
+                                <Badge variant="outline">{editingTemplate.industry}</Badge>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </TabsContent>
+
+                  <TabsContent value="configuration" className="mt-4 data-[state=active]:block hidden">
+                    <TemplateInfoSections template={editingTemplate} mode="view" />
+                  </TabsContent>
+
+                  <TabsContent value="code" className="space-y-6 mt-4 data-[state=active]:block hidden">
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>Template JSON</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="relative">
+                          <div className="text-xs bg-slate-950 text-slate-100 p-4 rounded-md overflow-x-auto max-h-96 border font-mono">
+                            <details className="cursor-pointer">
+                              <summary className="text-slate-400 hover:text-slate-200 transition-colors mb-2 select-none">
+                                📋 Click to expand/collapse JSON structure
+                              </summary>
+                              <pre className="whitespace-pre-wrap text-slate-100">
+                                {JSON.stringify(editingTemplate, null, 2)}
+                              </pre>
+                            </details>
+                          </div>
+                          <button 
+                            onClick={() => {
+                              navigator.clipboard.writeText(JSON.stringify(editingTemplate, null, 2))
+                              // Add toast notification if available
+                            }}
+                            className="absolute top-2 right-2 text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 px-2 py-1 rounded border border-slate-600 transition-colors"
+                          >
+                            Copy JSON
+                          </button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </TabsContent>
+                </>
+              )}
+
+              {/* Edit tabs */}
+              {!isViewMode && (
+                <>
+                  <TabsContent value="basic" className="space-y-6 mt-4 data-[state=active]:block hidden">
               {/* Basic Information */}
               <Card>
                 <CardHeader>
@@ -1345,18 +1514,23 @@ export function CreateTemplateDialog({ open, onOpenChange, onTemplateCreate, edi
                 </CardContent>
               </Card>
             </TabsContent>
+                </>
+              )}
             </div>
           </Tabs>
         </div>
 
-        <div className="flex-shrink-0 p-6 pt-0">
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Cancel
-            </Button>
-            <Button onClick={handleSubmit}>{isEditing ? 'Update Template' : 'Create Template'}</Button>
-          </DialogFooter>
-        </div>
+        {/* Footer - only show in edit mode */}
+        {!isViewMode && (
+          <div className="flex-shrink-0 p-6 pt-0">
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleSubmit}>{isEditing ? 'Update Template' : 'Create Template'}</Button>
+            </DialogFooter>
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   )

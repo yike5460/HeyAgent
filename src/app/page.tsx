@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { TemplateDetailsPanel } from '@/components/template-details-panel'
+import { CreateTemplateDialog } from '@/components/create-template-dialog'
 import { DashboardHero } from '@/components/dashboard-hero'
 import { PromptTemplate, IndustryVertical } from '@/types'
 import { templateService } from '@/services/template-service'
@@ -795,11 +795,12 @@ export default function HomePage() {
         </CardContent>
       </Card>
 
-      {/* Template Details Panel */}
-      <TemplateDetailsPanel
-        template={selectedTemplate}
-        isOpen={isTemplateDetailsOpen}
+      {/* Template View Panel */}
+      <CreateTemplateDialog
+        open={isTemplateDetailsOpen}
         onOpenChange={setIsTemplateDetailsOpen}
+        editingTemplate={selectedTemplate || undefined}
+        isViewMode={true}
         onForkTemplate={handleFork}
       />
     </div>

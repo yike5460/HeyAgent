@@ -192,7 +192,7 @@ export function TemplateCard({
                 {executionEnvironment.length > 0 && (
                   <div className="flex items-center space-x-1.5 text-xs">
                     <Settings className="h-3 w-3 flex-shrink-0 text-purple-600" />
-                    <span className="font-medium text-foreground">Env:</span>
+                    <span className="font-medium text-foreground">ENV:</span>
                     <div className="flex space-x-1 flex-wrap min-w-0">
                       {executionEnvironment.slice(0, 2).map((env, index) => (
                         <span 

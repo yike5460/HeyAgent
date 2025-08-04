@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { TemplateCard } from '@/components/template-card'
-import { TemplateDetailsPanel } from '@/components/template-details-panel'
+import { CreateTemplateDialog } from '@/components/create-template-dialog'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -674,11 +674,12 @@ export default function TemplateGalleryPage() {
         )}
       </div>
 
-      {/* Template Details Panel */}
-      <TemplateDetailsPanel
-        template={selectedTemplate}
-        isOpen={isTemplateDetailsOpen}
+      {/* Template View Panel */}
+      <CreateTemplateDialog
+        open={isTemplateDetailsOpen}
         onOpenChange={setIsTemplateDetailsOpen}
+        editingTemplate={selectedTemplate || undefined}
+        isViewMode={true}
         onForkTemplate={handleFork}
       />
     </div>

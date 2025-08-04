@@ -6,7 +6,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useSearchParams } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
-import { TemplateDetailsPanel } from '@/components/template-details-panel'
+// Removed TemplateDetailsPanel - now using unified CreateTemplateDialog
 import { CreateTemplateDialog } from '@/components/create-template-dialog'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
