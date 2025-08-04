@@ -740,30 +740,36 @@ export function CreateTemplateDialog({ open, onOpenChange, onTemplateCreate, edi
         </div>
 
         <div className="flex-1 overflow-hidden min-h-0">
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col">
-            <div className="flex-shrink-0 px-6">
-              <TabsList className="grid w-full grid-cols-4">
-                <TabsTrigger value="basic" className="flex items-center space-x-2">
-                  <Settings className="h-4 w-4" />
-                  <span>Basic</span>
-                </TabsTrigger>
-                <TabsTrigger value="model" className="flex items-center space-x-2">
-                  <Brain className="h-4 w-4" />
-                  <span>Model & Prompt</span>
-                </TabsTrigger>
-                <TabsTrigger value="integrations" className="flex items-center space-x-2">
-                  <Database className="h-4 w-4" />
-                  <span>Integrations</span>
-                </TabsTrigger>
-                <TabsTrigger value="advanced" className="flex items-center space-x-2">
-                  <Cloud className="h-4 w-4" />
-                  <span>Advanced</span>
-                </TabsTrigger>
-              </TabsList>
+          {isViewMode ? (
+            // View Mode - No tabs, just show content
+            <div className="h-full overflow-y-auto px-6 pb-6">
+              {editingTemplate && <TemplateInfoSections template={editingTemplate} mode="view" />}
             </div>
+          ) : (
+            // Edit Mode - Show tabs
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col">
+              <div className="flex-shrink-0 px-6">
+                <TabsList className="grid w-full grid-cols-4">
+                  <TabsTrigger value="basic" className="flex items-center space-x-2">
+                    <Settings className="h-4 w-4" />
+                    <span>Basic</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="model" className="flex items-center space-x-2">
+                    <Brain className="h-4 w-4" />
+                    <span>Model & Prompt</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="integrations" className="flex items-center space-x-2">
+                    <Database className="h-4 w-4" />
+                    <span>Integrations</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="advanced" className="flex items-center space-x-2">
+                    <Cloud className="h-4 w-4" />
+                    <span>Advanced</span>
+                  </TabsTrigger>
+                </TabsList>
+              </div>
 
-            <div className="flex-1 overflow-y-auto min-h-0 px-6 pb-6">
-              {/* Tabs for both edit and view modes */}
+              <div className="flex-1 overflow-y-auto min-h-0 px-6 pb-6">
                 <TabsContent value="basic" className="space-y-6 mt-4 data-[state=active]:block hidden">
               {/* Basic Information */}
               <Card>
@@ -1432,8 +1438,9 @@ export function CreateTemplateDialog({ open, onOpenChange, onTemplateCreate, edi
                 </CardContent>
               </Card>
             </TabsContent>
-            </div>
-          </Tabs>
+              </div>
+            </Tabs>
+          )}
         </div>
 
         {/* Footer - only show in edit mode */}
