@@ -22,6 +22,19 @@ export function TemplateInfoSections({ template, mode = 'view' }: TemplateInfoSe
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
+          {/* Title and Description - Full width */}
+          <div className="space-y-4">
+            <div>
+              <h4 className="font-medium text-sm text-muted-foreground">Title</h4>
+              <p className="text-base font-medium">{template.title}</p>
+            </div>
+            <div>
+              <h4 className="font-medium text-sm text-muted-foreground">Description</h4>
+              <p className="text-sm text-muted-foreground leading-relaxed">{template.description}</p>
+            </div>
+          </div>
+          
+          {/* Other fields - Grid layout */}
           <div className="grid grid-cols-2 gap-4">
             <div>
               <h4 className="font-medium text-sm text-muted-foreground">Industry</h4>
@@ -34,20 +47,20 @@ export function TemplateInfoSections({ template, mode = 'view' }: TemplateInfoSe
             <div>
               <h4 className="font-medium text-sm text-muted-foreground">Complexity</h4>
               <Badge variant="outline" className={
-                template.metadata.complexity === 'beginner' ? 'bg-green-100 text-green-800' :
-                template.metadata.complexity === 'intermediate' ? 'bg-yellow-100 text-yellow-800' :
+                template.metadata?.complexity === 'beginner' ? 'bg-green-100 text-green-800' :
+                template.metadata?.complexity === 'intermediate' ? 'bg-yellow-100 text-yellow-800' :
                 'bg-red-100 text-red-800'
               }>
-                {template.metadata.complexity}
+                {template.metadata?.complexity || 'Unknown'}
               </Badge>
             </div>
             <div>
               <h4 className="font-medium text-sm text-muted-foreground">Category</h4>
-              <p className="text-sm">{template.metadata.category}</p>
+              <p className="text-sm">{template.metadata?.category || 'Uncategorized'}</p>
             </div>
             <div>
               <h4 className="font-medium text-sm text-muted-foreground">Runtime (est.)</h4>
-              <p className="text-sm">{template.metadata.estimatedRuntime || 'N/A'}min</p>
+              <p className="text-sm">{template.metadata?.estimatedRuntime || 'N/A'}min</p>
             </div>
           </div>
           
@@ -221,15 +234,16 @@ export function TemplateInfoSections({ template, mode = 'view' }: TemplateInfoSe
                 <div key={index} className="border rounded-lg p-3 space-y-2">
                   <div className="flex items-center justify-between">
                     <div className="space-y-1">
-                      <h4 className="font-medium">{server.serverId}</h4>
+                      <h4 className="font-medium">{server?.serverId || 'Unknown Server'}</h4>
                       <p className="text-sm text-muted-foreground">
-                        {server.serverType === 'firecrawl' && 'Web scraping and content extraction from websites and documents'}
-                        {server.serverType === 'api-integrator' && 'Unified interface for external API integrations and data processing'}
-                        {server.serverType === 'file-processor' && 'File upload, processing, and format conversion capabilities'}
-                        {server.serverType === 'custom' && 'Custom server implementation with specialized functionality'}
+                        {server?.serverType === 'firecrawl' && 'Web scraping and content extraction from websites and documents'}
+                        {server?.serverType === 'api-integrator' && 'Unified interface for external API integrations and data processing'}
+                        {server?.serverType === 'file-processor' && 'File upload, processing, and format conversion capabilities'}
+                        {server?.serverType === 'custom' && 'Custom server implementation with specialized functionality'}
+                        {!server?.serverType && 'Server configuration available'}
                       </p>
                     </div>
-                    <Badge variant="outline">{server.tools?.length || 0} tools</Badge>
+                    <Badge variant="outline">{server?.tools?.length || 0} tools</Badge>
                   </div>
                   {mode === 'view' && (
                     <details className="group">
@@ -249,7 +263,7 @@ export function TemplateInfoSections({ template, mode = 'view' }: TemplateInfoSe
                       <div className="mt-2">
                         <div className="relative max-h-64 overflow-y-auto bg-muted rounded-md">
                           <pre className="text-xs p-3 whitespace-pre-wrap">
-                            {JSON.stringify(server.configuration, null, 2)}
+                            {server?.configuration ? JSON.stringify(server.configuration, null, 2) : 'No configuration available'}
                           </pre>
                         </div>
                       </div>
@@ -288,21 +302,21 @@ export function TemplateInfoSections({ template, mode = 'view' }: TemplateInfoSe
                   <div className="flex items-center justify-between">
                     <div className="space-y-1">
                       <h4 className="font-medium capitalize">
-                        {environment?.infrastructure?.replace('-', ' ') || 'Unknown'}
+                        {environment?.infrastructure?.replace?.('-', ' ') || 'Unknown Infrastructure'}
                       </h4>
                       <p className="text-sm text-muted-foreground">
                         {typeof environment?.requirements === 'string' 
                           ? environment.requirements 
-                          : environment?.requirements || 'No specific requirements'}
+                          : (environment?.requirements ? JSON.stringify(environment.requirements) : 'No specific requirements')}
                       </p>
                     </div>
-                    <Badge variant="outline">Infrastructure</Badge>
+                    <Badge variant="outline">Environment</Badge>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <h5 className="font-medium text-sm text-muted-foreground mb-1">Infrastructure</h5>
                       <p className="text-sm bg-muted p-2 rounded capitalize">
-                        {environment?.infrastructure?.replace('-', ' ') || 'Unknown'}
+                        {environment?.infrastructure?.replace?.('-', ' ') || 'Standard Runtime'}
                       </p>
                     </div>
                     <div>
@@ -310,7 +324,7 @@ export function TemplateInfoSections({ template, mode = 'view' }: TemplateInfoSe
                       <p className="text-sm bg-muted p-2 rounded font-mono text-xs break-all">
                         {typeof environment?.requirements === 'string' 
                           ? environment.requirements 
-                          : JSON.stringify(environment?.requirements || 'No specific requirements')}
+                          : (environment?.requirements ? JSON.stringify(environment.requirements, null, 2) : 'No specific requirements')}
                       </p>
                     </div>
                   </div>
