@@ -196,7 +196,7 @@ const providerDefaults = {
 }
 
 export function CreateTemplateDialog({ open, onOpenChange, onTemplateCreate, editingTemplate, isEditing = false, isViewMode = false, onUseTemplate, onForkTemplate }: CreateTemplateDialogProps) {
-  const [activeTab, setActiveTab] = useState(isViewMode ? 'overview' : 'basic')
+  const [activeTab, setActiveTab] = useState('basic')
   const [formData, setFormData] = useState({
     // Basic Information
     title: "",
@@ -742,157 +742,29 @@ export function CreateTemplateDialog({ open, onOpenChange, onTemplateCreate, edi
         <div className="flex-1 overflow-hidden min-h-0">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col">
             <div className="flex-shrink-0 px-6">
-              {isViewMode ? (
-                <TabsList className="grid w-full grid-cols-3">
-                  <TabsTrigger value="overview" className="flex items-center space-x-2">
-                    <Settings className="h-4 w-4" />
-                    <span>Overview</span>
-                  </TabsTrigger>
-                  <TabsTrigger value="configuration" className="flex items-center space-x-2">
-                    <Brain className="h-4 w-4" />
-                    <span>Configuration</span>
-                  </TabsTrigger>
-                  <TabsTrigger value="code" className="flex items-center space-x-2">
-                    <Database className="h-4 w-4" />
-                    <span>JSON</span>
-                  </TabsTrigger>
-                </TabsList>
-              ) : (
-                <TabsList className="grid w-full grid-cols-4">
-                  <TabsTrigger value="basic" className="flex items-center space-x-2">
-                    <Settings className="h-4 w-4" />
-                    <span>Basic</span>
-                  </TabsTrigger>
-                  <TabsTrigger value="model" className="flex items-center space-x-2">
-                    <Brain className="h-4 w-4" />
-                    <span>Model & Prompt</span>
-                  </TabsTrigger>
-                  <TabsTrigger value="integrations" className="flex items-center space-x-2">
-                    <Database className="h-4 w-4" />
-                    <span>Integrations</span>
-                  </TabsTrigger>
-                  <TabsTrigger value="advanced" className="flex items-center space-x-2">
-                    <Cloud className="h-4 w-4" />
-                    <span>Advanced</span>
-                  </TabsTrigger>
-                </TabsList>
-              )}
+              <TabsList className="grid w-full grid-cols-4">
+                <TabsTrigger value="basic" className="flex items-center space-x-2">
+                  <Settings className="h-4 w-4" />
+                  <span>Basic</span>
+                </TabsTrigger>
+                <TabsTrigger value="model" className="flex items-center space-x-2">
+                  <Brain className="h-4 w-4" />
+                  <span>Model & Prompt</span>
+                </TabsTrigger>
+                <TabsTrigger value="integrations" className="flex items-center space-x-2">
+                  <Database className="h-4 w-4" />
+                  <span>Integrations</span>
+                </TabsTrigger>
+                <TabsTrigger value="advanced" className="flex items-center space-x-2">
+                  <Cloud className="h-4 w-4" />
+                  <span>Advanced</span>
+                </TabsTrigger>
+              </TabsList>
             </div>
 
             <div className="flex-1 overflow-y-auto min-h-0 px-6 pb-6">
-              {/* View-only tabs */}
-              {isViewMode && editingTemplate && (
-                <>
-                  <TabsContent value="overview" className="space-y-6 mt-4 data-[state=active]:block hidden">
-                    {/* Overview content from TemplateDetailsPanel */}
-                    <Card>
-                      <CardHeader>
-                        <CardTitle>Description</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <p className="text-sm text-muted-foreground leading-relaxed">
-                          {editingTemplate.description}
-                        </p>
-                      </CardContent>
-                    </Card>
-                    
-                    <Card>
-                      <CardHeader>
-                        <CardTitle>Template Composition</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="grid gap-4 md:grid-cols-2">
-                          <div>
-                            <h4 className="font-medium mb-2">Components</h4>
-                            <div className="space-y-2">
-                              <div className="flex items-center justify-between p-2 border rounded">
-                                <span className="text-sm">MCP Servers</span>
-                                <Badge variant="outline">{editingTemplate.mcpServers ? editingTemplate.mcpServers.length : 0}</Badge>
-                              </div>
-                              <div className="flex items-center justify-between p-2 border rounded">
-                                <span className="text-sm">Execution Environment</span>
-                                <Badge variant="outline">{editingTemplate.executionEnvironment ? editingTemplate.executionEnvironment.length : 0}</Badge>
-                              </div>
-                              <div className="flex items-center justify-between p-2 border rounded">
-                                <span className="text-sm">Parameters</span>
-                                <Badge variant="outline">{editingTemplate.promptConfig?.parameters?.length || 0}</Badge>
-                              </div>
-                              <div className="flex items-center justify-between p-2 border rounded">
-                                <span className="text-sm">Dependencies</span>
-                                <Badge variant="outline">{editingTemplate.metadata?.dependencies?.length || 0}</Badge>
-                              </div>
-                            </div>
-                          </div>
-                          
-                          <div>
-                            <h4 className="font-medium mb-2">Metadata</h4>
-                            <div className="space-y-2">
-                              <div className="flex items-center justify-between p-2 border rounded">
-                                <span className="text-sm">Complexity</span>
-                                <Badge variant={
-                                  editingTemplate.metadata?.complexity === 'beginner' ? 'default' :
-                                  editingTemplate.metadata?.complexity === 'intermediate' ? 'secondary' :
-                                  'destructive'
-                                }>
-                                  {editingTemplate.metadata?.complexity || 'Unknown'}
-                                </Badge>
-                              </div>
-                              <div className="flex items-center justify-between p-2 border rounded">
-                                <span className="text-sm">Category</span>
-                                <Badge variant="outline">{editingTemplate.metadata?.category || 'Unknown'}</Badge>
-                              </div>
-                              <div className="flex items-center justify-between p-2 border rounded">
-                                <span className="text-sm">Industry</span>
-                                <Badge variant="outline">{editingTemplate.industry}</Badge>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </TabsContent>
-
-                  <TabsContent value="configuration" className="mt-4 data-[state=active]:block hidden">
-                    <TemplateInfoSections template={editingTemplate} mode="view" />
-                  </TabsContent>
-
-                  <TabsContent value="code" className="space-y-6 mt-4 data-[state=active]:block hidden">
-                    <Card>
-                      <CardHeader>
-                        <CardTitle>Template JSON</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="relative">
-                          <div className="text-xs bg-slate-950 text-slate-100 p-4 rounded-md overflow-x-auto max-h-96 border font-mono">
-                            <details className="cursor-pointer">
-                              <summary className="text-slate-400 hover:text-slate-200 transition-colors mb-2 select-none">
-                                📋 Click to expand/collapse JSON structure
-                              </summary>
-                              <pre className="whitespace-pre-wrap text-slate-100">
-                                {JSON.stringify(editingTemplate, null, 2)}
-                              </pre>
-                            </details>
-                          </div>
-                          <button 
-                            onClick={() => {
-                              navigator.clipboard.writeText(JSON.stringify(editingTemplate, null, 2))
-                              // Add toast notification if available
-                            }}
-                            className="absolute top-2 right-2 text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 px-2 py-1 rounded border border-slate-600 transition-colors"
-                          >
-                            Copy JSON
-                          </button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </TabsContent>
-                </>
-              )}
-
-              {/* Edit tabs */}
-              {!isViewMode && (
-                <>
-                  <TabsContent value="basic" className="space-y-6 mt-4 data-[state=active]:block hidden">
+              {/* Tabs for both edit and view modes */}
+                <TabsContent value="basic" className="space-y-6 mt-4 data-[state=active]:block hidden">
               {/* Basic Information */}
               <Card>
                 <CardHeader>
@@ -906,9 +778,10 @@ export function CreateTemplateDialog({ open, onOpenChange, onTemplateCreate, edi
                       <Input
                         id="title"
                         value={formData.title}
-                        onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+                        onChange={isViewMode ? undefined : (e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
                         placeholder="e.g., E-commerce Product Description Generator"
                         required
+                        readOnly={isViewMode}
                       />
                     </div>
                     <div className="space-y-2">
@@ -916,9 +789,10 @@ export function CreateTemplateDialog({ open, onOpenChange, onTemplateCreate, edi
                       <Input
                         id="useCase"
                         value={formData.useCase}
-                        onChange={(e) => setFormData(prev => ({ ...prev, useCase: e.target.value }))}
+                        onChange={isViewMode ? undefined : (e) => setFormData(prev => ({ ...prev, useCase: e.target.value }))}
                         placeholder="e.g., Product Marketing"
                         required
+                        readOnly={isViewMode}
                       />
                     </div>
                   </div>
@@ -928,47 +802,62 @@ export function CreateTemplateDialog({ open, onOpenChange, onTemplateCreate, edi
                     <Textarea
                       id="description"
                       value={formData.description}
-                      onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                      onChange={isViewMode ? undefined : (e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
                       placeholder="Describe what your template does and how it helps users..."
                       rows={3}
                       required
+                      readOnly={isViewMode}
                     />
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="industry">Industry *</Label>
-                      <Select value={formData.industry} onValueChange={(value: IndustryVertical) => setFormData(prev => ({ ...prev, industry: value }))}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select industry" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {industries.map((industry) => (
-                            <SelectItem key={industry} value={industry}>
-                              {industry}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      {isViewMode ? (
+                        <div className="p-2 border rounded bg-muted/20">
+                          <Badge variant="secondary">{formData.industry}</Badge>
+                        </div>
+                      ) : (
+                        <Select value={formData.industry} onValueChange={(value: IndustryVertical) => setFormData(prev => ({ ...prev, industry: value }))}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select industry" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {industries.map((industry) => (
+                              <SelectItem key={industry} value={industry}>
+                                {industry}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
                     </div>
 
                     <div className="space-y-2">
                       <Label htmlFor="complexity">Complexity</Label>
-                      <Select value={formData.complexity} onValueChange={(value: any) => setFormData(prev => ({ ...prev, complexity: value }))}>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                                                 <SelectContent>
-                           {complexityOptions.map((option) => (
-                             <SelectItem key={option.value} value={option.value}>
-                               <div className="text-left">
-                                 <div className="font-medium">{option.label}</div>
-                                 <div className="text-xs text-muted-foreground">{option.description}</div>
-                               </div>
-                             </SelectItem>
-                           ))}
-                         </SelectContent>
-                      </Select>
+                      {isViewMode ? (
+                        <div className="p-2 border rounded bg-muted/20">
+                          <Badge variant={formData.complexity === 'beginner' ? 'default' : formData.complexity === 'intermediate' ? 'secondary' : 'destructive'}>
+                            {formData.complexity}
+                          </Badge>
+                        </div>
+                      ) : (
+                        <Select value={formData.complexity} onValueChange={(value: any) => setFormData(prev => ({ ...prev, complexity: value }))}>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                             {complexityOptions.map((option) => (
+                               <SelectItem key={option.value} value={option.value}>
+                                 <div className="text-left">
+                                   <div className="font-medium">{option.label}</div>
+                                   <div className="text-xs text-muted-foreground">{option.description}</div>
+                                 </div>
+                               </SelectItem>
+                             ))}
+                           </SelectContent>
+                        </Select>
+                      )}
                     </div>
                   </div>
 
@@ -979,9 +868,10 @@ export function CreateTemplateDialog({ open, onOpenChange, onTemplateCreate, edi
                         id="estimatedRuntime"
                         type="number"
                         value={formData.estimatedRuntime}
-                        onChange={(e) => setFormData(prev => ({ ...prev, estimatedRuntime: parseInt(e.target.value) || 60 }))}
+                        onChange={isViewMode ? undefined : (e) => setFormData(prev => ({ ...prev, estimatedRuntime: parseInt(e.target.value) || 60 }))}
                         min="1"
                         max="3600"
+                        readOnly={isViewMode}
                       />
                     </div>
                   </div>
@@ -989,25 +879,29 @@ export function CreateTemplateDialog({ open, onOpenChange, onTemplateCreate, edi
                   {/* Tags */}
                   <div className="space-y-2">
                     <Label>Tags</Label>
-                    <div className="flex space-x-2">
-                      <Input
-                        value={newTag}
-                        onChange={(e) => setNewTag(e.target.value)}
-                        placeholder="Add a tag..."
-                        onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddTag())}
-                      />
-                      <Button type="button" onClick={handleAddTag} size="sm">
-                        <Plus className="h-4 w-4" />
-                      </Button>
-                    </div>
+                    {!isViewMode && (
+                      <div className="flex space-x-2">
+                        <Input
+                          value={newTag}
+                          onChange={(e) => setNewTag(e.target.value)}
+                          placeholder="Add a tag..."
+                          onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddTag())}
+                        />
+                        <Button type="button" onClick={handleAddTag} size="sm">
+                          <Plus className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    )}
                     <div className="flex flex-wrap gap-2">
                       {formData.tags.map((tag) => (
-                        <Badge key={tag} variant="secondary" className="flex items-center gap-1">
+                        <Badge key={tag} variant="secondary" className={isViewMode ? "" : "flex items-center gap-1"}>
                           {tag}
-                          <X 
-                            className="h-3 w-3 cursor-pointer" 
-                            onClick={() => handleRemoveTag(tag)}
-                          />
+                          {!isViewMode && (
+                            <X 
+                              className="h-3 w-3 cursor-pointer" 
+                              onClick={() => handleRemoveTag(tag)}
+                            />
+                          )}
                         </Badge>
                       ))}
                     </div>
@@ -1127,7 +1021,8 @@ export function CreateTemplateDialog({ open, onOpenChange, onTemplateCreate, edi
                         min="0"
                         max={formData.modelProvider === 'openai' ? 2 : 1}
                         value={formData.temperature}
-                        onChange={(e) => setFormData(prev => ({ ...prev, temperature: parseFloat(e.target.value) || providerDefaults[prev.modelProvider as keyof typeof providerDefaults].temperature }))}
+                        onChange={isViewMode ? undefined : (e) => setFormData(prev => ({ ...prev, temperature: parseFloat(e.target.value) || providerDefaults[prev.modelProvider as keyof typeof providerDefaults].temperature }))}
+                        readOnly={isViewMode}
                       />
                       <p className="text-xs text-muted-foreground">
                         {formData.modelProvider === 'openai' ? 'Ranges from 0-2. Higher values = more random output. Default: 1.0' : 
@@ -1143,7 +1038,8 @@ export function CreateTemplateDialog({ open, onOpenChange, onTemplateCreate, edi
                         min="1"
                         max={formData.modelProvider === 'openai' ? 8192 : formData.modelProvider === 'anthropic' ? 4096 : 8000}
                         value={formData.maxTokens}
-                        onChange={(e) => setFormData(prev => ({ ...prev, maxTokens: parseInt(e.target.value) || providerDefaults[prev.modelProvider as keyof typeof providerDefaults].maxTokens }))}
+                        onChange={isViewMode ? undefined : (e) => setFormData(prev => ({ ...prev, maxTokens: parseInt(e.target.value) || providerDefaults[prev.modelProvider as keyof typeof providerDefaults].maxTokens }))}
+                        readOnly={isViewMode}
                       />
                       <p className="text-xs text-muted-foreground">
                         {formData.modelProvider === 'openai' ? 'Maximum tokens to generate. Model-specific limits apply.' : 
@@ -1160,7 +1056,8 @@ export function CreateTemplateDialog({ open, onOpenChange, onTemplateCreate, edi
                         min="0"
                         max="1"
                         value={formData.topP}
-                        onChange={(e) => setFormData(prev => ({ ...prev, topP: parseFloat(e.target.value) || providerDefaults[prev.modelProvider as keyof typeof providerDefaults].topP }))}
+                        onChange={isViewMode ? undefined : (e) => setFormData(prev => ({ ...prev, topP: parseFloat(e.target.value) || providerDefaults[prev.modelProvider as keyof typeof providerDefaults].topP }))}
+                        readOnly={isViewMode}
                       />
                       <p className="text-xs text-muted-foreground">
                         {formData.modelProvider === 'openai' ? 'Alternative to temperature. Default: 1.0' : 
@@ -1182,7 +1079,8 @@ export function CreateTemplateDialog({ open, onOpenChange, onTemplateCreate, edi
                           min="-2"
                           max="2"
                           defaultValue="0"
-                          onChange={(e) => setFormData(prev => ({ ...prev, frequencyPenalty: parseFloat(e.target.value) || 0 }))}
+                          onChange={isViewMode ? undefined : (e) => setFormData(prev => ({ ...prev, frequencyPenalty: parseFloat(e.target.value) || 0 }))}
+                          readOnly={isViewMode}
                         />
                         <p className="text-xs text-muted-foreground">Penalizes repeated tokens. Range: -2.0 to 2.0. Default: 0</p>
                       </div>
@@ -1195,7 +1093,8 @@ export function CreateTemplateDialog({ open, onOpenChange, onTemplateCreate, edi
                           min="-2"
                           max="2"
                           defaultValue="0"
-                          onChange={(e) => setFormData(prev => ({ ...prev, presencePenalty: parseFloat(e.target.value) || 0 }))}
+                          onChange={isViewMode ? undefined : (e) => setFormData(prev => ({ ...prev, presencePenalty: parseFloat(e.target.value) || 0 }))}
+                          readOnly={isViewMode}
                         />
                         <p className="text-xs text-muted-foreground">Penalizes tokens based on appearance in text. Range: -2.0 to 2.0. Default: 0</p>
                       </div>
@@ -1212,7 +1111,8 @@ export function CreateTemplateDialog({ open, onOpenChange, onTemplateCreate, edi
                           type="number"
                           min="0"
                           defaultValue="5"
-                          onChange={(e) => setFormData(prev => ({ ...prev, topK: parseInt(e.target.value) || 5 }))}
+                          onChange={isViewMode ? undefined : (e) => setFormData(prev => ({ ...prev, topK: parseInt(e.target.value) || 5 }))}
+                          readOnly={isViewMode}
                         />
                         <p className="text-xs text-muted-foreground">Limits sampling to top K tokens. Higher values increase diversity.</p>
                       </div>
@@ -1228,7 +1128,8 @@ export function CreateTemplateDialog({ open, onOpenChange, onTemplateCreate, edi
                           id="guardrailId"
                           type="text"
                           placeholder="Optional guardrail ID"
-                          onChange={(e) => setFormData(prev => ({ ...prev, guardrailId: e.target.value }))}
+                          onChange={isViewMode ? undefined : (e) => setFormData(prev => ({ ...prev, guardrailId: e.target.value }))}
+                          readOnly={isViewMode}
                         />
                         <p className="text-xs text-muted-foreground">Amazon Bedrock guardrail ID for content filtering</p>
                       </div>
@@ -1238,7 +1139,8 @@ export function CreateTemplateDialog({ open, onOpenChange, onTemplateCreate, edi
                           id="guardrailVersion"
                           type="text"
                           placeholder="Optional guardrail version"
-                          onChange={(e) => setFormData(prev => ({ ...prev, guardrailVersion: e.target.value }))}
+                          onChange={isViewMode ? undefined : (e) => setFormData(prev => ({ ...prev, guardrailVersion: e.target.value }))}
+                          readOnly={isViewMode}
                         />
                         <p className="text-xs text-muted-foreground">Amazon Bedrock guardrail version</p>
                       </div>
@@ -1256,7 +1158,8 @@ export function CreateTemplateDialog({ open, onOpenChange, onTemplateCreate, edi
                           min="1"
                           max="100"
                           defaultValue="40"
-                          onChange={(e) => setFormData(prev => ({ ...prev, topK: parseInt(e.target.value) || 40 }))}
+                          onChange={isViewMode ? undefined : (e) => setFormData(prev => ({ ...prev, topK: parseInt(e.target.value) || 40 }))}
+                          readOnly={isViewMode}
                         />
                         <p className="text-xs text-muted-foreground">Limits sampling to top K tokens. Range: 1-100. Default: 40</p>
                       </div>
@@ -1266,7 +1169,8 @@ export function CreateTemplateDialog({ open, onOpenChange, onTemplateCreate, edi
                           id="safetySettings"
                           type="text"
                           placeholder="JSON array of safety settings"
-                          onChange={(e) => setFormData(prev => ({ ...prev, safetySettings: e.target.value }))}
+                          onChange={isViewMode ? undefined : (e) => setFormData(prev => ({ ...prev, safetySettings: e.target.value }))}
+                          readOnly={isViewMode}
                         />
                         <p className="text-xs text-muted-foreground">Configure safety thresholds for content filtering</p>
                       </div>
@@ -1290,9 +1194,10 @@ export function CreateTemplateDialog({ open, onOpenChange, onTemplateCreate, edi
                     <Textarea
                       id="systemPrompt"
                       value={formData.systemPrompt}
-                      onChange={(e) => setFormData(prev => ({ ...prev, systemPrompt: e.target.value }))}
+                      onChange={isViewMode ? undefined : (e) => setFormData(prev => ({ ...prev, systemPrompt: e.target.value }))}
                       placeholder="You are an expert AI assistant..."
                       rows={4}
+                      readOnly={isViewMode}
                     />
                   </div>
 
@@ -1301,9 +1206,10 @@ export function CreateTemplateDialog({ open, onOpenChange, onTemplateCreate, edi
                     <Textarea
                       id="userPromptTemplate"
                       value={formData.userPromptTemplate}
-                      onChange={(e) => setFormData(prev => ({ ...prev, userPromptTemplate: e.target.value }))}
+                      onChange={isViewMode ? undefined : (e) => setFormData(prev => ({ ...prev, userPromptTemplate: e.target.value }))}
                       placeholder="Create a {type} for {product} with {features}..."
                       rows={3}
+                      readOnly={isViewMode}
                     />
                   </div>
 
@@ -1367,33 +1273,35 @@ export function CreateTemplateDialog({ open, onOpenChange, onTemplateCreate, edi
                   <CardDescription>Add Model Context Protocol servers for enhanced capabilities</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <Input
-                      placeholder="Server name (required)"
-                      value={newMCPServer.name}
-                      onChange={(e) => setNewMCPServer(prev => ({ ...prev, name: e.target.value }))}
-                    />
-                    <Input
-                      placeholder="Description (optional)"
-                      value={newMCPServer.description}
-                      onChange={(e) => setNewMCPServer(prev => ({ ...prev, description: e.target.value }))}
-                    />
-                    <textarea
-                      className="flex min-h-[60px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                      placeholder="JSON configuration (required)"
-                      value={newMCPServer.configuration}
-                      onChange={(e) => setNewMCPServer(prev => ({ ...prev, configuration: e.target.value }))}
-                      rows={3}
-                    />
-                    <Button
-                      type="button"
-                      onClick={handleAddMCPServer}
-                      disabled={!newMCPServer.name.trim() || !newMCPServer.configuration.trim()}
-                      size="sm"
-                    >
-                      Add MCP Server
-                    </Button>
-                  </div>
+                  {!isViewMode && (
+                    <div className="space-y-2">
+                      <Input
+                        placeholder="Server name (required)"
+                        value={newMCPServer.name}
+                        onChange={(e) => setNewMCPServer(prev => ({ ...prev, name: e.target.value }))}
+                      />
+                      <Input
+                        placeholder="Description (optional)"
+                        value={newMCPServer.description}
+                        onChange={(e) => setNewMCPServer(prev => ({ ...prev, description: e.target.value }))}
+                      />
+                      <textarea
+                        className="flex min-h-[60px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                        placeholder="JSON configuration (required)"
+                        value={newMCPServer.configuration}
+                        onChange={(e) => setNewMCPServer(prev => ({ ...prev, configuration: e.target.value }))}
+                        rows={3}
+                      />
+                      <Button
+                        type="button"
+                        onClick={handleAddMCPServer}
+                        disabled={!newMCPServer.name.trim() || !newMCPServer.configuration.trim()}
+                        size="sm"
+                      >
+                        Add MCP Server
+                      </Button>
+                    </div>
+                  )}
                   <div className="space-y-2">
                     {formData.mcpServers.map((server, index) => (
                       <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
@@ -1401,14 +1309,16 @@ export function CreateTemplateDialog({ open, onOpenChange, onTemplateCreate, edi
                           <div className="font-medium">{server.name}</div>
                           {server.description && <div className="text-sm text-muted-foreground">{server.description}</div>}
                         </div>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleRemoveMCPServer(index)}
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
+                        {!isViewMode && (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleRemoveMCPServer(index)}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -1425,40 +1335,42 @@ export function CreateTemplateDialog({ open, onOpenChange, onTemplateCreate, edi
                   <CardDescription>Record the actual infrastructure the agent template executes on</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <Select
-                      value={newExecutionEnvironment.infrastructure}
-                      onValueChange={(value) => setNewExecutionEnvironment(prev => ({ ...prev, infrastructure: value }))}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select infrastructure" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="vscode">VS Code</SelectItem>
-                        <SelectItem value="cursor">Cursor</SelectItem>
-                        <SelectItem value="claude-code">Claude Code</SelectItem>
-                        <SelectItem value="jupyter">Jupyter Notebook</SelectItem>
-                        <SelectItem value="github-codespaces">GitHub Codespaces</SelectItem>
-                        <SelectItem value="replit">Replit</SelectItem>
-                        <SelectItem value="colab">Google Colab</SelectItem>
-                        <SelectItem value="other">Other</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <Textarea
-                      placeholder="Specific requirements (e.g., install ROO CODE plugin in VS Code, Python 3.9+, Node.js 16+)"
-                      value={newExecutionEnvironment.requirements}
-                      onChange={(e) => setNewExecutionEnvironment(prev => ({ ...prev, requirements: e.target.value }))}
-                      rows={3}
-                    />
-                    <Button
-                      type="button"
-                      onClick={handleAddExecutionEnvironment}
-                      disabled={!newExecutionEnvironment.infrastructure.trim()}
-                      size="sm"
-                    >
-                      Add Execution Environment
-                    </Button>
-                  </div>
+                  {!isViewMode && (
+                    <div className="space-y-2">
+                      <Select
+                        value={newExecutionEnvironment.infrastructure}
+                        onValueChange={(value) => setNewExecutionEnvironment(prev => ({ ...prev, infrastructure: value }))}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select infrastructure" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="vscode">VS Code</SelectItem>
+                          <SelectItem value="cursor">Cursor</SelectItem>
+                          <SelectItem value="claude-code">Claude Code</SelectItem>
+                          <SelectItem value="jupyter">Jupyter Notebook</SelectItem>
+                          <SelectItem value="github-codespaces">GitHub Codespaces</SelectItem>
+                          <SelectItem value="replit">Replit</SelectItem>
+                          <SelectItem value="colab">Google Colab</SelectItem>
+                          <SelectItem value="other">Other</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <Textarea
+                        placeholder="Specific requirements (e.g., install ROO CODE plugin in VS Code, Python 3.9+, Node.js 16+)"
+                        value={newExecutionEnvironment.requirements}
+                        onChange={(e) => setNewExecutionEnvironment(prev => ({ ...prev, requirements: e.target.value }))}
+                        rows={3}
+                      />
+                      <Button
+                        type="button"
+                        onClick={handleAddExecutionEnvironment}
+                        disabled={!newExecutionEnvironment.infrastructure.trim()}
+                        size="sm"
+                      >
+                        Add Execution Environment
+                      </Button>
+                    </div>
+                  )}
                   <div className="space-y-2">
                     {formData.executionEnvironment.map((env, index) => (
                       <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
@@ -1466,14 +1378,16 @@ export function CreateTemplateDialog({ open, onOpenChange, onTemplateCreate, edi
                           <div className="font-medium capitalize">{env?.infrastructure?.replace('-', ' ') || 'Unknown'}</div>
                           {env?.requirements && <div className="text-sm text-muted-foreground">{env.requirements}</div>}
                         </div>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleRemoveExecutionEnvironment(index)}
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
+                        {!isViewMode && (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleRemoveExecutionEnvironment(index)}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -1489,33 +1403,35 @@ export function CreateTemplateDialog({ open, onOpenChange, onTemplateCreate, edi
                   <CardDescription>Specify external dependencies and requirements</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="flex space-x-2">
-                    <Input
-                      placeholder="Add dependency (e.g., openai, firecrawl)"
-                      value={newDependency}
-                      onChange={(e) => setNewDependency(e.target.value)}
-                      onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddDependency())}
-                    />
-                    <Button type="button" onClick={handleAddDependency} size="sm">
-                      <Plus className="h-4 w-4" />
-                    </Button>
-                  </div>
+                  {!isViewMode && (
+                    <div className="flex space-x-2">
+                      <Input
+                        placeholder="Add dependency (e.g., openai, firecrawl)"
+                        value={newDependency}
+                        onChange={(e) => setNewDependency(e.target.value)}
+                        onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddDependency())}
+                      />
+                      <Button type="button" onClick={handleAddDependency} size="sm">
+                        <Plus className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  )}
                   <div className="flex flex-wrap gap-2">
                     {formData.dependencies.map((dep) => (
-                      <Badge key={dep} variant="outline" className="flex items-center gap-1">
+                      <Badge key={dep} variant="outline" className={isViewMode ? "" : "flex items-center gap-1"}>
                         {dep}
-                        <X 
-                          className="h-3 w-3 cursor-pointer" 
-                          onClick={() => handleRemoveDependency(dep)}
-                        />
+                        {!isViewMode && (
+                          <X 
+                            className="h-3 w-3 cursor-pointer" 
+                            onClick={() => handleRemoveDependency(dep)}
+                          />
+                        )}
                       </Badge>
                     ))}
                   </div>
                 </CardContent>
               </Card>
             </TabsContent>
-                </>
-              )}
             </div>
           </Tabs>
         </div>
