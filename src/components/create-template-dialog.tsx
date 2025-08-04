@@ -534,27 +534,38 @@ export function CreateTemplateDialog({ open, onOpenChange, onTemplateCreate, edi
           }
           serverIds.add(serverId)
           
+          // Parse user configuration or use defaults
+          let userConfig
+          try {
+            userConfig = JSON.parse(server.configuration || '{}')
+          } catch {
+            userConfig = {}
+          }
+          
+          // Determine server type from configuration or use the server name
+          const serverType = userConfig.serverType || server.name.toLowerCase().includes('firecrawl') ? 'firecrawl' : 'custom'
+          
           return {
             serverId,
-        serverType: 'custom' as any,
-        configuration: {
-          endpoint: 'https://api.custom.dev',
-          authentication: {
-            type: 'apiKey' as const,
-            credentials: { apiKey: 'your-api-key' }
-          },
-          rateLimit: {
-            requestsPerMinute: 60,
-            requestsPerHour: 1000,
-            burstLimit: 10
-          },
-          fallback: {
-            enabled: true,
-            fallbackServers: [],
-            retryAttempts: 3,
-            timeoutMs: 30000
-          }
-        },
+            serverType: serverType as any,
+            configuration: {
+              endpoint: userConfig.endpoint || 'https://api.custom.dev',
+              authentication: {
+                type: (userConfig.authentication?.type || 'apiKey') as 'apiKey' | 'oauth' | 'basic' | 'bearer',
+                credentials: userConfig.authentication?.credentials || { apiKey: 'your-api-key' }
+              },
+              rateLimit: {
+                requestsPerMinute: userConfig.rateLimit?.requestsPerMinute || 60,
+                requestsPerHour: userConfig.rateLimit?.requestsPerHour || 1000,
+                burstLimit: userConfig.rateLimit?.burstLimit || 10
+              },
+              fallback: {
+                enabled: userConfig.fallback?.enabled !== false,
+                fallbackServers: userConfig.fallback?.fallbackServers || [],
+                retryAttempts: userConfig.fallback?.retryAttempts || 3,
+                timeoutMs: userConfig.fallback?.timeoutMs || 30000
+              }
+            },
         tools: [{
           name: `${server.name}_tool`,
           description: server.description || `Tool for ${server.name}`,

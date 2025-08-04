@@ -386,8 +386,14 @@ export class TemplateQueries {
            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
           [
             `${template.id}_${mcpServer.serverId}`, template.id, mcpServer.serverId,
-            'MCP Server Configuration', 'npx', JSON.stringify(['@modelcontextprotocol/server-firecrawl']),
-            JSON.stringify({ FIRECRAWL_API_KEY: 'your-api-key' }), JSON.stringify(mcpServer.configuration || {}), now
+            mcpServer.serverType || 'custom', 'npx', JSON.stringify(['@modelcontextprotocol/server-firecrawl']),
+            JSON.stringify({ FIRECRAWL_API_KEY: 'your-api-key' }), 
+            JSON.stringify({
+              ...mcpServer.configuration,
+              serverType: mcpServer.serverType,
+              tools: mcpServer.tools,
+              resources: mcpServer.resources
+            }), now
           ]
         );
       }
@@ -471,8 +477,14 @@ export class TemplateQueries {
            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
           [
             `${id}_${mcpServer.serverId}`, id, mcpServer.serverId,
-            'MCP Server Configuration', 'npx', JSON.stringify(['@modelcontextprotocol/server-firecrawl']),
-            JSON.stringify({ FIRECRAWL_API_KEY: 'your-api-key' }), JSON.stringify(mcpServer.configuration || {}), now
+            mcpServer.serverType || 'custom', 'npx', JSON.stringify(['@modelcontextprotocol/server-firecrawl']),
+            JSON.stringify({ FIRECRAWL_API_KEY: 'your-api-key' }), 
+            JSON.stringify({
+              ...mcpServer.configuration,
+              serverType: mcpServer.serverType,
+              tools: mcpServer.tools,
+              resources: mcpServer.resources
+            }), now
           ]
         );
       }
@@ -653,23 +665,23 @@ export class TemplateQueries {
       const serverConfig = server.config ? this.safeJsonParse(server.config, {}) : {};
       return {
         serverId: server.name,
-        serverType: 'custom' as 'firecrawl' | 'custom' | 'api-integrator' | 'file-processor',
+        serverType: (serverConfig.serverType || server.description || 'custom') as 'firecrawl' | 'custom' | 'api-integrator' | 'file-processor',
         configuration: {
           endpoint: serverConfig.endpoint || 'https://api.example.com',
           authentication: {
-            type: (serverConfig.authenticationType || 'apiKey') as 'apiKey' | 'oauth' | 'basic' | 'bearer',
-            credentials: serverConfig.credentials || {}
+            type: (serverConfig.authentication?.type || 'apiKey') as 'apiKey' | 'oauth' | 'basic' | 'bearer',
+            credentials: serverConfig.authentication?.credentials || {}
           },
           rateLimit: {
-            requestsPerMinute: serverConfig.requestsPerMinute || 60,
-            requestsPerHour: serverConfig.requestsPerHour || 1000,
-            burstLimit: serverConfig.burstLimit || 10
+            requestsPerMinute: serverConfig.rateLimit?.requestsPerMinute || 60,
+            requestsPerHour: serverConfig.rateLimit?.requestsPerHour || 1000,
+            burstLimit: serverConfig.rateLimit?.burstLimit || 10
           },
           fallback: {
-            enabled: serverConfig.fallbackEnabled !== false,
-            fallbackServers: serverConfig.fallbackServers || [],
-            retryAttempts: serverConfig.retryAttempts || 3,
-            timeoutMs: serverConfig.timeoutMs || 30000
+            enabled: serverConfig.fallback?.enabled !== false,
+            fallbackServers: serverConfig.fallback?.fallbackServers || [],
+            retryAttempts: serverConfig.fallback?.retryAttempts || 3,
+            timeoutMs: serverConfig.fallback?.timeoutMs || 30000
           }
         },
         tools: serverConfig.tools || [],
