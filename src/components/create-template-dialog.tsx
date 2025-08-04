@@ -538,7 +538,7 @@ export function CreateTemplateDialog({ open, onOpenChange, onTemplateCreate, edi
           }
           serverIds.add(serverId)
           
-          // Parse user configuration or use defaults
+          // Parse user configuration - preserve exactly what user provided
           let userConfig
           try {
             userConfig = JSON.parse(server.configuration || '{}')
@@ -547,46 +547,32 @@ export function CreateTemplateDialog({ open, onOpenChange, onTemplateCreate, edi
           }
           
           // Determine server type from configuration or use the server name
-          const serverType = userConfig.serverType || server.name.toLowerCase().includes('firecrawl') ? 'firecrawl' : 'custom'
+          const serverType = userConfig.serverType || (server.name.toLowerCase().includes('firecrawl') ? 'firecrawl' : 'custom')
           
           return {
             serverId,
             serverType: serverType as any,
-            configuration: {
-              endpoint: userConfig.endpoint || 'https://api.custom.dev',
-              authentication: {
-                type: (userConfig.authentication?.type || 'apiKey') as 'apiKey' | 'oauth' | 'basic' | 'bearer',
-                credentials: userConfig.authentication?.credentials || { apiKey: 'your-api-key' }
+            // Store the user's configuration exactly as provided, without adding defaults
+            configuration: userConfig,
+            // Use tools from user configuration if provided, otherwise create basic tool structure
+            tools: userConfig.tools || [{
+              name: `${server.name}_tool`,
+              description: server.description || `Tool for ${server.name}`,
+              inputSchema: userConfig.inputSchema || {},
+              outputSchema: userConfig.outputSchema || {
+                type: 'object',
+                properties: {
+                  result: { type: 'string' }
+                }
               },
-              rateLimit: {
-                requestsPerMinute: userConfig.rateLimit?.requestsPerMinute || 60,
-                requestsPerHour: userConfig.rateLimit?.requestsPerHour || 1000,
-                burstLimit: userConfig.rateLimit?.burstLimit || 10
-              },
-              fallback: {
-                enabled: userConfig.fallback?.enabled !== false,
-                fallbackServers: userConfig.fallback?.fallbackServers || [],
-                retryAttempts: userConfig.fallback?.retryAttempts || 3,
-                timeoutMs: userConfig.fallback?.timeoutMs || 30000
+              costEstimate: userConfig.costEstimate || {
+                estimatedCostPerCall: 0.01,
+                currency: 'USD',
+                billingModel: 'per-call' as const
               }
-            },
-        tools: [{
-          name: `${server.name}_tool`,
-          description: server.description || `Tool for ${server.name}`,
-          inputSchema: JSON.parse(server.configuration || '{"type": "object", "properties": {"input": {"type": "string"}}, "required": ["input"]}'),
-          outputSchema: {
-            type: 'object',
-            properties: {
-              result: { type: 'string' }
-            }
-          },
-          costEstimate: {
-            estimatedCostPerCall: 0.01,
-            currency: 'USD',
-            billingModel: 'per-call' as const
-          }
-        }],
-        resources: []
+            }],
+            // Use resources from user configuration if provided
+            resources: userConfig.resources || []
           }
         })
       })(),

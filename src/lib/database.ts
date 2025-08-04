@@ -385,15 +385,15 @@ export class TemplateQueries {
           `INSERT INTO mcp_servers (id, template_id, name, description, command, args, env_vars, config, created_at)
            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
           [
-            `${template.id}_${mcpServer.serverId}`, template.id, mcpServer.serverId,
-            mcpServer.serverType || 'custom', 'npx', JSON.stringify(['@modelcontextprotocol/server-firecrawl']),
-            JSON.stringify({ FIRECRAWL_API_KEY: 'your-api-key' }), 
-            JSON.stringify({
-              ...mcpServer.configuration,
-              serverType: mcpServer.serverType,
-              tools: mcpServer.tools,
-              resources: mcpServer.resources
-            }), now
+            `${template.id}_${mcpServer.serverId}`, 
+            template.id, 
+            mcpServer.serverId,
+            mcpServer.serverType || 'custom', 
+            'npx',
+            JSON.stringify([]),
+            JSON.stringify({}), 
+            JSON.stringify(mcpServer.configuration),
+            now
           ]
         );
       }
@@ -476,15 +476,15 @@ export class TemplateQueries {
           `INSERT INTO mcp_servers (id, template_id, name, description, command, args, env_vars, config, created_at)
            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
           [
-            `${id}_${mcpServer.serverId}`, id, mcpServer.serverId,
-            mcpServer.serverType || 'custom', 'npx', JSON.stringify(['@modelcontextprotocol/server-firecrawl']),
-            JSON.stringify({ FIRECRAWL_API_KEY: 'your-api-key' }), 
-            JSON.stringify({
-              ...mcpServer.configuration,
-              serverType: mcpServer.serverType,
-              tools: mcpServer.tools,
-              resources: mcpServer.resources
-            }), now
+            `${id}_${mcpServer.serverId}`, 
+            id, 
+            mcpServer.serverId,
+            mcpServer.serverType || 'custom', 
+            'npx',
+            JSON.stringify([]),
+            JSON.stringify({}), 
+            JSON.stringify(mcpServer.configuration),
+            now
           ]
         );
       }
@@ -665,7 +665,7 @@ export class TemplateQueries {
       const serverConfig = server.config ? this.safeJsonParse(server.config, {}) : {};
       return {
         serverId: server.name || 'Unknown Server',
-        serverType: (server.server_type || serverConfig.serverType || 'custom') as 'firecrawl' | 'custom' | 'api-integrator' | 'file-processor',
+        serverType: (serverConfig.serverType || server.description || 'custom') as 'firecrawl' | 'custom' | 'api-integrator' | 'file-processor',
         // Preserve original configuration as-is, without adding default fallbacks
         configuration: serverConfig,
         tools: serverConfig.tools || [],
