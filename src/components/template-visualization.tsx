@@ -1,23 +1,6 @@
 "use client"
 
-import React, { useCallback, useMemo, useRef, useEffect } from 'react'
-import ReactFlow, {
-  MiniMap,
-  Controls,
-  Background,
-  useNodesState,
-  useEdgesState,
-  addEdge,
-  Connection,
-  Edge,
-  Node,
-  ReactFlowProvider,
-  NodeTypes,
-  MarkerType,
-  Position
-} from 'reactflow'
-import 'reactflow/dist/style.css'
-import * as d3 from 'd3'
+import React, { useCallback, useMemo, useRef, useEffect, useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
@@ -28,78 +11,70 @@ import {
   Database, 
   Settings, 
   Network,
-  Maximize2
+  Maximize2,
+  Play,
+  RotateCcw
 } from 'lucide-react'
 import { PromptTemplate } from '@/types'
+const anime = require('animejs')
 
-// Custom Node Components
-const LLMNode = ({ data }: { data: any }) => (
-  <div className="px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg shadow-lg border-2 border-blue-300 min-w-[150px]">
-    <div className="flex items-center space-x-2">
-      <Brain className="h-4 w-4" />
-      <div>
-        <div className="font-bold text-sm">{data.label}</div>
-        <div className="text-xs opacity-80">{data.model}</div>
+// Workflow Node Component
+interface WorkflowNodeProps {
+  id: string
+  type: 'prompt' | 'llm' | 'mcp' | 'tool' | 'env' | 'dependency'
+  label: string
+  subtitle?: string
+  className?: string
+}
+
+const WorkflowNode: React.FC<WorkflowNodeProps> = ({ id, type, label, subtitle, className = '' }) => {
+  const iconMap = {
+    prompt: MessageSquare,
+    llm: Brain,
+    mcp: Database,
+    tool: Zap,
+    env: Settings,
+    dependency: Network
+  }
+  
+  const colorMap = {
+    prompt: 'from-green-500 to-teal-600 border-green-300',
+    llm: 'from-blue-500 to-purple-600 border-blue-300',
+    mcp: 'from-orange-500 to-red-600 border-orange-300',
+    tool: 'from-yellow-500 to-amber-600 border-yellow-300',
+    env: 'from-indigo-500 to-purple-600 border-indigo-300',
+    dependency: 'from-gray-500 to-slate-600 border-gray-300'
+  }
+  
+  const Icon = iconMap[type]
+  
+  return (
+    <div 
+      id={id}
+      className={`workflow-node opacity-0 px-4 py-3 bg-gradient-to-r ${colorMap[type]} text-white rounded-lg shadow-lg border-2 min-w-[140px] transform scale-50 ${className}`}
+    >
+      <div className="flex items-center space-x-2">
+        <Icon className="h-4 w-4" />
+        <div>
+          <div className="font-bold text-sm">{label}</div>
+          {subtitle && <div className="text-xs opacity-80">{subtitle}</div>}
+        </div>
       </div>
     </div>
-  </div>
-)
+  )
+}
 
-const PromptNode = ({ data }: { data: any }) => (
-  <div className="px-4 py-2 bg-gradient-to-r from-green-500 to-teal-600 text-white rounded-lg shadow-lg border-2 border-green-300 min-w-[150px]">
-    <div className="flex items-center space-x-2">
-      <MessageSquare className="h-4 w-4" />
-      <div>
-        <div className="font-bold text-sm">{data.label}</div>
-        <div className="text-xs opacity-80">{data.type}</div>
-      </div>
+// Connection Arrow Component
+const ConnectionArrow: React.FC<{ id: string; className?: string }> = ({ id, className = '' }) => {
+  return (
+    <div 
+      id={id}
+      className={`connection-arrow opacity-0 flex items-center space-x-2 ${className}`}
+    >
+      <div className="h-0.5 bg-gray-400 flex-1 transform scale-x-0 origin-left"></div>
+      <div className="w-0 h-0 border-l-8 border-l-gray-400 border-t-4 border-t-transparent border-b-4 border-b-transparent transform scale-0"></div>
     </div>
-  </div>
-)
-
-const MCPNode = ({ data }: { data: any }) => (
-  <div className="px-4 py-2 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-lg shadow-lg border-2 border-orange-300 min-w-[150px]">
-    <div className="flex items-center space-x-2">
-      <Database className="h-4 w-4" />
-      <div>
-        <div className="font-bold text-sm">{data.label}</div>
-        <div className="text-xs opacity-80">{data.serverType}</div>
-      </div>
-    </div>
-  </div>
-)
-
-const ToolNode = ({ data }: { data: any }) => (
-  <div className="px-4 py-2 bg-gradient-to-r from-yellow-500 to-amber-600 text-white rounded-lg shadow-lg border-2 border-yellow-300 min-w-[150px]">
-    <div className="flex items-center space-x-2">
-      <Zap className="h-4 w-4" />
-      <div>
-        <div className="font-bold text-sm">{data.label}</div>
-        <div className="text-xs opacity-80">{data.category}</div>
-      </div>
-    </div>
-  </div>
-)
-
-const SaaSNode = ({ data }: { data: any }) => (
-  <div className="px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg shadow-lg border-2 border-indigo-300 min-w-[150px]">
-    <div className="flex items-center space-x-2">
-      <Settings className="h-4 w-4" />
-      <div>
-        <div className="font-bold text-sm">{data.label}</div>
-        <div className="text-xs opacity-80">{data.provider}</div>
-      </div>
-    </div>
-  </div>
-)
-
-// Node types configuration
-const nodeTypes: NodeTypes = {
-  llm: LLMNode,
-  prompt: PromptNode,
-  mcp: MCPNode,
-  tool: ToolNode,
-  saas: SaaSNode,
+  )
 }
 
 interface TemplateVisualizationProps {
@@ -107,326 +82,364 @@ interface TemplateVisualizationProps {
   className?: string
 }
 
-function TemplateFlowContent({ template }: { template: PromptTemplate }) {
-  const [nodes, setNodes, onNodesChange] = useNodesState([])
-  const [edges, setEdges, onEdgesChange] = useEdgesState([])
+// Fixed Workflow Animation Component
+function AnimatedWorkflowVisualization({ template }: { template: PromptTemplate }) {
+  const containerRef = useRef<HTMLDivElement>(null)
+  const [isAnimating, setIsAnimating] = useState(false)
+  const timelineRef = useRef<any>(null)
 
-  // Generate nodes and edges from template
-  const { generatedNodes, generatedEdges } = useMemo(() => {
-    const nodes: Node[] = []
-    const edges: Edge[] = []
-    let nodeId = 0
-
-    // LLM Node (central)
-    const llmNode: Node = {
-      id: `llm-${nodeId++}`,
-      type: 'llm',
-      position: { x: 400, y: 200 },
-      data: { 
-        label: 'Language Model',
-        model: template.executionEnvironment.find(s => s.infrastructure)?.infrastructure || 'GPT-4'
-      },
-      sourcePosition: Position.Right,
-      targetPosition: Position.Left,
+  // Extract workflow data from template
+  const workflowData = useMemo(() => {
+    const model = template.promptConfig?.model?.name || 'GPT-4'
+    const mcpServers = template.mcpServers.slice(0, 3) // Limit to first 3 for layout
+    const tools = template.mcpServers.flatMap(server => server.tools.slice(0, 2)) // Limit tools
+    const environments = template.executionEnvironment.slice(0, 2)
+    const dependencies = template.metadata?.dependencies?.slice(0, 3) || []
+    
+    return {
+      model,
+      mcpServers,
+      tools,
+      environments,
+      dependencies
     }
-    nodes.push(llmNode)
-
-    // System Prompt Node
-    const systemPromptNode: Node = {
-      id: `prompt-${nodeId++}`,
-      type: 'prompt',
-      position: { x: 50, y: 100 },
-      data: { 
-        label: 'System Prompt',
-        type: 'System Context'
-      },
-      sourcePosition: Position.Right,
-      targetPosition: Position.Left,
-    }
-    nodes.push(systemPromptNode)
-
-    // User Prompt Node
-    const userPromptNode: Node = {
-      id: `prompt-${nodeId++}`,
-      type: 'prompt',
-      position: { x: 50, y: 300 },
-      data: { 
-        label: 'User Prompt',
-        type: 'User Input'
-      },
-      sourcePosition: Position.Right,
-      targetPosition: Position.Left,
-    }
-    nodes.push(userPromptNode)
-
-    // Connect prompts to LLM
-    edges.push({
-      id: `edge-${systemPromptNode.id}-${llmNode.id}`,
-      source: systemPromptNode.id,
-      target: llmNode.id,
-      markerEnd: { type: MarkerType.ArrowClosed },
-      style: { stroke: '#10b981' }
-    })
-
-    edges.push({
-      id: `edge-${userPromptNode.id}-${llmNode.id}`,
-      source: userPromptNode.id,
-      target: llmNode.id,
-      markerEnd: { type: MarkerType.ArrowClosed },
-      style: { stroke: '#10b981' }
-    })
-
-    // MCP Server Nodes
-    template.mcpServers.forEach((mcpServer, index) => {
-      const mcpNode: Node = {
-        id: `mcp-${nodeId++}`,
-        type: 'mcp',
-        position: { x: 750, y: 50 + index * 120 },
-        data: {
-          label: mcpServer.serverId,
-          serverType: mcpServer.serverType
-        },
-        sourcePosition: Position.Left,
-        targetPosition: Position.Right,
-      }
-      nodes.push(mcpNode)
-
-      // Connect LLM to MCP Server
-      edges.push({
-        id: `edge-${llmNode.id}-${mcpNode.id}`,
-        source: llmNode.id,
-        target: mcpNode.id,
-        markerEnd: { type: MarkerType.ArrowClosed },
-        style: { stroke: '#f97316' }
-      })
-
-      // Add tool nodes for each MCP server
-      mcpServer.tools.forEach((tool, toolIndex) => {
-        const toolNode: Node = {
-          id: `tool-${nodeId++}`,
-          type: 'tool',
-          position: { x: 950, y: 50 + index * 120 + toolIndex * 40 },
-          data: {
-            label: tool.name,
-            category: 'MCP Tool'
-          },
-          sourcePosition: Position.Left,
-          targetPosition: Position.Right,
-        }
-        nodes.push(toolNode)
-
-        // Connect MCP Server to Tool
-        edges.push({
-          id: `edge-${mcpNode.id}-${toolNode.id}`,
-          source: mcpNode.id,
-          target: toolNode.id,
-          markerEnd: { type: MarkerType.ArrowClosed },
-          style: { stroke: '#eab308' }
-        })
-      })
-    })
-
-    // Execution Environment Nodes
-    template.executionEnvironment.forEach((env, index) => {
-      if (env.infrastructure) {
-        const envNode: Node = {
-          id: `env-${nodeId++}`,
-          type: 'saas',
-          position: { x: 750, y: 350 + index * 100 },
-          data: {
-            label: env.infrastructure.replace('-', ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' '),
-            infrastructure: env.infrastructure,
-          },
-          sourcePosition: Position.Left,
-          targetPosition: Position.Right,
-        }
-        nodes.push(envNode)
-
-        // Connect LLM to Execution Environment
-        edges.push({
-          id: `edge-${llmNode.id}-${envNode.id}`,
-          source: llmNode.id,
-          target: envNode.id,
-          markerEnd: { type: MarkerType.ArrowClosed },
-          style: { stroke: '#6366f1' }
-        })
-      }
-    })
-
-    return { generatedNodes: nodes, generatedEdges: edges }
   }, [template])
 
-  // Set nodes and edges when they change
-  useEffect(() => {
-    setNodes(generatedNodes)
-    setEdges(generatedEdges)
-  }, [generatedNodes, generatedEdges, setNodes, setEdges])
+  const startAnimation = useCallback(() => {
+    if (!containerRef.current || isAnimating) return
+    
+    setIsAnimating(true)
+    
+    // Create timeline animation
+    const tl = anime.timeline({
+      easing: 'easeOutExpo',
+      duration: 800,
+      complete: () => {
+        setIsAnimating(false)
+      }
+    })
 
-  const onConnect = useCallback(
-    (params: Connection) => setEdges((eds) => addEdge(params, eds)),
-    [setEdges]
-  )
+    // Reset all elements
+    anime({
+      targets: '.workflow-node',
+      opacity: 0,
+      scale: 0.5,
+      translateY: 30,
+      duration: 0
+    })
+    
+    anime({
+      targets: '.connection-arrow',
+      opacity: 0,
+      duration: 0
+    })
+    
+    anime({
+      targets: '.connection-arrow .h-0\\.5',
+      scaleX: 0,
+      duration: 0
+    })
+    
+    anime({
+      targets: '.connection-arrow .w-0',
+      scale: 0,
+      duration: 0
+    })
+
+    // Animate workflow sequence
+    tl.add({
+      targets: '#prompt-node',
+      opacity: [0, 1],
+      scale: [0.5, 1],
+      translateY: [30, 0],
+      delay: 200
+    })
+    .add({
+      targets: '#arrow-1 .h-0\.5',
+      scaleX: [0, 1],
+      duration: 600
+    }, '-=200')
+    .add({
+      targets: '#arrow-1 .w-0',
+      scale: [0, 1],
+      duration: 300
+    }, '-=100')
+    .add({
+      targets: '#arrow-1',
+      opacity: [0, 1],
+      duration: 200
+    }, '-=500')
+    .add({
+      targets: '#llm-node',
+      opacity: [0, 1],
+      scale: [0.5, 1.1, 1],
+      translateY: [30, 0],
+      duration: 1000
+    }, '-=200')
+    .add({
+      targets: '#arrow-2 .h-0\.5',
+      scaleX: [0, 1],
+      duration: 600
+    }, '-=200')
+    .add({
+      targets: '#arrow-2 .w-0',
+      scale: [0, 1],
+      duration: 300
+    }, '-=100')
+    .add({
+      targets: '#arrow-2',
+      opacity: [0, 1],
+      duration: 200
+    }, '-=500')
+    .add({
+      targets: '.mcp-node',
+      opacity: [0, 1],
+      scale: [0.5, 1],
+      translateY: [30, 0],
+      delay: anime.stagger(200)
+    }, '-=200')
+    .add({
+      targets: '#arrow-3 .h-0\.5',
+      scaleX: [0, 1],
+      duration: 600
+    }, '-=200')
+    .add({
+      targets: '#arrow-3 .w-0',
+      scale: [0, 1],
+      duration: 300
+    }, '-=100')
+    .add({
+      targets: '#arrow-3',
+      opacity: [0, 1],
+      duration: 200
+    }, '-=500')
+    .add({
+      targets: '.tool-node',
+      opacity: [0, 1],
+      scale: [0.5, 1],
+      translateY: [30, 0],
+      delay: anime.stagger(100)
+    }, '-=200')
+    .add({
+      targets: '#arrow-4 .h-0\.5',
+      scaleX: [0, 1],
+      duration: 600
+    }, '-=200')
+    .add({
+      targets: '#arrow-4 .w-0',
+      scale: [0, 1],
+      duration: 300
+    }, '-=100')
+    .add({
+      targets: '#arrow-4',
+      opacity: [0, 1],
+      duration: 200
+    }, '-=500')
+    .add({
+      targets: '.env-node',
+      opacity: [0, 1],
+      scale: [0.5, 1],
+      translateY: [30, 0],
+      delay: anime.stagger(150)
+    }, '-=200')
+    .add({
+      targets: '#arrow-5 .h-0\.5',
+      scaleX: [0, 1],
+      duration: 600
+    }, '-=200')
+    .add({
+      targets: '#arrow-5 .w-0',
+      scale: [0, 1],
+      duration: 300
+    }, '-=100')
+    .add({
+      targets: '#arrow-5',
+      opacity: [0, 1],
+      duration: 200
+    }, '-=500')
+    .add({
+      targets: '.dependency-node',
+      opacity: [0, 1],
+      scale: [0.5, 1],
+      translateY: [30, 0],
+      delay: anime.stagger(100)
+    }, '-=200')
+
+    timelineRef.current = tl
+  }, [isAnimating])
+
+  const resetAnimation = useCallback(() => {
+    if (timelineRef.current) {
+      timelineRef.current.restart()
+      setIsAnimating(true)
+    }
+  }, [])
+
+  useEffect(() => {
+    // Auto-start animation on mount
+    const timer = setTimeout(startAnimation, 500)
+    return () => clearTimeout(timer)
+  }, [startAnimation])
 
   return (
-    <div className="h-full w-full">
-      <ReactFlow
-        nodes={nodes}
-        edges={edges}
-        onNodesChange={onNodesChange}
-        onEdgesChange={onEdgesChange}
-        onConnect={onConnect}
-        nodeTypes={nodeTypes}
-        fitView
-        className="bg-gray-50"
-      >
-        <Controls />
-        <MiniMap />
-        <Background variant={"dots" as any} gap={12} size={1} />
-      </ReactFlow>
+    <div ref={containerRef} className="relative h-full w-full p-6 bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg overflow-auto">
+      {/* Controls */}
+      <div className="absolute top-4 right-4 flex space-x-2 z-10">
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={startAnimation}
+          disabled={isAnimating}
+          className="bg-white/80 backdrop-blur-sm"
+        >
+          <Play className="h-4 w-4 mr-1" />
+          Play
+        </Button>
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={resetAnimation}
+          disabled={isAnimating}
+          className="bg-white/80 backdrop-blur-sm"
+        >
+          <RotateCcw className="h-4 w-4 mr-1" />
+          Reset
+        </Button>
+      </div>
+
+      {/* Workflow Visualization */}
+      <div className="flex flex-col space-y-8 items-center py-8">
+        {/* Step 1: Prompt Input */}
+        <div className="flex flex-col items-center space-y-4">
+          <WorkflowNode 
+            id="prompt-node"
+            type="prompt"
+            label="Prompt Processing"
+            subtitle="User & System Prompts"
+          />
+          <ConnectionArrow id="arrow-1" />
+        </div>
+
+        {/* Step 2: LLM */}
+        <div className="flex flex-col items-center space-y-4">
+          <WorkflowNode 
+            id="llm-node"
+            type="llm"
+            label="Language Model"
+            subtitle={workflowData.model}
+            className="transform-gpu"
+          />
+          <ConnectionArrow id="arrow-2" />
+        </div>
+
+        {/* Step 3: MCP Servers */}
+        <div className="flex flex-col items-center space-y-4">
+          <div className="flex flex-wrap justify-center gap-4">
+            {workflowData.mcpServers.map((server, index) => (
+              <WorkflowNode 
+                key={server.serverId}
+                id={`mcp-${index}`}
+                type="mcp"
+                label={server.serverId}
+                subtitle={server.serverType}
+                className="mcp-node"
+              />
+            ))}
+            {workflowData.mcpServers.length === 0 && (
+              <WorkflowNode 
+                id="mcp-0"
+                type="mcp"
+                label="No MCP Servers"
+                subtitle="Direct Processing"
+                className="mcp-node opacity-50"
+              />
+            )}
+          </div>
+          {workflowData.tools.length > 0 && <ConnectionArrow id="arrow-3" />}
+        </div>
+
+        {/* Step 4: Tools (if any) */}
+        {workflowData.tools.length > 0 && (
+          <div className="flex flex-col items-center space-y-4">
+            <div className="flex flex-wrap justify-center gap-3">
+              {workflowData.tools.map((tool, index) => (
+                <WorkflowNode 
+                  key={`${tool.name}-${index}`}
+                  id={`tool-${index}`}
+                  type="tool"
+                  label={tool.name}
+                  subtitle="MCP Tool"
+                  className="tool-node"
+                />
+              ))}
+            </div>
+            <ConnectionArrow id="arrow-4" />
+          </div>
+        )}
+
+        {/* Step 5: Execution Environment */}
+        <div className="flex flex-col items-center space-y-4">
+          <div className="flex flex-wrap justify-center gap-4">
+            {workflowData.environments.map((env, index) => (
+              <WorkflowNode 
+                key={`env-${index}`}
+                id={`env-${index}`}
+                type="env"
+                label={env.infrastructure || 'Cloud Environment'}
+                subtitle="Execution Environment"
+                className="env-node"
+              />
+            ))}
+            {workflowData.environments.length === 0 && (
+              <WorkflowNode 
+                id="env-0"
+                type="env"
+                label="Default Environment"
+                subtitle="Standard Runtime"
+                className="env-node opacity-50"
+              />
+            )}
+          </div>
+          {workflowData.dependencies.length > 0 && <ConnectionArrow id="arrow-5" />}
+        </div>
+
+        {/* Step 6: Dependencies (if any) */}
+        {workflowData.dependencies.length > 0 && (
+          <div className="flex flex-col items-center space-y-4">
+            <div className="flex flex-wrap justify-center gap-3">
+              {workflowData.dependencies.map((dep, index) => (
+                <WorkflowNode 
+                  key={`dep-${index}`}
+                  id={`dep-${index}`}
+                  type="dependency"
+                  label={dep}
+                  subtitle="Dependency"
+                  className="dependency-node"
+                />
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   )
 }
 
-// D3 Network Diagram Component
-function D3NetworkDiagram({ template }: { template: PromptTemplate }) {
-  const svgRef = useRef<SVGSVGElement>(null)
-
-  useEffect(() => {
-    if (!svgRef.current) return
-
-    const svg = d3.select(svgRef.current)
-    svg.selectAll("*").remove() // Clear previous content
-
-    const width = 800
-    const height = 600
-
-    // Prepare data
-    const nodes: any[] = [
-      { id: 'llm', type: 'llm', label: 'LLM', group: 1 },
-      { id: 'system-prompt', type: 'prompt', label: 'System Prompt', group: 2 },
-      { id: 'user-prompt', type: 'prompt', label: 'User Prompt', group: 2 },
-    ]
-
-    const links: any[] = [
-      { source: 'system-prompt', target: 'llm' },
-      { source: 'user-prompt', target: 'llm' },
-    ]
-
-    // Add MCP servers
-    template.mcpServers.forEach((mcp, index) => {
-      const mcpId = `mcp-${index}`
-      nodes.push({ id: mcpId, type: 'mcp', label: mcp.serverId, group: 3 })
-      links.push({ source: 'llm', target: mcpId })
-
-      // Add tools
-      mcp.tools.forEach((tool, toolIndex) => {
-        const toolId = `tool-${index}-${toolIndex}`
-        nodes.push({ id: toolId, type: 'tool', label: tool.name, group: 4 })
-        links.push({ source: mcpId, target: toolId })
-      })
-    })
-
-    // Add execution environments
-    template.executionEnvironment.forEach((env, index) => {
-      if (env.infrastructure) {
-        const envId = `env-${index}`
-        nodes.push({ id: envId, type: 'env', label: env.infrastructure.replace('-', ' '), group: 5 })
-        links.push({ source: 'llm', target: envId })
-      }
-    })
-
-    // Color scale
-    const color = d3.scaleOrdinal()
-      .domain(['1', '2', '3', '4', '5'])
-      .range(['#3b82f6', '#10b981', '#f97316', '#eab308', '#6366f1'])
-
-    // Create simulation
-    const simulation = d3.forceSimulation(nodes)
-      .force('link', d3.forceLink(links).id((d: any) => d.id).distance(100))
-      .force('charge', d3.forceManyBody().strength(-300))
-      .force('center', d3.forceCenter(width / 2, height / 2))
-
-    // Add links
-    const link = svg.append('g')
-      .selectAll('line')
-      .data(links)
-      .join('line')
-      .attr('stroke', '#999')
-      .attr('stroke-opacity', 0.6)
-      .attr('stroke-width', 2)
-
-    // Add nodes
-    const node = svg.append('g')
-      .selectAll('circle')
-      .data(nodes)
-      .join('circle')
-      .attr('r', (d: any) => d.type === 'llm' ? 20 : 15)
-      .attr('fill', (d: any) => color(d.group.toString()) as string)
-      .attr('stroke', '#fff')
-      .attr('stroke-width', 2)
-
-    // Add labels
-    const label = svg.append('g')
-      .selectAll('text')
-      .data(nodes)
-      .join('text')
-      .text((d: any) => d.label)
-      .attr('font-size', '12px')
-      .attr('font-weight', 'bold')
-      .attr('text-anchor', 'middle')
-      .attr('dy', '0.3em')
-      .attr('fill', 'white')
-
-    // Add drag behavior
-    const drag = d3.drag()
-      .on('start', (event: any, d: any) => {
-        if (!event.active) simulation.alphaTarget(0.3).restart()
-        d.fx = d.x
-        d.fy = d.y
-      })
-      .on('drag', (event: any, d: any) => {
-        d.fx = event.x
-        d.fy = event.y
-      })
-      .on('end', (event: any, d: any) => {
-        if (!event.active) simulation.alphaTarget(0)
-        d.fx = null
-        d.fy = null
-      })
-
-    node.call(drag as any)
-
-    // Update positions on simulation tick
-    simulation.on('tick', () => {
-      link
-        .attr('x1', (d: any) => d.source.x)
-        .attr('y1', (d: any) => d.source.y)
-        .attr('x2', (d: any) => d.target.x)
-        .attr('y2', (d: any) => d.target.y)
-
-      node
-        .attr('cx', (d: any) => d.x)
-        .attr('cy', (d: any) => d.y)
-
-      label
-        .attr('x', (d: any) => d.x)
-        .attr('y', (d: any) => d.y)
-    })
-
-  }, [template])
-
+// Legacy Network Diagram - kept for reference
+function LegacyNetworkDiagram({ template }: { template: PromptTemplate }) {
   return (
-    <svg
-      ref={svgRef}
-      width="100%"
-      height="400"
-      className="border rounded-lg bg-white"
-    />
+    <div className="h-full flex items-center justify-center bg-gray-50 rounded-lg">
+      <p className="text-gray-500 text-center">
+        Legacy network view replaced with animated workflow visualization.
+        <br />
+        <span className="text-sm">Use the animated view for better user experience.</span>
+      </p>
+    </div>
   )
 }
 
 export function TemplateVisualization({ template, className = '' }: TemplateVisualizationProps) {
-  const [viewMode, setViewMode] = React.useState<'flow' | 'network'>('flow')
+  const [viewMode, setViewMode] = React.useState<'animated' | 'legacy'>('animated')
 
   return (
     <Card className={`template-visualization ${className}`}>
@@ -434,22 +447,23 @@ export function TemplateVisualization({ template, className = '' }: TemplateVisu
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center space-x-2">
             <Network className="h-5 w-5" />
-            <span>Template Architecture</span>
+            <span>Template Workflow</span>
           </CardTitle>
           <div className="flex space-x-2">
             <Button
-              variant={viewMode === 'flow' ? 'default' : 'outline'}
+              variant={viewMode === 'animated' ? 'default' : 'outline'}
               size="sm"
-              onClick={() => setViewMode('flow')}
+              onClick={() => setViewMode('animated')}
             >
-              Flow View
+              <Play className="h-4 w-4 mr-1" />
+              Animated View
             </Button>
             <Button
-              variant={viewMode === 'network' ? 'default' : 'outline'}
+              variant={viewMode === 'legacy' ? 'default' : 'outline'}
               size="sm"
-              onClick={() => setViewMode('network')}
+              onClick={() => setViewMode('legacy')}
             >
-              Network View
+              Legacy View
             </Button>
             <Dialog>
               <DialogTrigger asChild>
@@ -460,15 +474,13 @@ export function TemplateVisualization({ template, className = '' }: TemplateVisu
               </DialogTrigger>
               <DialogContent className="max-w-7xl max-h-[90vh]">
                 <DialogHeader>
-                  <DialogTitle>Template Architecture - {template.title}</DialogTitle>
+                  <DialogTitle>Template Workflow - {template.title}</DialogTitle>
                 </DialogHeader>
                 <div className="h-[70vh]">
-                  {viewMode === 'flow' ? (
-                    <ReactFlowProvider>
-                      <TemplateFlowContent template={template} />
-                    </ReactFlowProvider>
+                  {viewMode === 'animated' ? (
+                    <AnimatedWorkflowVisualization template={template} />
                   ) : (
-                    <D3NetworkDiagram template={template} />
+                    <LegacyNetworkDiagram template={template} />
                   )}
                 </div>
               </DialogContent>
@@ -478,24 +490,22 @@ export function TemplateVisualization({ template, className = '' }: TemplateVisu
       </CardHeader>
       <CardContent>
         <div className="h-96">
-          {viewMode === 'flow' ? (
-            <ReactFlowProvider>
-              <TemplateFlowContent template={template} />
-            </ReactFlowProvider>
+          {viewMode === 'animated' ? (
+            <AnimatedWorkflowVisualization template={template} />
           ) : (
-            <D3NetworkDiagram template={template} />
+            <LegacyNetworkDiagram template={template} />
           )}
         </div>
         
-        {/* Legend */}
+        {/* Updated Legend for Workflow */}
         <div className="mt-4 flex flex-wrap gap-2">
-          <div className="flex items-center space-x-1">
-            <div className="w-4 h-4 bg-gradient-to-r from-blue-500 to-purple-600 rounded"></div>
-            <span className="text-xs">LLM</span>
-          </div>
           <div className="flex items-center space-x-1">
             <div className="w-4 h-4 bg-gradient-to-r from-green-500 to-teal-600 rounded"></div>
             <span className="text-xs">Prompts</span>
+          </div>
+          <div className="flex items-center space-x-1">
+            <div className="w-4 h-4 bg-gradient-to-r from-blue-500 to-purple-600 rounded"></div>
+            <span className="text-xs">LLM</span>
           </div>
           <div className="flex items-center space-x-1">
             <div className="w-4 h-4 bg-gradient-to-r from-orange-500 to-red-600 rounded"></div>
@@ -507,7 +517,11 @@ export function TemplateVisualization({ template, className = '' }: TemplateVisu
           </div>
           <div className="flex items-center space-x-1">
             <div className="w-4 h-4 bg-gradient-to-r from-indigo-500 to-purple-600 rounded"></div>
-            <span className="text-xs">SaaS</span>
+            <span className="text-xs">Environment</span>
+          </div>
+          <div className="flex items-center space-x-1">
+            <div className="w-4 h-4 bg-gradient-to-r from-gray-500 to-slate-600 rounded"></div>
+            <span className="text-xs">Dependencies</span>
           </div>
         </div>
       </CardContent>
