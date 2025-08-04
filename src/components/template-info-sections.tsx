@@ -25,42 +25,56 @@ export function TemplateInfoSections({ template, mode = 'view' }: TemplateInfoSe
           {/* Title and Description - Full width */}
           <div className="space-y-4">
             <div>
-              <h4 className="font-medium text-sm text-muted-foreground">Title</h4>
-              <p className="text-base font-medium">{template.title}</p>
+              <h4 className="font-medium text-xs text-muted-foreground mb-1">Title</h4>
+              <div className="bg-muted rounded-md p-3">
+                <p className="text-base font-medium">{template.title}</p>
+              </div>
             </div>
             <div>
-              <h4 className="font-medium text-sm text-muted-foreground">Description</h4>
-              <p className="text-sm text-muted-foreground leading-relaxed">{template.description}</p>
+              <h4 className="font-medium text-xs text-muted-foreground mb-1">Description</h4>
+              <div className="bg-muted rounded-md p-3">
+                <p className="text-sm leading-relaxed">{template.description}</p>
+              </div>
             </div>
           </div>
           
           {/* Other fields - Grid layout */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <h4 className="font-medium text-sm text-muted-foreground">Industry</h4>
-              <Badge variant="secondary">{template.industry}</Badge>
+              <h4 className="font-medium text-xs text-muted-foreground mb-1">Industry</h4>
+              <div className="bg-muted rounded-md p-3 flex items-center">
+                <Badge variant="secondary">{template.industry}</Badge>
+              </div>
             </div>
             <div>
-              <h4 className="font-medium text-sm text-muted-foreground">Use Case</h4>
-              <p className="text-sm">{template.useCase}</p>
+              <h4 className="font-medium text-xs text-muted-foreground mb-1">Use Case</h4>
+              <div className="bg-muted rounded-md p-3">
+                <p className="text-sm">{template.useCase}</p>
+              </div>
             </div>
             <div>
-              <h4 className="font-medium text-sm text-muted-foreground">Complexity</h4>
-              <Badge variant="outline" className={
-                template.metadata?.complexity === 'beginner' ? 'bg-green-100 text-green-800' :
-                template.metadata?.complexity === 'intermediate' ? 'bg-yellow-100 text-yellow-800' :
-                'bg-red-100 text-red-800'
-              }>
-                {template.metadata?.complexity || 'Unknown'}
-              </Badge>
+              <h4 className="font-medium text-xs text-muted-foreground mb-1">Complexity</h4>
+              <div className="bg-muted rounded-md p-3 flex items-center">
+                <Badge variant="outline" className={
+                  template.metadata?.complexity === 'beginner' ? 'bg-green-100 text-green-800' :
+                  template.metadata?.complexity === 'intermediate' ? 'bg-yellow-100 text-yellow-800' :
+                  'bg-red-100 text-red-800'
+                }>
+                  {template.metadata?.complexity || 'Unknown'}
+                </Badge>
+              </div>
             </div>
             <div>
-              <h4 className="font-medium text-sm text-muted-foreground">Category</h4>
-              <p className="text-sm">{template.metadata?.category || 'Uncategorized'}</p>
+              <h4 className="font-medium text-xs text-muted-foreground mb-1">Category</h4>
+              <div className="bg-muted rounded-md p-3">
+                <p className="text-sm">{template.metadata?.category || 'Uncategorized'}</p>
+              </div>
             </div>
             <div>
-              <h4 className="font-medium text-sm text-muted-foreground">Runtime (est.)</h4>
-              <p className="text-sm">{template.metadata?.estimatedRuntime || 'N/A'}min</p>
+              <h4 className="font-medium text-xs text-muted-foreground mb-1">Runtime (est.)</h4>
+              <div className="bg-muted rounded-md p-3">
+                <p className="text-sm">{template.metadata?.estimatedRuntime || 'N/A'}min</p>
+              </div>
             </div>
           </div>
           

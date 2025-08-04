@@ -664,26 +664,10 @@ export class TemplateQueries {
     parsed.mcpServers = mcpServers.map(server => {
       const serverConfig = server.config ? this.safeJsonParse(server.config, {}) : {};
       return {
-        serverId: server.name,
-        serverType: (serverConfig.serverType || server.description || 'custom') as 'firecrawl' | 'custom' | 'api-integrator' | 'file-processor',
-        configuration: {
-          endpoint: serverConfig.endpoint || 'https://api.example.com',
-          authentication: {
-            type: (serverConfig.authentication?.type || 'apiKey') as 'apiKey' | 'oauth' | 'basic' | 'bearer',
-            credentials: serverConfig.authentication?.credentials || {}
-          },
-          rateLimit: {
-            requestsPerMinute: serverConfig.rateLimit?.requestsPerMinute || 60,
-            requestsPerHour: serverConfig.rateLimit?.requestsPerHour || 1000,
-            burstLimit: serverConfig.rateLimit?.burstLimit || 10
-          },
-          fallback: {
-            enabled: serverConfig.fallback?.enabled !== false,
-            fallbackServers: serverConfig.fallback?.fallbackServers || [],
-            retryAttempts: serverConfig.fallback?.retryAttempts || 3,
-            timeoutMs: serverConfig.fallback?.timeoutMs || 30000
-          }
-        },
+        serverId: server.name || 'Unknown Server',
+        serverType: (server.server_type || serverConfig.serverType || 'custom') as 'firecrawl' | 'custom' | 'api-integrator' | 'file-processor',
+        // Preserve original configuration as-is, without adding default fallbacks
+        configuration: serverConfig,
         tools: serverConfig.tools || [],
         resources: serverConfig.resources || []
       };
